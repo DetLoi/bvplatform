@@ -9,6 +9,9 @@ export default function Events() {
   // Use the API hook
   const { events, loading, error } = useEvents();
 
+  // Ensure events is always an array
+  const eventsArray = Array.isArray(events) ? events : [];
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'upcoming': return '#00ffc3';
@@ -74,7 +77,7 @@ export default function Events() {
         </div>
 
         <div className="events-grid">
-          {events.map((event) => (
+          {eventsArray.map((event) => (
             <div 
               key={event.id} 
               className="event-card"

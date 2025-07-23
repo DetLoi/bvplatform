@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { eventsAPI } from '../services/api';
 
 export const useEvents = (filters = {}) => {
@@ -6,7 +6,7 @@ export const useEvents = (filters = {}) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchEvents = async (params = {}) => {
+  const fetchEvents = useCallback(async (params = {}) => {
     try {
       setLoading(true);
       setError(null);
@@ -16,16 +16,18 @@ export const useEvents = (filters = {}) => {
         ...params
       });
       
-      setEvents(response);
+      // Handle both array and object responses
+      const eventsArray = Array.isArray(response) ? response : (response.events || []);
+      setEvents(eventsArray);
     } catch (err) {
       setError(err.message);
       console.error('Error fetching events:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
-  const fetchEventById = async (id) => {
+  const fetchEventById = useCallback(async (id) => {
     try {
       setLoading(true);
       setError(null);
@@ -39,9 +41,9 @@ export const useEvents = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const createEvent = async (eventData) => {
+  const createEvent = useCallback(async (eventData) => {
     try {
       setLoading(true);
       setError(null);
@@ -56,9 +58,9 @@ export const useEvents = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchEvents]);
 
-  const updateEvent = async (id, eventData) => {
+  const updateEvent = useCallback(async (id, eventData) => {
     try {
       setLoading(true);
       setError(null);
@@ -73,9 +75,9 @@ export const useEvents = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchEvents]);
 
-  const deleteEvent = async (id) => {
+  const deleteEvent = useCallback(async (id) => {
     try {
       setLoading(true);
       setError(null);
@@ -89,12 +91,12 @@ export const useEvents = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchEvents]);
 
-  // Initial fetch
+  // Initial fetch - only run once on mount
   useEffect(() => {
     fetchEvents();
-  }, [filters]);
+  }, []); // Empty dependency array to run only once
 
   return {
     events,
