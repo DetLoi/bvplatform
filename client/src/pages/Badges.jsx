@@ -1,5 +1,5 @@
 import { useProfile } from '../context/ProfileContext';
-import { useBadges } from '../hooks/useBadges';
+import { badges as localBadges } from '../data/badges';
 import BadgeCard from '../components/BadgeCard';
 import { FaTrophy, FaLock, FaStar, FaCrown, FaLayerGroup, FaFire, FaUsers } from 'react-icons/fa';
 import { useState } from 'react';
@@ -9,11 +9,24 @@ export default function Badges() {
   const { masteredMoves } = useProfile();
   const [activeCategory, setActiveCategory] = useState('all');
   
-  // Use the API hook
-  const { badges, loading, error } = useBadges();
+  // Use local badges data with unlock functions
+  const badges = localBadges || [];
+
+  // Safe function to check if badge is unlocked
+  const isBadgeUnlocked = (badge, masteredMoves) => {
+    if (typeof badge.unlock === 'function') {
+      try {
+        return badge.unlock(masteredMoves);
+      } catch (error) {
+        console.warn('Error checking badge unlock condition:', error);
+        return false;
+      }
+    }
+    return false;
+  };
 
   // Calculate badge statistics
-  const earnedBadges = badges.filter(badge => typeof badge.unlock === 'function' && badge.unlock(masteredMoves));
+  const earnedBadges = badges.filter(badge => isBadgeUnlocked(badge, masteredMoves));
   const totalBadges = badges.length;
   const earnedPercentage = Math.round((earnedBadges.length / totalBadges) * 100);
 
@@ -29,9 +42,9 @@ export default function Badges() {
   // Navigation categories
   const navCategories = [
     { id: 'all', name: 'All Badges', icon: FaTrophy, count: totalBadges, earned: earnedBadges.length },
-    { id: 'level', name: 'Level Mastery', icon: FaLayerGroup, count: levelBadges.length, earned: levelBadges.filter(b => typeof b.unlock === 'function' && b.unlock(masteredMoves)).length },
-    { id: 'element', name: 'Element Mastery', icon: FaFire, count: elementBadges.length, earned: elementBadges.filter(b => typeof b.unlock === 'function' && b.unlock(masteredMoves)).length },
-    { id: 'power', name: 'Power Specialists', icon: FaUsers, count: specialBadges.length, earned: specialBadges.filter(b => typeof b.unlock === 'function' && b.unlock(masteredMoves)).length }
+    { id: 'level', name: 'Level Mastery', icon: FaLayerGroup, count: levelBadges.length, earned: levelBadges.filter(b => isBadgeUnlocked(b, masteredMoves)).length },
+    { id: 'element', name: 'Element Mastery', icon: FaFire, count: elementBadges.length, earned: elementBadges.filter(b => isBadgeUnlocked(b, masteredMoves)).length },
+    { id: 'power', name: 'Power Specialists', icon: FaUsers, count: specialBadges.length, earned: specialBadges.filter(b => isBadgeUnlocked(b, masteredMoves)).length }
   ];
 
   // Get badges for active category
@@ -48,29 +61,7 @@ export default function Badges() {
     }
   };
 
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="badges-page">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading badges...</p>
-        </div>
-      </div>
-    );
-  }
 
-  // Show error state
-  if (error) {
-    return (
-      <div className="badges-page">
-        <div className="error-container">
-          <p>Error loading badges: {error}</p>
-          <button onClick={() => window.location.reload()}>Retry</button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="badges-page">
@@ -123,7 +114,7 @@ export default function Badges() {
                   <BadgeCard 
                     key={badge.id} 
                     badge={badge} 
-                    isEarned={typeof badge.unlock === 'function' ? badge.unlock(masteredMoves) : false}
+                    isEarned={isBadgeUnlocked(badge, masteredMoves)}
                     masteredMoves={masteredMoves}
                   />
                 ))}

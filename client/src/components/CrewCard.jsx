@@ -39,7 +39,7 @@ export default function CrewCard({ member }) {
         </div>
         
         <div className="crew-member-xp">
-          <span className="xp-value">{member.xp.toLocaleString()}</span>
+                                <span className="xp-value">{(member.xp || 0).toLocaleString()}</span>
           <span className="xp-label">XP</span>
         </div>
       </div>

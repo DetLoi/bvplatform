@@ -143,7 +143,7 @@ export default function Profile() {
 
                         <div className="action-button">
                           <div className="xp-display">
-                            <span className="xp-value">{member.xp.toLocaleString()}</span>
+                            <span className="xp-value">{(member.xp || 0).toLocaleString()}</span>
                             <span className="xp-label">XP</span>
                           </div>
                         </div>
@@ -198,7 +198,7 @@ export default function Profile() {
                           <div className="member-info">
                             <span className="member-name">{member.name}</span>
                           </div>
-                          <div className="member-xp">{member.xp.toLocaleString()} XP</div>
+                          <div className="member-xp">{(member.xp || 0).toLocaleString()} XP</div>
                         </div>
                       ))}
                   </div>
