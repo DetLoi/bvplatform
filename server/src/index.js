@@ -132,18 +132,28 @@ const PORT = process.env.PORT || 5000;
 // Validate required environment variables
 if (!process.env.MONGO_URI) {
   console.error('❌ MONGO_URI environment variable is required');
+  console.error('Please set MONGO_URI in your environment variables');
+  console.error('For local development, create a .env file with:');
+  console.error('MONGO_URI=mongodb+srv://spkzdloi:btTDAPh0XXhiURtb@breakverse.p9k1nq1.mongodb.net/?retryWrites=true&w=majority&appName=breakverse');
   process.exit(1);
 }
 
 // Connect to MongoDB with better error handling
 const startServer = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    console.log('🔌 Attempting to connect to MongoDB...');
+    console.log('📡 MongoDB URI:', process.env.MONGO_URI ? 'Set (hidden for security)' : 'Not set');
+    
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
     console.log('✅ MongoDB connected successfully');
     
     const server = app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Health check: http://localhost:${PORT}/health`);
+      console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
     });
 
     // Graceful shutdown
@@ -157,6 +167,7 @@ const startServer = async () => {
 
   } catch (error) {
     console.error('❌ Failed to connect to MongoDB:', error.message);
+    console.error('🔍 Error details:', error);
     process.exit(1);
   }
 };
