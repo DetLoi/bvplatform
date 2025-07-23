@@ -89,13 +89,23 @@ userSchema.pre('save', async function(next) {
   }
 });
 
+// Auto-calculate level before saving
+userSchema.pre('save', function(next) {
+  // Only auto-calculate level if XP or masteredMoves have changed
+  if (this.isModified('xp') || this.isModified('masteredMoves')) {
+    this.level = this.calculateLevel();
+  }
+  next();
+});
+
 // Method to compare passwords
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to calculate level from XP
+// Method to calculate level from XP and moves mastered
 userSchema.methods.calculateLevel = function() {
+  // Base calculation on XP
   const xpThresholds = [0, 100, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000];
   let level = 1;
   
@@ -107,7 +117,11 @@ userSchema.methods.calculateLevel = function() {
     }
   }
   
-  return Math.min(level, 10);
+  // Bonus levels based on number of moves mastered
+  const totalMoves = this.masteredMoves ? this.masteredMoves.length : 0;
+  const moveBonus = Math.floor(totalMoves / 5); // 1 bonus level for every 5 moves
+  
+  return Math.min(level + moveBonus, 50); // Cap at level 50
 };
 
 // Method to get next level XP
@@ -115,8 +129,21 @@ userSchema.methods.getNextLevelXP = function() {
   const xpThresholds = [0, 100, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000];
   const currentLevel = this.calculateLevel();
   
-  if (currentLevel >= 10) return this.xp;
-  return xpThresholds[currentLevel];
+  // Calculate the base XP level (without move bonus)
+  let baseLevel = 1;
+  for (let i = 0; i < xpThresholds.length; i++) {
+    if (this.xp >= xpThresholds[i]) {
+      baseLevel = i + 1;
+    } else {
+      break;
+    }
+  }
+  
+  // If we're at max XP level, return current XP
+  if (baseLevel >= 10) return this.xp;
+  
+  // Return the XP needed for the next base level
+  return xpThresholds[baseLevel];
 };
 
 // Method to get progress to next level

@@ -145,7 +145,7 @@ export const addMasteredMove = async (req, res) => {
     // Add move to mastered moves and add XP
     user.masteredMoves.push(moveId);
     user.xp += move.xp;
-    user.level = user.calculateLevel();
+    // Level will be auto-calculated by pre-save middleware
     
     // Remove from pending moves if it exists
     user.pendingMoves = user.pendingMoves.filter(id => id.toString() !== moveId);
@@ -185,7 +185,7 @@ export const removeMasteredMove = async (req, res) => {
     // Remove move from mastered moves and subtract XP
     user.masteredMoves = user.masteredMoves.filter(id => id.toString() !== moveId);
     user.xp = Math.max(0, user.xp - move.xp);
-    user.level = user.calculateLevel();
+    // Level will be auto-calculated by pre-save middleware
     
     await user.save();
     
@@ -261,7 +261,7 @@ export const approvePendingMove = async (req, res) => {
     user.pendingMoves = user.pendingMoves.filter(id => id.toString() !== moveId);
     user.masteredMoves.push(moveId);
     user.xp += move.xp;
-    user.level = user.calculateLevel();
+    // Level will be auto-calculated by pre-save middleware
     
     await user.save();
     
