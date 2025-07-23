@@ -3,26 +3,17 @@
   padding: 2rem 0;
 }
 
-/* Layout with Navigation */
-.badges-layout {
-  position: relative;
-  width: 100%;
-}
-
-/* Left Navigation Panel */
+/* Top Navigation Panel */
 .badges-nav-panel {
-  position: fixed;
-  left: 0;
+  position: sticky;
   top: 80px; /* Account for header height */
-  width: 280px;
-  height: calc(100vh - 80px); /* Subtract header height */
+  width: 100%;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 0 1rem 1rem 0;
+  border-radius: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-left: none;
   backdrop-filter: blur(20px);
   padding: 1.5rem;
-  overflow-y: auto;
+  margin-bottom: 2rem;
   z-index: 100;
 }
 
@@ -36,8 +27,10 @@
 
 .nav-categories {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  flex-direction: row;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .nav-category {
@@ -58,7 +51,7 @@
 .nav-category:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(230, 199, 123, 0.3);
-  transform: translateX(4px);
+  transform: translateY(-2px);
 }
 
 .nav-category.active {
@@ -109,12 +102,9 @@
 
 /* Main Content */
 .badges-main-content {
-  margin-left: 280px;
   padding: 2rem;
   max-width: 1200px;
-  margin-right: auto;
-  margin-top: 0;
-  margin-bottom: 0;
+  margin: 0 auto;
 }
 
 .badges-header {
@@ -507,15 +497,12 @@
     position: static;
     width: 100%;
     height: auto;
-    left: auto;
-    top: auto;
     border-radius: 1rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 1rem;
   }
   
   .badges-main-content {
-    margin-left: 0;
     padding: 1rem;
   }
   
@@ -523,15 +510,12 @@
     flex-direction: row;
     overflow-x: auto;
     padding-bottom: 0.5rem;
+    justify-content: flex-start;
   }
   
   .nav-category {
     min-width: 200px;
     flex-shrink: 0;
-  }
-  
-  .badges-main-content {
-    width: 100%;
   }
   
   .badges-title {
