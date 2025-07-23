@@ -1,6 +1,4 @@
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://bvplatform-api.onrender.com/api'
-  : 'http://localhost:5000/api';
+const API_BASE_URL = 'https://bvplatform-api.onrender.com/api';
 
 // Generic API request function
 const apiRequest = async (endpoint, options = {}) => {
