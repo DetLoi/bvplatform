@@ -4,6 +4,8 @@ const API_BASE_URL = 'https://bvplatform-api.onrender.com/api';
 const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
   
+  console.log('🌐 Making API request to:', url);
+  
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -13,16 +15,23 @@ const apiRequest = async (endpoint, options = {}) => {
   };
 
   try {
+    console.log('📡 Sending request...');
     const response = await fetch(url, config);
+    
+    console.log('📥 Response status:', response.status);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error('❌ API Error:', response.status, errorData);
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log('✅ API Response received:', data);
+    return data;
   } catch (error) {
-    console.error('API request failed:', error);
+    console.error('💥 API request failed:', error);
+    console.error('🔗 URL attempted:', url);
     throw error;
   }
 };

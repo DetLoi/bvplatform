@@ -26,6 +26,30 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Test endpoint with sample data
+app.get('/api/test', (req, res) => {
+  res.json({
+    message: 'API is working!',
+    sampleMoves: [
+      {
+        id: '1',
+        name: 'Toprock Basic',
+        category: 'Toprock',
+        level: 'Beginner',
+        description: 'Basic toprock foundation'
+      },
+      {
+        id: '2', 
+        name: 'Six Step',
+        category: 'Footwork',
+        level: 'Beginner',
+        description: 'Fundamental footwork move'
+      }
+    ],
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({ 
