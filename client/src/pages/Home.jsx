@@ -6,7 +6,7 @@ import placeholder from '../assets/placeholder.jpg';
 import { StyleRadar } from '../components/StyleRadar';
 import { LevelSummary } from '../components/LevelSummary';
 import { moves as allMoves } from '../data/moves';
-import { badges } from '../data/badges';
+import { badges as localBadges } from '../data/badges';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaVideo } from 'react-icons/fa';
@@ -25,6 +25,27 @@ export default function Home({ coverPhoto, setCoverPhoto, isEditing, setIsEditin
   } = useProfile();
 
   const [selectedImage, setSelectedImage] = useState(null);
+
+  // Safe badge filtering function that handles both local and API badge data
+  const getUnlockedBadges = (badges, masteredMoves) => {
+    if (!Array.isArray(badges)) return [];
+    return badges.filter(badge => {
+      // Check if badge has unlock function and call it safely
+      if (typeof badge.unlock === 'function') {
+        try {
+          return badge.unlock(masteredMoves);
+        } catch (error) {
+          console.warn('Error checking badge unlock condition:', error);
+          return false;
+        }
+      }
+      // If no unlock function, assume badge is not unlocked
+      return false;
+    });
+  };
+
+  // Use local badges as fallback, ensuring they always have unlock functions
+  const badges = localBadges || [];
   
   // Add some test moves for badge testing (remove this later)
   const testMoves = [
@@ -150,20 +171,19 @@ export default function Home({ coverPhoto, setCoverPhoto, isEditing, setIsEditin
           <div className="section-card">
             <h2 className="section-heading">Badges</h2>
             <div className="badges-wrapper">
-              {badges.filter(badge => typeof badge.unlock === 'function' && badge.unlock(masteredMoves)).length > 0 ? (
+              {getUnlockedBadges(badges, masteredMoves).length > 0 ? (
                 <div className="badges-row">
-                  {badges
-                    .filter(badge => typeof badge.unlock === 'function' && badge.unlock(masteredMoves))
+                  {getUnlockedBadges(badges, masteredMoves)
                     .map((badge) => (
                       <div key={badge.id} className="game-badge-minimal">
                         <div className="badge-icon">
-                          {badge.image.startsWith('/src/assets/badges/') ? (
-                            <img src={badge.image} alt={badge.name} className="badge-image" />
+                          {badge.image && badge.image.startsWith('/src/assets/badges/') ? (
+                            <img src={badge.image} alt={badge.name || 'Badge'} className="badge-image" />
                           ) : (
-                            <span className="badge-emoji">{badge.image}</span>
+                            <span className="badge-emoji">{badge.image || '🏆'}</span>
                           )}
                         </div>
-                        <div className="badge-title">{badge.name}</div>
+                        <div className="badge-title">{badge.name || 'Unknown Badge'}</div>
                       </div>
                     ))}
                 </div>
