@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FaPlay } from 'react-icons/fa';
 import { useMoves } from '../hooks/useMoves';
@@ -28,6 +28,15 @@ export function Moves({ setToastMessage }) {
   // Use the API hook
   const { moves, loading, error, fetchMovesByCategory } = useMoves();
 
+  // Memoize the fetch function to prevent infinite loops
+  const fetchCategoryMoves = useCallback(async (categoryName) => {
+    try {
+      await fetchMovesByCategory(categoryName);
+    } catch (err) {
+      console.error('Error fetching moves by category:', err);
+    }
+  }, [fetchMovesByCategory]);
+
   // Handle URL parameter for specific move
   useEffect(() => {
     const moveParam = searchParams.get('move');
@@ -42,8 +51,8 @@ export function Moves({ setToastMessage }) {
 
   // Fetch moves by category when category changes
   useEffect(() => {
-    fetchMovesByCategory(category);
-  }, [category, fetchMovesByCategory]);
+    fetchCategoryMoves(category);
+  }, [category, fetchCategoryMoves]);
 
   function handleAddMove(move) {
     toast.success(`Request sent to certified instructor for ${move.name}!`);

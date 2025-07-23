@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { movesAPI } from '../services/api';
 
 export const useMoves = (filters = {}) => {
@@ -11,7 +11,7 @@ export const useMoves = (filters = {}) => {
     total: 0
   });
 
-  const fetchMoves = async (params = {}) => {
+  const fetchMoves = useCallback(async (params = {}) => {
     try {
       setLoading(true);
       setError(null);
@@ -33,9 +33,9 @@ export const useMoves = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
-  const fetchMovesByCategory = async (category) => {
+  const fetchMovesByCategory = useCallback(async (category) => {
     try {
       setLoading(true);
       setError(null);
@@ -52,7 +52,7 @@ export const useMoves = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const fetchMovesByLevel = async (level) => {
     try {
@@ -135,10 +135,10 @@ export const useMoves = (filters = {}) => {
     }
   };
 
-  // Initial fetch
+  // Initial fetch - only run once on mount
   useEffect(() => {
     fetchMoves();
-  }, [filters]);
+  }, []); // Empty dependency array to run only once
 
   return {
     moves,
