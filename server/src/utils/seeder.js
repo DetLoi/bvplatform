@@ -191,22 +191,25 @@ export const seedDatabase = async () => {
 };
 
 // Run seeder if this file is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  import('dotenv/config').then(() => {
-    import('mongoose').then(({ default: mongoose }) => {
-      mongoose.connect(process.env.MONGO_URI)
-        .then(() => {
-          console.log('📦 Connected to MongoDB');
-          return seedDatabase();
-        })
-        .then((result) => {
-          console.log('📊 Seeding results:', result);
-          process.exit(0);
-        })
-        .catch((error) => {
-          console.error('❌ Seeding failed:', error);
-          process.exit(1);
-        });
-    });
-  });
-} 
+import dotenv from 'dotenv';
+dotenv.config();
+
+import mongoose from 'mongoose';
+
+const runSeeder = async () => {
+  try {
+    console.log('🔌 Connecting to MongoDB...');
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('📦 Connected to MongoDB');
+    
+    const result = await seedDatabase();
+    console.log('📊 Seeding results:', result);
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Seeding failed:', error);
+    process.exit(1);
+  }
+};
+
+// Run seeder
+runSeeder(); 
