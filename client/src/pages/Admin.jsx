@@ -8,6 +8,10 @@ import { useEvents } from '../hooks/useEvents';
 import { useProfile } from '../context/ProfileContext';
 import { FaMinus } from 'react-icons/fa';
 import Toast from '../components/Toast';
+import { moves } from '../data/moves';
+import { badges } from '../data/badges';
+import { events } from '../data/events';
+import { crews } from '../data/crews';
 import '../styles/pages/admin.css';
 
 // Edit Form Components

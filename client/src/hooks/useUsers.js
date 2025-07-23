@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { usersAPI } from '../services/api';
 
 export const useUsers = (filters = {}) => {
@@ -11,7 +11,7 @@ export const useUsers = (filters = {}) => {
     total: 0
   });
 
-  const fetchUsers = async (params = {}) => {
+  const fetchUsers = useCallback(async (params = {}) => {
     try {
       setLoading(true);
       setError(null);
@@ -21,21 +21,26 @@ export const useUsers = (filters = {}) => {
         ...params
       });
       
-      setUsers(response.users);
-      setPagination({
-        currentPage: response.currentPage,
-        totalPages: response.totalPages,
-        total: response.total
-      });
+      // Handle both array and object responses
+      const usersArray = Array.isArray(response) ? response : (response.users || []);
+      setUsers(usersArray);
+      
+      if (response.pagination) {
+        setPagination({
+          currentPage: response.currentPage || 1,
+          totalPages: response.totalPages || 1,
+          total: response.total || 0
+        });
+      }
     } catch (err) {
       setError(err.message);
       console.error('Error fetching users:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
-  const fetchUserById = async (id) => {
+  const fetchUserById = useCallback(async (id) => {
     try {
       setLoading(true);
       setError(null);
@@ -49,9 +54,9 @@ export const useUsers = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const createUser = async (userData) => {
+  const createUser = useCallback(async (userData) => {
     try {
       setLoading(true);
       setError(null);
@@ -66,9 +71,9 @@ export const useUsers = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchUsers]);
 
-  const updateUser = async (id, userData) => {
+  const updateUser = useCallback(async (id, userData) => {
     try {
       setLoading(true);
       setError(null);
@@ -83,9 +88,9 @@ export const useUsers = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchUsers]);
 
-  const deleteUser = async (id) => {
+  const deleteUser = useCallback(async (id) => {
     try {
       setLoading(true);
       setError(null);
@@ -99,9 +104,9 @@ export const useUsers = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchUsers]);
 
-  const addMasteredMove = async (userId, moveId) => {
+  const addMasteredMove = useCallback(async (userId, moveId) => {
     try {
       setLoading(true);
       setError(null);
@@ -116,9 +121,9 @@ export const useUsers = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchUsers]);
 
-  const removeMasteredMove = async (userId, moveId) => {
+  const removeMasteredMove = useCallback(async (userId, moveId) => {
     try {
       setLoading(true);
       setError(null);
@@ -133,9 +138,9 @@ export const useUsers = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchUsers]);
 
-  const addPendingMove = async (userId, moveId) => {
+  const addPendingMove = useCallback(async (userId, moveId) => {
     try {
       setLoading(true);
       setError(null);
@@ -150,9 +155,9 @@ export const useUsers = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchUsers]);
 
-  const approvePendingMove = async (userId, moveId) => {
+  const approvePendingMove = useCallback(async (userId, moveId) => {
     try {
       setLoading(true);
       setError(null);
@@ -167,9 +172,9 @@ export const useUsers = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchUsers]);
 
-  const rejectPendingMove = async (userId, moveId) => {
+  const rejectPendingMove = useCallback(async (userId, moveId) => {
     try {
       setLoading(true);
       setError(null);
@@ -184,9 +189,9 @@ export const useUsers = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchUsers]);
 
-  const getUserStats = async (userId) => {
+  const getUserStats = useCallback(async (userId) => {
     try {
       setLoading(true);
       setError(null);
@@ -200,12 +205,12 @@ export const useUsers = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Initial fetch
+  // Initial fetch - only run once on mount
   useEffect(() => {
     fetchUsers();
-  }, [filters]);
+  }, []); // Empty dependency array to run only once
 
   return {
     users,
