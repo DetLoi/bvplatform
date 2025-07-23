@@ -13,8 +13,24 @@ import crewRoutes from './routes/crew.routes.js';
 dotenv.config();
 const app = express();
 
+// CORS configuration
+const corsOptions = {
+  origin: [
+    'http://localhost:5173',     // Vite dev server
+    'http://localhost:3000',     // React dev server
+    'http://localhost:8080',     // Vue dev server
+    'https://bvplatform.vercel.app', // Production frontend (if you deploy there)
+    'https://breakverse.vercel.app',  // Alternative domain
+    'https://breakverse.netlify.app', // Netlify deployment
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
+};
+
 // Middlewares
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Health check endpoint for Render
