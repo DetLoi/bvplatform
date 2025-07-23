@@ -22,6 +22,10 @@ const corsOptions = {
     'https://bvplatform.vercel.app', // Production frontend (if you deploy there)
     'https://breakverse.vercel.app',  // Alternative domain
     'https://breakverse.netlify.app', // Netlify deployment
+    'http://localhost:4173',     // Vite preview server
+    'https://breakverse-client.vercel.app', // Vercel deployment
+    'https://breakverse-client.netlify.app', // Netlify deployment
+    'https://breakverse-client.onrender.com', // Render deployment
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -31,6 +35,20 @@ const corsOptions = {
 
 // Middlewares
 app.use(cors(corsOptions));
+
+// Additional CORS headers for preflight requests
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 app.use(express.json());
 
 // Health check endpoint for Render

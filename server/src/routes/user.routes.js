@@ -18,11 +18,11 @@ const router = Router();
 // Get all users with filtering
 router.get('/', getAllUsers);
 
-// Get user statistics
-router.get('/:userId/stats', getUserStats);
-
 // Get single user
 router.get('/:id', getUserById);
+
+// Get user statistics
+router.get('/:userId/stats', getUserStats);
 
 // Create user
 router.post('/', createUser);
@@ -33,7 +33,7 @@ router.put('/:id', updateUser);
 // Delete user
 router.delete('/:id', deleteUser);
 
-// Move management
+// Move management - reordered to avoid conflicts
 router.post('/:userId/moves/:moveId/master', addMasteredMove);
 router.delete('/:userId/moves/:moveId/master', removeMasteredMove);
 router.post('/:userId/moves/:moveId/pending', addPendingMove);
