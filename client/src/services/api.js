@@ -1,7 +1,5 @@
-// Use localhost for development, deployed server for production
-const API_BASE_URL = window.location.hostname === 'localhost' 
-  ? 'http://localhost:5000/api' 
-  : 'https://bvplatform-api.onrender.com/api';
+// Use deployed server for now - localhost server setup needed
+const API_BASE_URL = 'https://bvplatform-api.onrender.com/api';
 
 // Generic API request function
 const apiRequest = async (endpoint, options = {}) => {
