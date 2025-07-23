@@ -41,10 +41,14 @@ export const useMoves = (filters = {}) => {
       setError(null);
       
       const response = await movesAPI.getByCategory(category);
-      setMoves(response);
+      // Handle both array and object responses
+      const movesArray = Array.isArray(response) ? response : (response.moves || []);
+      setMoves(movesArray);
+      return movesArray; // Return the array for the component to use
     } catch (err) {
       setError(err.message);
       console.error('Error fetching moves by category:', err);
+      return []; // Return empty array on error
     } finally {
       setLoading(false);
     }

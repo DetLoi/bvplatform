@@ -27,7 +27,6 @@ export function Moves({ setToastMessage }) {
   
   // Use the API hook
   const { moves, loading, error, fetchMovesByCategory } = useMoves();
-  const [filteredMoves, setFilteredMoves] = useState([]);
 
   // Handle URL parameter for specific move
   useEffect(() => {
@@ -43,16 +42,7 @@ export function Moves({ setToastMessage }) {
 
   // Fetch moves by category when category changes
   useEffect(() => {
-    const fetchCategoryMoves = async () => {
-      try {
-        const categoryMoves = await fetchMovesByCategory(category);
-        setFilteredMoves(categoryMoves);
-      } catch (err) {
-        console.error('Error fetching moves by category:', err);
-      }
-    };
-    
-    fetchCategoryMoves();
+    fetchMovesByCategory(category);
   }, [category, fetchMovesByCategory]);
 
   function handleAddMove(move) {
@@ -185,14 +175,20 @@ export function Moves({ setToastMessage }) {
 
       {/* Moves Grid */}
       <div className="moves-grid">
-        {filteredMoves.map((move) => (
-          <MoveCard 
-            key={move.name} 
-            move={move} 
-            onAdd={handleAddMove}
-            onVideoSelect={() => handleVideoSelect(move)}
-          />
-        ))}
+        {moves && moves.length > 0 ? (
+          moves.map((move) => (
+            <MoveCard 
+              key={move.name} 
+              move={move} 
+              onAdd={handleAddMove}
+              onVideoSelect={() => handleVideoSelect(move)}
+            />
+          ))
+        ) : (
+          <div className="no-moves">
+            <p>No moves found for {category}</p>
+          </div>
+        )}
       </div>
     </section>
   );
