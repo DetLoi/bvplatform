@@ -16,7 +16,9 @@ export const useBadges = (filters = {}) => {
         ...params
       });
       
-      setBadges(response);
+      // Handle both array and object responses
+      const badgesArray = Array.isArray(response) ? response : (response.badges || []);
+      setBadges(badgesArray);
     } catch (err) {
       setError(err.message);
       console.error('Error fetching badges:', err);

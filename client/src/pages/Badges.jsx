@@ -12,19 +12,22 @@ export default function Badges() {
   // Use the API hook
   const { badges, loading, error } = useBadges();
 
+  // Ensure badges is always an array
+  const badgesArray = Array.isArray(badges) ? badges : [];
+
   // Calculate badge statistics
-  const earnedBadges = badges.filter(badge => badge.unlock && badge.unlock(masteredMoves));
-  const totalBadges = badges.length;
+  const earnedBadges = badgesArray.filter(badge => badge.unlock && badge.unlock(masteredMoves));
+  const totalBadges = badgesArray.length;
   const earnedPercentage = Math.round((earnedBadges.length / totalBadges) * 100);
 
   // Group badges by category
-  const elementBadges = badges.filter(badge => 
+  const elementBadges = badgesArray.filter(badge => 
     badge.category && 
     badge.category !== 'Level' &&
     (badge.category !== 'Power' || badge.id === 'power-master')
   );
-  const levelBadges = badges.filter(badge => badge.category === 'Level');
-  const specialBadges = badges.filter(badge => badge.category === 'Power' && badge.id !== 'power-master');
+  const levelBadges = badgesArray.filter(badge => badge.category === 'Level');
+  const specialBadges = badgesArray.filter(badge => badge.category === 'Power' && badge.id !== 'power-master');
 
   // Navigation categories
   const navCategories = [
@@ -44,7 +47,7 @@ export default function Badges() {
       case 'power':
         return specialBadges;
       default:
-        return badges;
+        return badgesArray;
     }
   };
 
