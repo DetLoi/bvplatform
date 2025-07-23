@@ -42,7 +42,7 @@ export default function BadgeDetail() {
     );
   }
 
-  const isEarned = badge.unlock(masteredMoves);
+  const isEarned = typeof badge.unlock === 'function' ? badge.unlock(masteredMoves) : false;
   
   // Get moves for this badge category
   const getCategoryMoves = (category) => {
@@ -88,7 +88,7 @@ export default function BadgeDetail() {
   
   if (badge.id === 'grandmaster') {
     const levelBadges = badges.filter(b => b.category === 'Level' && b.id !== 'grandmaster');
-    const earnedLevelBadges = levelBadges.filter(b => b.unlock(masteredMoves));
+    const earnedLevelBadges = levelBadges.filter(b => typeof b.unlock === 'function' && b.unlock(masteredMoves));
     progress = Math.round((earnedLevelBadges.length / levelBadges.length) * 100);
     masteredInCategory = earnedLevelBadges;
   } else {
@@ -239,7 +239,7 @@ export default function BadgeDetail() {
               <h3>Required Level Mastery Badges</h3>
               <div className="moves-grid">
                 {badges.filter(b => b.category === 'Level' && b.id !== 'grandmaster').map((levelBadge) => {
-                  const isEarned = levelBadge.unlock(masteredMoves);
+                  const isEarned = typeof levelBadge.unlock === 'function' ? levelBadge.unlock(masteredMoves) : false;
                   
                   return (
                     <div key={levelBadge.id} className={`move-card ${isEarned ? 'mastered' : 'locked'}`}>

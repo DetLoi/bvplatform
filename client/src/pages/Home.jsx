@@ -150,10 +150,10 @@ export default function Home({ coverPhoto, setCoverPhoto, isEditing, setIsEditin
           <div className="section-card">
             <h2 className="section-heading">Badges</h2>
             <div className="badges-wrapper">
-              {badges.filter(badge => badge.unlock(masteredMoves)).length > 0 ? (
+              {badges.filter(badge => typeof badge.unlock === 'function' && badge.unlock(masteredMoves)).length > 0 ? (
                 <div className="badges-row">
                   {badges
-                    .filter(badge => badge.unlock(masteredMoves))
+                    .filter(badge => typeof badge.unlock === 'function' && badge.unlock(masteredMoves))
                     .map((badge) => (
                       <div key={badge.id} className="game-badge-minimal">
                         <div className="badge-icon">

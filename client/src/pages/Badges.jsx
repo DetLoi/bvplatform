@@ -13,7 +13,7 @@ export default function Badges() {
   const { badges, loading, error } = useBadges();
 
   // Calculate badge statistics
-  const earnedBadges = badges.filter(badge => badge.unlock && badge.unlock(masteredMoves));
+  const earnedBadges = badges.filter(badge => typeof badge.unlock === 'function' && badge.unlock(masteredMoves));
   const totalBadges = badges.length;
   const earnedPercentage = Math.round((earnedBadges.length / totalBadges) * 100);
 
@@ -29,9 +29,9 @@ export default function Badges() {
   // Navigation categories
   const navCategories = [
     { id: 'all', name: 'All Badges', icon: FaTrophy, count: totalBadges, earned: earnedBadges.length },
-    { id: 'level', name: 'Level Mastery', icon: FaLayerGroup, count: levelBadges.length, earned: levelBadges.filter(b => b.unlock(masteredMoves)).length },
-    { id: 'element', name: 'Element Mastery', icon: FaFire, count: elementBadges.length, earned: elementBadges.filter(b => b.unlock(masteredMoves)).length },
-    { id: 'power', name: 'Power Specialists', icon: FaUsers, count: specialBadges.length, earned: specialBadges.filter(b => b.unlock(masteredMoves)).length }
+    { id: 'level', name: 'Level Mastery', icon: FaLayerGroup, count: levelBadges.length, earned: levelBadges.filter(b => typeof b.unlock === 'function' && b.unlock(masteredMoves)).length },
+    { id: 'element', name: 'Element Mastery', icon: FaFire, count: elementBadges.length, earned: elementBadges.filter(b => typeof b.unlock === 'function' && b.unlock(masteredMoves)).length },
+    { id: 'power', name: 'Power Specialists', icon: FaUsers, count: specialBadges.length, earned: specialBadges.filter(b => typeof b.unlock === 'function' && b.unlock(masteredMoves)).length }
   ];
 
   // Get badges for active category
@@ -123,7 +123,7 @@ export default function Badges() {
                   <BadgeCard 
                     key={badge.id} 
                     badge={badge} 
-                    isEarned={badge.unlock(masteredMoves)}
+                    isEarned={typeof badge.unlock === 'function' ? badge.unlock(masteredMoves) : false}
                     masteredMoves={masteredMoves}
                   />
                 ))}

@@ -42,7 +42,7 @@ export default function BreakerProfile() {
       setMasteredMoves(simulatedMasteredMoves);
       
       // Calculate earned badges
-      const earned = badges.filter(badge => badge.unlock(simulatedMasteredMoves));
+      const earned = badges.filter(badge => typeof badge.unlock === 'function' && badge.unlock(simulatedMasteredMoves));
       setEarnedBadges(earned);
     }
   }, [breakerId]);
