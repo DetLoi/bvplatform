@@ -32,16 +32,16 @@ export const battles = [
       judgedDate: null
     },
     category: "All-Style",
-    description: "Let's see who has the better footwork!",
+    description: "Let's see who has the better footwork! Been watching your moves and I think we should battle it out.",
     stakes: "Respect and bragging rights"
   },
   {
     id: 2,
     challenger: {
       id: "user3",
-      name: "B-Boy Flex",
-      level: "Intermediate", 
-      crew: "Urban Breakers"
+      name: "Benji",
+      level: "Advanced", 
+      crew: "Specific Kidz"
     },
     opponent: {
       id: "user1",
@@ -68,7 +68,7 @@ export const battles = [
       judgedDate: null
     },
     category: "Power Moves",
-    description: "Power move battle - let's see who can throw down harder!",
+    description: "Power move battle - let's see who can throw down harder! Been practicing my flares and I want to test them against you.",
     stakes: "Respect and bragging rights"
   },
   {
@@ -81,9 +81,9 @@ export const battles = [
     },
     opponent: {
       id: "user4",
-      name: "Spin Master",
-      level: "Novice",
-      crew: "Spin Crew"
+      name: "Kien",
+      level: "Intermediate",
+      crew: "Specific Kidz"
     },
     status: "in_progress",
     callOutDate: "2024-01-08T16:45:00Z",
@@ -104,8 +104,116 @@ export const battles = [
       judgedDate: null
     },
     category: "Toprock",
-    description: "Toprock battle - let's see who has the better rhythm!",
+    description: "Toprock battle - let's see who has the better rhythm! I've been working on my Indian step and want to challenge you.",
     stakes: "Respect and bragging rights"
+  },
+  {
+    id: 4,
+    challenger: {
+      id: "user5",
+      name: "Pele",
+      level: "Intermediate",
+      crew: "Specific Kidz"
+    },
+    opponent: {
+      id: "user6",
+      name: "Oritami",
+      level: "Intermediate",
+      crew: "Specific Kidz"
+    },
+    status: "completed",
+    callOutDate: "2024-01-05T12:00:00Z",
+    responseDate: "2024-01-06T10:00:00Z",
+    acceptedBy: "opponent",
+    acceptedDate: "2024-01-06T10:00:00Z",
+    roomId: "battle_room_4",
+    videos: {
+      challenger: "https://example.com/video4_challenger.mp4",
+      opponent: "https://example.com/video4_opponent.mp4"
+    },
+    adminReview: {
+      isReady: true,
+      judgedBy: null,
+      winner: null,
+      score: null,
+      comments: null,
+      judgedDate: null
+    },
+    category: "Freezes",
+    description: "Freeze battle! Let's see who can hold the most creative freezes. I've been working on my airchair and want to test it.",
+    stakes: "Respect and bragging rights"
+  },
+  {
+    id: 5,
+    challenger: {
+      id: "user7",
+      name: "Emilio",
+      level: "Advanced",
+      crew: "Famillia Loca"
+    },
+    opponent: {
+      id: "user8",
+      name: "Andy",
+      level: "Intermediate",
+      crew: "Famillia Loca"
+    },
+    status: "judged",
+    callOutDate: "2024-01-01T09:00:00Z",
+    responseDate: "2024-01-02T14:00:00Z",
+    acceptedBy: "opponent",
+    acceptedDate: "2024-01-02T14:00:00Z",
+    roomId: "battle_room_5",
+    videos: {
+      challenger: "https://example.com/video5_challenger.mp4",
+      opponent: "https://example.com/video5_opponent.mp4"
+    },
+    adminReview: {
+      isReady: true,
+      judgedBy: "admin1",
+      winner: "challenger",
+      score: "3-2",
+      comments: "Great battle! Emilio showed better technique and creativity. Andy had good energy but needs to work on transitions.",
+      judgedDate: "2024-01-10T16:30:00Z"
+    },
+    category: "All-Style",
+    description: "All-style battle! Let's see who has the most complete game. Been practicing my combinations and want to test them.",
+    stakes: "Respect and bragging rights"
+  },
+  {
+    id: 6,
+    challenger: {
+      id: "user9",
+      name: "Danielito",
+      level: "Novice",
+      crew: "Famillia Loca"
+    },
+    opponent: {
+      id: "user10",
+      name: "Alireza",
+      level: "Novice",
+      crew: "Famillia Loca"
+    },
+    status: "pending",
+    callOutDate: "2024-01-20T11:00:00Z",
+    responseDate: null,
+    acceptedBy: null,
+    acceptedDate: null,
+    roomId: null,
+    videos: {
+      challenger: null,
+      opponent: null
+    },
+    adminReview: {
+      isReady: false,
+      judgedBy: null,
+      winner: null,
+      score: null,
+      comments: null,
+      judgedDate: null
+    },
+    category: "Footwork",
+    description: "Footwork battle for beginners! Let's practice our 6-step and coffee grinder together.",
+    stakes: "Learning experience"
   }
 ];
 
