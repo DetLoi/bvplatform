@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { badgesAPI } from '../services/api';
 
 export const useBadges = (filters = {}) => {
@@ -6,7 +6,7 @@ export const useBadges = (filters = {}) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchBadges = async (params = {}) => {
+  const fetchBadges = useCallback(async (params = {}) => {
     try {
       setLoading(true);
       setError(null);
@@ -23,9 +23,9 @@ export const useBadges = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
-  const fetchBadgeById = async (id) => {
+  const fetchBadgeById = useCallback(async (id) => {
     try {
       setLoading(true);
       setError(null);
@@ -39,9 +39,9 @@ export const useBadges = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const createBadge = async (badgeData) => {
+  const createBadge = useCallback(async (badgeData) => {
     try {
       setLoading(true);
       setError(null);
@@ -56,9 +56,9 @@ export const useBadges = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchBadges]);
 
-  const updateBadge = async (id, badgeData) => {
+  const updateBadge = useCallback(async (id, badgeData) => {
     try {
       setLoading(true);
       setError(null);
@@ -73,9 +73,9 @@ export const useBadges = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchBadges]);
 
-  const deleteBadge = async (id) => {
+  const deleteBadge = useCallback(async (id) => {
     try {
       setLoading(true);
       setError(null);
@@ -89,12 +89,12 @@ export const useBadges = (filters = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchBadges]);
 
-  // Initial fetch
+  // Initial fetch - only run once on mount
   useEffect(() => {
     fetchBadges();
-  }, [filters]);
+  }, []); // Empty dependency array to run only once
 
   return {
     badges,
