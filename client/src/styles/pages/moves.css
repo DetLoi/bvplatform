@@ -1,0 +1,698 @@
+/* --- Moves Page Layout --- */
+.moves-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem 1.25rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Tabs area */
+.moves-tabs {
+  display: flex;
+  flex-wrap: wrap;               /* Allow line breaks */
+  gap: 0.75rem;
+  padding: 0.5rem 0 1rem;
+  justify-content: center;       /* Optional: center-align */
+}
+
+.moves-tabs::-webkit-scrollbar {
+  display: none;
+}
+.moves-tabs::after {
+  content: "";
+  flex: 0 0 1.5rem;
+  background: linear-gradient(to left, #0d0d0d, transparent);
+  pointer-events: none;
+}
+
+/* Tab buttons */
+.tab {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: #1d1d1d;
+  color: #ccc;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border: 1px solid #333;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  transition: all 0.2s ease;
+}
+.tab:hover {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.3);
+  color: #ffd700;
+}
+.tab.active {
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  color: #000;
+  border-color: #ffd700;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+/* Moves Grid */
+.moves-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Move Card */
+.move-card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.move-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.move-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.video-btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  color: #e6c77b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-btn:hover {
+  background: rgba(230, 199, 123, 0.2);
+  border-color: #e6c77b;
+  transform: scale(1.05);
+}
+
+.video-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(230, 199, 123, 0.3);
+}
+
+.add-container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+/* Level‑based title colors */
+
+.level-beginner{color:#00fbff;}
+.level-novice{color:#00b7ff;}
+.level-intermediate{color:#a875ff;}
+.level-advanced{color:#ffd54f;}
+.level-skilled{color:#ff9c33;}
+.level-master{color:#ff5555;}
+.level-grandmaster{color:#ff00ff;}
+
+.move-name{font-size:1rem;font-weight:700;margin-bottom:0.25rem;} /* color inherits from level class */
+.move-cat{font-size:0.75rem;text-transform:uppercase;color:#999;}
+.move-xp{font-size:0.85rem;color:#ffffff;font-weight:600;}
+
+
+.add-master-btn {
+  background: rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #e6c77b;
+}
+
+.add-master-btn:hover {
+  background: rgba(230, 199, 123, 0.2);
+  border-color: #e6c77b;
+  transform: scale(1.1);
+}
+
+.add-master-btn.mastered {
+  background: #e6c77b;
+  border-color: #e6c77b;
+  color: #23272f;
+  animation: masteredPulse 0.6s ease-out;
+}
+
+.add-master-btn.mastered:hover {
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.add-master-btn.pending {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-color: #f59e0b;
+  color: #000;
+  animation: pendingPulse 2s ease-in-out infinite;
+}
+
+.add-master-btn.pending:hover {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  border-color: #d97706;
+  color: #000;
+  transform: scale(1.05);
+}
+
+.add-master-btn:disabled {
+  cursor: auto;
+  opacity: 0.8;
+}
+
+.add-master-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Beautiful animated checkmark */
+.checkmark {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkmark-stem {
+  position: absolute;
+  width: 2px;
+  height: 8px;
+  background: #23272f;
+  border-radius: 1px;
+  transform: rotate(45deg);
+  animation: checkmarkStem 0.4s ease-out 0.1s both;
+}
+
+.checkmark-kick {
+  position: absolute;
+  width: 2px;
+  height: 4px;
+  background: #23272f;
+  border-radius: 1px;
+  transform: rotate(-45deg);
+  animation: checkmarkKick 0.4s ease-out 0.3s both;
+}
+
+@keyframes checkmarkStem {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+  100% {
+    height: 8px;
+    opacity: 1;
+  }
+}
+
+@keyframes checkmarkKick {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+  100% {
+    height: 8px;
+    opacity: 1;
+  }
+}
+
+@keyframes masteredPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pendingPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.icon-plus, .icon-check {
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+
+/* Plus symbol */
+.icon-plus::before { width: 100%; height: 3px; top: 50%; left: 0; transform: translateY(-50%); }
+.icon-plus::after { height: 100%; width: 3px; left: 50%; top: 0; transform: translateX(-50%); }
+
+.icon-check {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  transform: rotate(45deg);
+  position: relative;
+}
+
+.icon-check::before,
+.icon-check::after {
+  content: '';
+  position: absolute;
+  background-color: currentColor;
+  border-radius: 2px;
+}
+
+/* The short part */
+.icon-check::before {
+  width: 3px;
+  height: 0.5em;
+  bottom: 0;
+  left: 0.4em;
+}
+
+/* The long part */
+.icon-check::after {
+  width: 3px;
+  height: 1em;
+  left: 0.4em;
+  top: 0;
+}
+
+/* Change colors on mastered */
+.add-master-btn.mastered .icon-check::before,
+.add-master-btn.mastered .icon-check::after { background: #111; }
+
+/* Video Section */
+.video-section {
+  margin: 2rem 0;
+  background: transparent;
+  border-radius: 1.5rem;
+  backdrop-filter: blur(12px);
+}
+
+/* When showing specific move with recommendations */
+.video-section.has-recommendations {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+  grid-template-columns: 1fr 300px;
+  grid-template-areas: 
+    "video recommendations"
+    "info info";
+}
+
+.video-section.has-recommendations .video-container {
+  margin: 0;
+  grid-area: video;
+}
+
+.video-section.has-recommendations .recommendations-panel {
+  margin-top: 0;
+  grid-area: recommendations;
+}
+
+.video-section.has-recommendations .video-info {
+  margin-bottom: 0;
+  grid-area: info;
+  max-width: 800px;
+  width: 100%;
+}
+
+.video-container {
+  width: 100%;
+  max-width: 800px;
+  height: 450px;
+  margin: 0 auto 1.5rem auto;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+/* When showing default category video, make container relative for absolute positioning */
+.video-section:not(.has-recommendations) .video-container {
+  position: relative;
+}
+
+.moves-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 1rem;
+  min-height: 400px;
+}
+
+.video-info {
+  text-align: left;
+  max-width: 800px;
+  width: 100%;
+}
+
+/* When showing default category video, position on the right side */
+.video-section:not(.has-recommendations) .video-info {
+  text-align: left;
+  margin: 0;
+  padding-top: 32px;
+  right: 0;
+  top: 0;
+  width: 300px;
+  max-width: 300px;
+}
+
+.video-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.video-description {
+  font-size: 1rem;
+  color: #ccc;
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .video-section {
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  
+  .video-title {
+    font-size: 1.25rem;
+  }
+  
+  .video-description {
+    font-size: 0.9rem;
+  }
+}
+
+/* ============ RECOMMENDATIONS PANEL ============ */
+.recommendations-panel {
+  background: rgba(40, 50, 70, 0.35);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1.5px solid rgba(255,255,255,0.18);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+}
+
+.recommendations-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #e6c77b;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.recommendations-subtitle {
+  font-size: 0.9rem;
+  color: #b0b0b0;
+  margin: 0 0 1rem 0;
+  font-weight: 500;
+}
+
+.recommendations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.recommendation-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+
+.recommendation-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(230, 199, 123, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.recommendation-info {
+  flex: 1;
+}
+
+.recommendation-name {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  color: #f1f1f1;
+}
+
+.recommendation-category {
+  font-size: 0.8rem;
+  color: #b0b0b0;
+  margin: 0 0 0.25rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.recommendation-xp {
+  font-size: 0.8rem;
+  color: #e6c77b;
+  font-weight: 600;
+}
+
+.recommendation-play {
+  color: #e6c77b;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.recommendation-card:hover .recommendation-play {
+  opacity: 1;
+}
+
+/* Level colors for recommendation names */
+.recommendation-name.level-beginner {
+  color: #4ade80;
+}
+
+.recommendation-name.level-novice {
+  color: #60a5fa;
+}
+
+.recommendation-name.level-intermediate {
+  color: #f59e0b;
+}
+
+.recommendation-name.level-advanced {
+  color: #f97316;
+}
+
+.recommendation-name.level-skilled {
+  color: #a855f7;
+}
+
+.recommendation-name.level-master {
+  color: #ef4444;
+}
+
+/* ============ RECOMMENDATIONS TOGGLE ============ */
+.recommendations-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #e6c77b;
+  font-weight: 600;
+  font-size: 0.9rem;
+  backdrop-filter: blur(8px);
+  width: 100%;
+}
+
+.recommendations-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(230, 199, 123, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-text {
+  font-weight: 600;
+}
+
+.toggle-arrow {
+  transition: transform 0.3s ease;
+  color: #e6c77b;
+}
+
+.toggle-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+/* ============ RESPONSIVE DESIGN ============ */
+@media (max-width: 768px) {
+  .recommendations-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .recommendation-card {
+    padding: 0.75rem;
+  }
+  
+  .recommendation-name {
+    font-size: 0.9rem;
+  }
+  
+  .recommendations-panel {
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .video-section.has-recommendations {
+    grid-template-columns: 1fr 300px;
+    grid-template-areas: 
+      "video recommendations"
+      "info info";
+
+      
+  }
+  
+  .video-section.has-recommendations .video-container {
+    margin: 0;
+    grid-area: video;
+  }
+  
+  .video-section.has-recommendations .recommendations-panel {
+    margin-top: 0;
+    grid-area: recommendations;
+  }
+  
+  .video-section.has-recommendations .video-info {
+    margin-bottom: 0;
+    grid-area: info;
+    max-width: 800px;
+    width: 100%;
+    text-align: left;
+  }
+}
+
+/* Video Flex Container for Default View */
+.video-flex-container {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.video-flex-container .video-container {
+  flex: 1;
+  margin: 0;
+}
+
+.video-flex-container .video-info {
+  flex: 0 0 300px;
+  margin: 0;
+  max-width: 300px;
+}
+
+/* When showing default category video, position on the right side */
+.video-section:not(.has-recommendations) .video-info {
+  text-align: left;
+  margin: 0;
+  width: 300px;
+  max-width: 300px;
+}
+
+/* Loading and Error States */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  color: #ffffff;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #ffd700;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container button {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.error-container button:hover {
+  background: linear-gradient(135deg, #ee5a52, #ff6b6b);
+  transform: translateY(-2px);
+}
+

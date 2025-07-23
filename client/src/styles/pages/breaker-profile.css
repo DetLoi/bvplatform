@@ -1,0 +1,397 @@
+/* Breaker Profile Page - Matching Home Dashboard Styling */
+
+/* === Cover Photo === */
+.cover-photo-wrapper {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-bottom: 4px solid #111;
+}
+
+.cover-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.9);
+}
+
+/* === Profile Header === */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: -60px;
+  padding: 0 2rem;
+  position: relative;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.profile-pic-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.profile-pic {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #1a1a1a;
+}
+
+/* === Dashboard username & Progress === */
+.dashboard-title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.header-progress-container {
+  margin-top: 0.5rem;
+  width: 250px;
+}
+
+.xp-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #b0b0b0;
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* === Back Button === */
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #e6c77b;
+  color: #23272f;
+  font-weight: 700;
+  border: none;
+  border-radius: 1.2rem;
+  padding: 0.6rem 1.4rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  outline: none;
+  margin-left: auto;
+}
+
+.back-button:hover, .back-button:focus {
+  background: #f3dca2;
+  color: #23272f;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+}
+
+.back-button svg {
+  font-size: 0.9rem;
+}
+
+/* === Dashboard Grid === */
+.dashboard-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); 
+}
+
+.section-heading { 
+  font-size: 1.3rem; 
+  font-weight: 600; 
+  margin-bottom: 0.5rem; 
+}
+
+.section-card {
+  background: transparent;
+  padding: 1.5rem;
+  border-radius: 1rem;
+}
+
+.section-card h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.section-card p {
+  font-size: 0.875rem;
+  color: #ccc;
+}
+
+/* === Badges Layout === */
+.badges-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.badges-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+/* Minimalistic Game Badges */
+.game-badge-minimal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.game-badge-minimal:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(230, 199, 123, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.badge-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: transparent;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  box-shadow: 0 2px 10px rgba(230, 199, 123, 0.3);
+  transition: all 0.3s ease;
+}
+
+.game-badge-minimal:hover .badge-icon {
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(230, 199, 123, 0.4);
+}
+
+.badge-emoji {
+  font-size: 1.5rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.badge-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+  border-radius: 6px;
+}
+
+.badge-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  line-height: 1.2;
+  max-width: 80px;
+}
+
+/* No Badges CTA */
+.no-badges-cta {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cta-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.no-badges-cta h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #e6c77b;
+  margin: 0 0 0.5rem 0;
+}
+
+.no-badges-cta p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 1.5rem 0;
+  font-size: 0.875rem;
+}
+
+/* === Style identity video === */
+.video-container {
+  width: 100%;
+  max-width: 800px;
+  height: 450px;
+  margin: 0 auto;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.style-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 1rem;
+  min-height: 400px;
+}
+
+/* === Mastered Moves === */
+.mastered-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); 
+  gap: 1rem; 
+}
+
+.mastered-card { 
+  background: #222; 
+  padding: 1rem; 
+  border-radius: 0.75rem; 
+  border: 1px solid #444; 
+  box-shadow: 0 3px 8px rgba(0,0,0,.4); 
+  transition: transform .2s; 
+}
+
+.mastered-card:hover { 
+  transform: translateY(-4px); 
+}
+
+.level-beginner      { color: #00ffc3; }
+.level-novice        { color: #00b7ff; }
+.level-intermediate  { color: #a875ff; }
+.level-advanced      { color: #ffd54f; }
+.level-skilled       { color: #ff9c33; }
+.level-master        { color: #ff5555; }
+.level-grandmaster   { color: #ff00ff; }
+
+.move-name { 
+  font-size: 1rem; 
+  font-weight: 700; 
+  margin-bottom: 0.25rem; 
+}
+
+.move-cat { 
+  font-size: 0.75rem; 
+  text-transform: uppercase; 
+  color: #999; 
+}
+
+.move-xp { 
+  font-size: 0.85rem; 
+  color: #ff26c2; 
+  font-weight: 600; 
+}
+
+/* === Utility Classes === */
+.mt-6 { margin-top: 1.5rem; }
+.mt-8 { margin-top: 2rem; }
+.widthfc { width: fit-content; }
+.width100 { width: 100%; }
+.flex { display: flex; }
+.text-muted { color: #999; }
+
+/* === Main Content === */
+.main-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* === Loading State === */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* === Responsive Design === */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+    padding: 0 1rem;
+  }
+  
+  .profile-info {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .dashboard-title {
+    font-size: 1.75rem;
+  }
+  
+  .header-progress-container {
+    width: 100%;
+  }
+  
+  .back-button {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .mastered-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .badges-row {
+    justify-content: center;
+  }
+  
+  .video-container {
+    height: 300px;
+  }
+  
+  .style-video {
+    min-height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 0;
+  }
+  
+  .profile-header {
+    padding: 0 1rem;
+  }
+  
+  .dashboard-title {
+    font-size: 1.5rem;
+  }
+  
+  .section-card {
+    padding: 1rem;
+  }
+  
+  .game-badge-minimal {
+    min-width: 80px;
+    padding: 0.75rem;
+  }
+  
+  .badge-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .badge-title {
+    font-size: 0.7rem;
+    max-width: 70px;
+  }
+} 

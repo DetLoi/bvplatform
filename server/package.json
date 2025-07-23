@@ -1,0 +1,33 @@
+{
+  "name": "breakverse-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "seed": "node src/utils/seeder.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["breakdance", "api", "express", "mongodb"],
+  "author": "Breakverse Team",
+  "license": "MIT",
+  "description": "Backend API for Breakverse - Breakdance learning platform",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.3.1",
+    "express-validator": "^7.0.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.16.1",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "joi": "^17.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

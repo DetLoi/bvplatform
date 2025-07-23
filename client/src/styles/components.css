@@ -1,0 +1,184 @@
+/* General Card */
+.card {
+  background: linear-gradient(145deg, #1c1c1c, #2a2a2a);
+  padding: 1.5rem; border-radius: 1.25rem;
+  box-shadow: 0 10px 20px rgba(0,0,0,.4); border: 1px solid #333;
+  transition: transform .3s ease;
+}
+.card:hover { transform: scale(1.02); }
+
+/* Move Card */
+
+
+/* Badge */
+.badge { display:inline-block; padding:.35rem .9rem; font-size:.8rem; font-weight:700; border-radius:999px; text-shadow:0 0 2px #111; transition:opacity .2s; }
+.badge--earned { background:#ffffff; color:#111; }
+.badge--locked { background:#444; color:#777; }
+
+/* Progress Bar */
+.progress-bar { width:100%; height:12px; background:#333; border-radius:10px; overflow:hidden; }
+.progress-bar-fill { height:100%; background:linear-gradient(to right,#ffd700,#ffd700); transition:width .4s ease-in-out; }
+
+/* Buttons */
+.btn { padding:.75rem 1.5rem; background:#ff26c2; color:#fff; font-weight:700; border:none; border-radius:.75rem; cursor:pointer; box-shadow:0 4px 12px #ff26c244; transition:background .3s; }
+.btn:hover { background:#ff4ad6; }
+
+/* ============ NAVIGATION ============ */
+.nav {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  background-color: black;
+  z-index: 100;
+  padding: 0.5rem 1.25rem;
+}
+
+.nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.nav-center-group {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.twitch-link {
+  color: #9147ff;
+  margin-left: 1.5rem;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.twitch-link:hover, .twitch-link:focus {
+  color: #b084f7;
+}
+
+/* LOGO */
+.logo img {
+  height: 40px;
+  width: auto;
+}
+
+/* MOBILE TITLE (above nav for mobile layout) */
+.nav-mobile-title {
+  display: none;
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  color: #f1f1f1;
+}
+
+/* ============ NAV LINKS ============ */
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+}
+
+.nav-links li a {
+  text-decoration: none;
+  color: #e2e2e2;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-links li a:hover,
+.nav-links li a.active {
+  color: #e6c77b;
+}
+
+/* ============ BURGER MENU ============ */
+.burger {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 101;
+}
+
+.burger span {
+  height: 2px;
+  width: 100%;
+  background-color: #f1f1f1;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.burger.open span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.burger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.burger.open span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* Adjust burger for new layout */
+.burger {
+  margin-left: 1.5rem;
+}
+
+/* ============ MOBILE STYLES ============ */
+@media (max-width: 768px) {
+  .nav-mobile-title {
+    display: block;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    flex-direction: column;
+    background-color: transparent;
+    padding: 1rem 2rem;
+    width: 200px;
+    display: none;
+    border-radius: 0 0 8px 8px;
+  }
+
+  .nav-links.show {
+    display: flex;
+  }
+
+  .burger {
+    display: flex;
+  }
+}
+
+/* --- Page container reveal --- */
+.page-container {
+  animation: reveal 0.6s cubic-bezier(0.6, 0, 0.2, 1);
+}
+
+@keyframes reveal {
+  0% {
+    clip-path: inset(0 0 0 100%);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.style-radar{max-width:400px;margin:auto;padding:1rem;background:#1f1f1f;border-radius:1rem;box-shadow:0 4px 12px rgba(0,0,0,.4);} 
+
+/* level progress list */
+.level-summary{display:grid;gap:.75rem;width: 100%;}
+.level-item{display:flex;align-items:center;gap:.75rem;}
+.level-label{min-width:90px;font-weight:600;}
+.level-bar{flex:1;height:10px;background:#333;border-radius:6px;overflow:hidden;}
+.level-fill{height:100%;background:linear-gradient(90deg,#ffd700,#ffd700);} 
+.level-count{min-width:50px;font-size:.8rem;color:#ccc;}

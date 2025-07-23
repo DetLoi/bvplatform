@@ -1,0 +1,573 @@
+/* Badges Page */
+.badges-page {
+  padding: 2rem 0;
+}
+
+/* Layout with Navigation */
+.badges-layout {
+  position: relative;
+  width: 100%;
+}
+
+/* Left Navigation Panel */
+.badges-nav-panel {
+  position: fixed;
+  left: 0;
+  top: 80px; /* Account for header height */
+  width: 280px;
+  height: calc(100vh - 80px); /* Subtract header height */
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0 1rem 1rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: none;
+  backdrop-filter: blur(20px);
+  padding: 1.5rem;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.nav-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+}
+
+.nav-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.nav-category {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.nav-category:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(230, 199, 123, 0.3);
+  transform: translateX(4px);
+}
+
+.nav-category.active {
+  background: rgba(230, 199, 123, 0.2);
+  border-color: rgba(230, 199, 123, 0.5);
+  color: #e6c77b;
+}
+
+.nav-category-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.nav-category.active .nav-category-icon {
+  background: rgba(230, 199, 123, 0.3);
+}
+
+.nav-category-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.nav-category-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-category-count {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0.25rem;
+}
+
+.nav-category.active .nav-category-count {
+  color: rgba(230, 199, 123, 0.8);
+}
+
+/* Main Content */
+.badges-main-content {
+  margin-left: 280px;
+  padding: 2rem;
+  max-width: 1200px;
+  margin-right: auto;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.badges-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.badges-title {
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.badges-subtitle {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 700px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.badges-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Badge Card */
+.badge-card {
+  background: transparent;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.badge-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: transparent;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.badge-card.earned::before {
+  opacity: 1;
+}
+
+.badge-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.badge-card:hover::after {
+  content: 'See Mission';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(230, 199, 123, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  border-radius: 1rem;
+  z-index: 10;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.badge-card.locked {
+  opacity: 1;
+}
+
+.badge-card.locked:hover {
+  opacity: 0.8;
+}
+
+.badge-card.locked:hover::after {
+  content: 'See Mission';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(230, 199, 123, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  border-radius: 1rem;
+  z-index: 10;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Badge Icon */
+.badge-icon {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.badge-emoji {
+  font-size: 2rem;
+  filter: grayscale(0);
+  transition: filter 0.3s ease;
+}
+
+.badge-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: grayscale(0);
+  transition: filter 0.3s ease;
+  border-radius: 6px;
+}
+
+.badge-card.locked .badge-emoji {
+  filter: grayscale(1) opacity(0.7);
+}
+
+.badge-card.locked .badge-image {
+  filter: grayscale(1) opacity(0.7);
+}
+
+/* Badge Info */
+.badge-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.badge-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+}
+
+.badge-card.locked .badge-name {
+  color: #ffffff;
+}
+
+.badge-description {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 0.75rem 0;
+  line-height: 1.4;
+}
+
+.badge-card.locked .badge-description {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.badge-requirement {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.requirement-text {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.badge-card.locked .requirement-text {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Badge Status */
+.badge-status {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.status-earned {
+  color: #4ade80;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.status-locked {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Badge Progress */
+.badge-progress {
+  margin-top: 0.75rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffd700, #ffb347);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+/* Badge Statistics */
+.badge-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0 3rem 0;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  color: #e6c77b;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+/* Badge Sections */
+.badge-section {
+  margin-bottom: 4rem;
+}
+
+.section-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+}
+
+.section-description {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.grandmaster-section {
+  grid-template-columns: 1fr;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Achievement Tips */
+.achievement-tips {
+  margin-top: 4rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tips-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 2rem 0;
+  text-align: center;
+}
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.tip-card {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.tip-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.tip-card h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #e6c77b;
+  margin: 0 0 0.75rem 0;
+}
+
+.tip-card p {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .badges-nav-panel {
+    position: static;
+    width: 100%;
+    height: auto;
+    left: auto;
+    top: auto;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+  }
+  
+  .badges-main-content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+  
+  .nav-categories {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+  
+  .nav-category {
+    min-width: 200px;
+    flex-shrink: 0;
+  }
+  
+  .badges-main-content {
+    width: 100%;
+  }
+  
+  .badges-title {
+    font-size: 2rem;
+  }
+  
+  .badges-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .badge-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .badge-status {
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .badges-page {
+    padding: 1rem 0;
+  }
+  
+  .badge-card {
+    padding: 1.25rem;
+  }
+  
+  .badge-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .badge-emoji {
+    font-size: 1.5rem;
+  }
+}
