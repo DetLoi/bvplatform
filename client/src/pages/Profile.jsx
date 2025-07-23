@@ -98,15 +98,15 @@ export default function Profile() {
                 <h2 className="section-title">Crew Members</h2>
                 <div className="crew-stats-overview">
                   <div className="crew-stat">
-                    <span className="crew-stat-number">{selectedCrew.memberCount}</span>
+                    <span className="crew-stat-number">{selectedCrew.memberCount || 0}</span>
                     <span className="crew-stat-label">Members</span>
                   </div>
                   <div className="crew-stat">
-                    <span className="crew-stat-number">{selectedCrew.totalXP.toLocaleString()}</span>
+                    <span className="crew-stat-number">{(selectedCrew.totalXP || 0).toLocaleString()}</span>
                     <span className="crew-stat-label">Total XP</span>
                   </div>
                   <div className="crew-stat">
-                    <span className="crew-stat-number">{selectedCrew.level}</span>
+                    <span className="crew-stat-number">{selectedCrew.level || 1}</span>
                     <span className="crew-stat-label">Crew Level</span>
                   </div>
                 </div>
@@ -165,21 +165,21 @@ export default function Profile() {
                     <div className="overview-item">
                       <div className="overview-icon">👥</div>
                       <div className="overview-content">
-                        <span className="overview-value">{selectedCrew.memberCount}</span>
+                        <span className="overview-value">{selectedCrew.memberCount || 0}</span>
                         <span className="overview-label">Members</span>
                       </div>
                     </div>
                     <div className="overview-item">
                       <div className="overview-icon">⭐</div>
                       <div className="overview-content">
-                        <span className="overview-value">{selectedCrew.totalXP.toLocaleString()}</span>
+                        <span className="overview-value">{(selectedCrew.totalXP || 0).toLocaleString()}</span>
                         <span className="overview-label">Total XP</span>
                       </div>
                     </div>
                     <div className="overview-item">
                       <div className="overview-icon">🏆</div>
                       <div className="overview-content">
-                        <span className="overview-value">{selectedCrew.level}</span>
+                        <span className="overview-value">{selectedCrew.level || 1}</span>
                         <span className="overview-label">Crew Level</span>
                       </div>
                     </div>

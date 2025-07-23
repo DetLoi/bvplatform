@@ -29,11 +29,11 @@ export default function CrewSelection({ crews, onCrewSelect }) {
                   <div className="crew-stats">
                     <div className="crew-stat">
                       <FaUsers size={14} />
-                      <span>{crew.memberCount} members</span>
+                      <span>{crew.memberCount || 0} members</span>
                     </div>
                     <div className="crew-stat">
                       <FaTrophy size={14} />
-                      <span>{crew.totalXP.toLocaleString()} XP</span>
+                      <span>{(crew.totalXP || 0).toLocaleString()} XP</span>
                     </div>
                   </div>
                 </div>
