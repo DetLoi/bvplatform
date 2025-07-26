@@ -33,13 +33,17 @@ export interface User {
 // Badge types
 export interface Badge {
   _id?: string;
-  title: string;
+  id?: string;
+  name: string;
   description: string;
-  category: MoveCategory;
-  level: MoveLevel;
-  icon?: string;
-  earned: boolean;
-  earnedAt?: Date;
+  category: string;
+  requirement: string;
+  image: string;
+  level?: string;
+  rarity?: string;
+  isActive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // Style data for radar chart

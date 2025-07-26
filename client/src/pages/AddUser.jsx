@@ -1,19 +1,21 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FaArrowLeft, FaSave, FaTimes } from 'react-icons/fa';
+import { usersAPI } from '../services/api';
 import '../styles/pages/add-form.css';
 
 export default function AddUser() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const currentTab = searchParams.get('tab') || 'users';
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
-    level: 1,
+    name: '',
     status: 'active',
-    joinDate: new Date().toISOString().split('T')[0],
     bio: '',
     profileImage: ''
   });
@@ -28,22 +30,34 @@ export default function AddUser() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Generate a unique ID (in a real app, this would come from the backend)
-    const newUser = {
-      id: Date.now(),
-      ...formData,
-      // In a real app, you'd hash the password
-      password: formData.password // This should be hashed
-    };
+    setLoading(true);
+    setError('');
 
-    // Here you would typically save to your data store
-    console.log('New user:', newUser);
-    
-    // Navigate back to admin with success message
-    navigate(`/admin?tab=${currentTab}&message=User added successfully!`);
+    try {
+      // Prepare user data for API
+      const userData = {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        status: formData.status,
+        bio: formData.bio || '',
+        profileImage: formData.profileImage || ''
+      };
+
+      // Create user via API
+      await usersAPI.create(userData);
+      
+      // Navigate back to admin with success message
+      navigate(`/admin?tab=${currentTab}&message=User added successfully!`);
+    } catch (err) {
+      setError(err.message || 'Failed to create user');
+      console.error('Error creating user:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -60,6 +74,12 @@ export default function AddUser() {
           <h1>Add New User</h1>
         </div>
 
+        {error && (
+          <div className="error-message">
+            <p>{error}</p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="add-form">
           <div className="form-row">
             <div className="form-group">
@@ -73,6 +93,7 @@ export default function AddUser() {
                 required
                 placeholder="Enter username"
                 className="form-input"
+                disabled={loading}
               />
             </div>
 
@@ -87,69 +108,62 @@ export default function AddUser() {
                 required
                 placeholder="Enter email address"
                 className="form-input"
+                disabled={loading}
               />
             </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Password *</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="Enter password"
-              className="form-input"
-            />
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="level">Level</label>
+              <label htmlFor="name">Name *</label>
               <input
-                type="number"
-                id="level"
-                name="level"
-                value={formData.level}
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
-                min="1"
-                max="20"
+                required
+                placeholder="Enter full name"
                 className="form-input"
+                disabled={loading}
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="status">Status *</label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
+              <label htmlFor="password">Password *</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
                 onChange={handleChange}
                 required
-                className="form-select"
-              >
-                {statuses.map(status => (
-                  <option key={status} value={status}>
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </option>
-                ))}
-              </select>
+                placeholder="Enter password"
+                className="form-input"
+                disabled={loading}
+              />
             </div>
           </div>
 
           <div className="form-group">
-            <label htmlFor="joinDate">Join Date</label>
-            <input
-              type="date"
-              id="joinDate"
-              name="joinDate"
-              value={formData.joinDate}
+            <label htmlFor="status">Status</label>
+            <select
+              id="status"
+              name="status"
+              value={formData.status}
               onChange={handleChange}
-              className="form-input"
-            />
+              className="form-select"
+              disabled={loading}
+            >
+              {statuses.map(status => (
+                <option key={status} value={status}>
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </option>
+              ))}
+            </select>
           </div>
+
+
 
           <div className="form-group">
             <label htmlFor="bio">Bio</label>
@@ -161,6 +175,7 @@ export default function AddUser() {
               placeholder="Enter user bio"
               rows="3"
               className="form-textarea"
+              disabled={loading}
             />
           </div>
 
@@ -174,16 +189,17 @@ export default function AddUser() {
               onChange={handleChange}
               placeholder="https://example.com/profile.jpg"
               className="form-input"
+              disabled={loading}
             />
             <small className="form-help">Optional: Enter image URL for profile picture</small>
           </div>
 
           <div className="form-actions">
-            <button type="button" onClick={handleCancel} className="cancel-btn">
+            <button type="button" onClick={handleCancel} className="cancel-btn" disabled={loading}>
               <FaTimes /> Cancel
             </button>
-            <button type="submit" className="save-btn">
-              <FaSave /> Save User
+            <button type="submit" className="save-btn" disabled={loading}>
+              <FaSave /> {loading ? 'Creating...' : 'Save User'}
             </button>
           </div>
         </form>

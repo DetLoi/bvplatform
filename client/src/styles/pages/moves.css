@@ -59,6 +59,48 @@
   gap: 1.5rem;
 }
 
+/* Level Sections for All Moves */
+.level-section {
+  margin-bottom: 3rem;
+}
+
+.level-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Grid for moves within each level section */
+.level-moves-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Level-specific colors for titles */
+.level-section:nth-child(1) .level-title { color: #00fbff; } /* Beginner */
+.level-section:nth-child(2) .level-title { color: #00b7ff; } /* Novice */
+.level-section:nth-child(3) .level-title { color: #a875ff; } /* Intermediate */
+.level-section:nth-child(4) .level-title { color: #ffd54f; } /* Advanced */
+.level-section:nth-child(5) .level-title { color: #ff9c33; } /* Skilled */
+.level-section:nth-child(6) .level-title { color: #ff5555; } /* Master */
+
+/* Responsive adjustments for level sections */
+@media (max-width: 768px) {
+  .level-section {
+    margin-bottom: 2rem;
+  }
+  
+  .level-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+}
+
 /* Move Card */
 .move-card {
   background: rgba(255,255,255,0.05);

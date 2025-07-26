@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { moves as allMoves } from '../data/moves';
 
-export default function RecommendationsPanel({ selectedMove, onMoveSelect, currentCategory }) {
+export default function RecommendationsPanel({ selectedMove, onMoveSelect, currentCategory, moves }) {
   const [isExpanded, setIsExpanded] = useState(false);
   
   // Only show panel when a specific move is selected
@@ -11,7 +10,7 @@ export default function RecommendationsPanel({ selectedMove, onMoveSelect, curre
 
   // Show specific recommendations for the selected move
   const recommendedMoves = selectedMove.recommendations
-    .map(moveName => allMoves.find(move => move.name === moveName))
+    .map(moveName => moves.find(move => move.name === moveName))
     .filter(Boolean);
 
   if (recommendedMoves.length === 0) {

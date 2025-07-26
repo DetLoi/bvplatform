@@ -2,6 +2,18 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import multer from 'multer';
+import { startLoop } from './scraper/cronjob.js';
+
+// Import all models to register them with Mongoose
+import './models/user.models.js';
+import './models/crew.models.js';
+import './models/move.models.js';
+import './models/badge.models.js';
+import './models/event.models.js';
+import './models/battle.models.js';
 
 import userRoutes from './routes/user.routes.js';
 import moveRoutes from './routes/move.routes.js';
@@ -9,14 +21,20 @@ import badgeRoutes from './routes/badge.routes.js';
 import eventRoutes from './routes/event.routes.js';
 import battleRoutes from './routes/battle.routes.js';
 import crewRoutes from './routes/crew.routes.js';
+import uploadRoutes from './routes/upload.routes.js';
 
 dotenv.config();
 const app = express();
+
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // CORS configuration
 const corsOptions = {
   origin: [
     'http://localhost:5173',     // Vite dev server
+    'http://localhost:5174',     // Vite dev server (alternative port)
     'http://localhost:3000',     // React dev server
     'http://localhost:8080',     // Vue dev server
     'https://bvplatform.vercel.app', // Production frontend (if you deploy there)
@@ -51,79 +69,45 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-// Health check endpoint for Render
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Health check endpoint
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
-    message: 'Breakverse API is running',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Test endpoint with sample data
-app.get('/api/test', (req, res) => {
   res.json({
-    message: 'API is working!',
-    sampleMoves: [
-      {
-        id: '1',
-        name: 'Toprock Basic',
-        category: 'Toprock',
-        level: 'Beginner',
-        description: 'Basic toprock foundation'
-      },
-      {
-        id: '2', 
-        name: 'Six Step',
-        category: 'Footwork',
-        level: 'Beginner',
-        description: 'Fundamental footwork move'
-      }
-    ],
-    timestamp: new Date().toISOString()
+    status: 'OK',
+    message: 'Breakverse API is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
-// Root endpoint
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Breakverse API', 
-    version: '1.0.0',
-    endpoints: {
-      health: '/health',
-      users: '/api/users',
-      moves: '/api/moves',
-      badges: '/api/badges',
-      events: '/api/events',
-      battles: '/api/battles',
-      crews: '/api/crews'
-    }
-  });
-});
-
-// Routes
+// API Routes
 app.use('/api/users', userRoutes);
 app.use('/api/moves', moveRoutes);
 app.use('/api/badges', badgeRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/battles', battleRoutes);
 app.use('/api/crews', crewRoutes);
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ 
-    error: 'Route not found',
-    path: req.originalUrl 
-  });
-});
+app.use('/api/upload', uploadRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
-  res.status(500).json({ 
-    error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
-  });
+  
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ message: 'File too large. Maximum size is 5MB.' });
+    }
+    return res.status(400).json({ message: 'File upload error' });
+  }
+  
+  res.status(500).json({ message: 'Internal server error' });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
 // DB & server start
@@ -173,3 +157,4 @@ const startServer = async () => {
 };
 
 startServer();
+startLoop();

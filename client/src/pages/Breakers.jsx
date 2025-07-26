@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { crews } from '../data/crews';
-import { FaSearch, FaFilter, FaUsers, FaCrosshairs, FaUserTimes, FaCrown, FaStar } from 'react-icons/fa';
+import { useUsers } from '../hooks/useUsers';
+import { useCrews } from '../hooks/useCrews';
+import { FaSearch, FaFilter, FaUsers, FaCrosshairs, FaUserTimes, FaCrown, FaStar, FaSpinner } from 'react-icons/fa';
 import '../styles/pages/breakers.css';
 
 export default function Breakers() {
@@ -11,43 +12,40 @@ export default function Breakers() {
   const [sortBy, setSortBy] = useState('level');
   const [callOuts, setCallOuts] = useState(new Set());
 
-  // Get all breakers from both crews, grouped by name
+  // Fetch real data from database
+  const { users, loading: usersLoading, error: usersError } = useUsers();
+  const { crews, loading: crewsLoading, error: crewsError } = useCrews();
+
+  // Get all breakers from database - show each user individually
   const allBreakers = useMemo(() => {
-    const breakerMap = new Map();
+    if (usersLoading || crewsLoading) return [];
     
-    crews.forEach(crew => {
-      crew.members.forEach(member => {
-        if (breakerMap.has(member.name)) {
-          // Add crew membership to existing breaker
-          breakerMap.get(member.name).crews.push({
+    return users.map(user => {
+      // Find user's crew information
+      let userCrew = null;
+      if (user.crew) {
+        const crew = crews.find(c => c._id === user.crew);
+        if (crew) {
+          userCrew = {
             name: crew.name,
             color: crew.color,
-            id: crew.id
-          });
-          // Update level if this crew has a higher level
-          const currentLevel = breakerMap.get(member.name).level;
-          if (member.level > currentLevel) {
-            breakerMap.get(member.name).level = member.level;
-          }
-        } else {
-          // Create new breaker entry
-          breakerMap.set(member.name, {
-            id: member.id,
-            name: member.name,
-            profileImage: member.profileImage,
-            level: member.level,
-            crews: [{
-              name: crew.name,
-              color: crew.color,
-              id: crew.id
-            }]
-          });
+            id: crew._id
+          };
         }
-      });
+      }
+      
+      return {
+        id: user._id,
+        name: user.name,
+        username: user.username,
+        profileImage: user.profileImage || '/src/assets/placeholder.jpg',
+        level: user.level,
+        xp: user.xp,
+        crew: userCrew,
+        status: user.status
+      };
     });
-    
-    return Array.from(breakerMap.values());
-  }, []);
+  }, [users, crews, usersLoading, crewsLoading]);
 
   // Filter and sort breakers
   const filteredBreakers = useMemo(() => {
@@ -55,13 +53,14 @@ export default function Breakers() {
 
     // Filter by crew
     if (selectedCrew !== 'all') {
-      filtered = filtered.filter(breaker => breaker.crews.some(crew => crew.name === selectedCrew));
+      filtered = filtered.filter(breaker => breaker.crew && breaker.crew.name === selectedCrew);
     }
 
     // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(breaker => 
-        breaker.name.toLowerCase().includes(searchTerm.toLowerCase())
+        breaker.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        breaker.username.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -73,7 +72,7 @@ export default function Breakers() {
         case 'name':
           return a.name.localeCompare(b.name);
         case 'crew':
-          return a.crews[0]?.name.localeCompare(b.crews[0]?.name || '');
+          return (a.crew?.name || '').localeCompare(b.crew?.name || '');
         default:
           return b.level - a.level;
       }
@@ -112,17 +111,54 @@ export default function Breakers() {
     return <FaStar className="level-icon" />;
   };
 
-  const crewOptions = [
-    { value: 'all', label: 'All Crews' },
-    { value: 'Specific Kidz', label: 'Specific Kidz' },
-    { value: 'Famillia Loca', label: 'Famillia Loca' }
-  ];
+  // Get unique crew names for filter options
+  const crewOptions = useMemo(() => {
+    const uniqueCrews = [...new Set(crews.map(crew => crew.name))];
+    return [
+      { value: 'all', label: 'All Crews' },
+      ...uniqueCrews.map(crewName => ({
+        value: crewName,
+        label: crewName
+      }))
+    ];
+  }, [crews]);
 
   const sortOptions = [
     { value: 'level', label: 'Level' },
     { value: 'name', label: 'Name' },
     { value: 'crew', label: 'Crew' }
   ];
+
+  // Show loading state
+  if (usersLoading || crewsLoading) {
+    return (
+      <div className="breakers-page">
+        <div className="breakers-header">
+          <h1 className="page-title">Breakers</h1>
+          <p className="page-subtitle">Find and challenge the best breakers in Denmark</p>
+        </div>
+        <div className="loading-state">
+          <FaSpinner className="loading-spinner" />
+          <p>Loading breakers...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (usersError || crewsError) {
+    return (
+      <div className="breakers-page">
+        <div className="breakers-header">
+          <h1 className="page-title">Breakers</h1>
+          <p className="page-subtitle">Find and challenge the best breakers in Denmark</p>
+        </div>
+        <div className="error-state">
+          <p>Error loading breakers: {usersError || crewsError}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="breakers-page">
@@ -198,6 +234,9 @@ export default function Breakers() {
                       src={breaker.profileImage}
                       alt={breaker.name}
                       className="breaker-avatar"
+                      onError={(e) => {
+                        e.target.src = '/src/assets/placeholder.jpg';
+                      }}
                     />
                   </div>
                   
@@ -207,6 +246,13 @@ export default function Breakers() {
                     <div className="breaker-level">
                       <span className="level-text">Level {breaker.level}</span>
                     </div>
+                    {breaker.crew && (
+                      <div className="breaker-crew">
+                        <span className="crew-name" style={{ color: breaker.crew.color }}>
+                          {breaker.crew.name}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 

@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { getBadgeProgress } from '../utils/badgeUtils';
 
 export default function BadgeCard({ badge, isEarned, masteredMoves = [] }) {
   const navigate = useNavigate();
@@ -6,35 +7,13 @@ export default function BadgeCard({ badge, isEarned, masteredMoves = [] }) {
   // Calculate progress for category badges
   const getProgress = () => {
     if (isEarned) return 100;
-    
-    // For category badges, calculate progress based on moves in that category
-    if (badge.category && badge.category !== 'Master') {
-      const categoryMoves = getCategoryMoves(badge.category);
-      const masteredInCategory = masteredMoves.filter(move => 
-        categoryMoves.includes(move.name)
-      ).length;
-      return Math.round((masteredInCategory / categoryMoves.length) * 100);
-    }
-    
-    return 0;
-  };
-
-  const getCategoryMoves = (category) => {
-    const categoryMovesMap = {
-      'Toprock': ['Two step', 'Salsa step', 'Indian step', 'Charlie rock', 'Battle rock', 'Skater', 'Jerk rock'],
-      'Footwork': ['CC', 'Kick outs', 'Coffee grinder', '2 step', '3 step', 'Hooks', 'Zulu spin', 'Baby love', 'Knee rock', 'Russian step', 'Over/under lap', '6 step', '4 step', '5 step', '7 step', '8 step', 'Peter pan', 'Permanent increase', 'Half sweeps', 'Monkey swing', 'Gorilla 6 step', 'Knock out', 'Pretzels'],
-      'Freezes': ['Yoga freeze', 'Turtle freeze', 'Baby freeze', 'Spider freeze', 'Headstand', 'Handstand', 'Shoulder freeze', 'Elbow freeze', 'Chairfreeze', '1-hand freeze', '1-hand elbow freeze', 'Scorpion', 'Airbaby', 'Flag-freeze', 'Airchair', 'Suicide', 'L-kick', 'V-kick'],
-      'Power': ['Butt spin', 'Back spin', 'Baby swipe', 'Windmill', 'Swipe', 'Headspin', 'Turtles', 'Flare', 'Tapmill', 'Babymill', 'Bellymill', 'Head swipe', 'Headdrill', 'Halo', 'Freeze spin', 'Elbow track', 'Barrel mill', 'Nutcracker', 'Airplanes', 'Superman', 'Tombstones', 'T-flare', '1990', '2000', 'Shoulder halo', 'Shoulder spin'],
-      'Tricks': ['Cartwheel', 'Ormen', 'Icey Ice', 'Macaco', 'Kick-up', 'Aerial', 'Butterfly'],
-      'GoDowns': ['Squat down', 'Corkspin drop', 'Knee drop', 'Knee rock', 'Hook', 'Power step back', 'Power front kick', 'Coindrop', 'Power back kick']
-    };
-    return categoryMovesMap[category] || [];
+    return getBadgeProgress(badge, masteredMoves);
   };
 
   const progress = getProgress();
 
   const handleClick = () => {
-    navigate(`/badges/${badge.id}`);
+    navigate(`/badges/${badge._id || badge.name}`);
   };
 
   return (

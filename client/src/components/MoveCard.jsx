@@ -14,10 +14,15 @@ export default function MoveCard({ move, onAdd = () => {}, onVideoSelect = () =>
   const isPending = pendingMoves.some((m) => m.name === move.name);
   const levelClass = `level-${move.level?.toLowerCase() || 'beginner'}`;
 
-  function handleClick() {
+  async function handleClick() {
     if (!isMastered && !isPending) {
-      requestMoveApproval(move);
-      onAdd(move); // trigger toast in parent
+      try {
+        await requestMoveApproval(move);
+        onAdd(move); // trigger toast in parent
+      } catch (error) {
+        console.error('Error requesting move approval:', error);
+        // You could show an error toast here if needed
+      }
     }
     // Removed the ability for users to remove mastered moves
     // Only admins can remove mastered moves through the admin panel

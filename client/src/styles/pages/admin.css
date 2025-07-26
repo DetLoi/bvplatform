@@ -1026,3 +1026,25 @@
     gap: 1rem;
   }
 } 
+
+.refresh-btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.refresh-btn:hover {
+  background: #45a049;
+}
+
+.refresh-btn:active {
+  transform: scale(0.98);
+} 

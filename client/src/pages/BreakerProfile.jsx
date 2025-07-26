@@ -1,83 +1,166 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { crews } from '../data/crews';
-import { moves as allMoves } from '../data/moves';
-import { badges } from '../data/badges';
+import { useUsers } from '../hooks/useUsers';
+import { useMoves } from '../hooks/useMoves';
+import { useBadges } from '../hooks/useBadges';
 import { FaArrowLeft, FaUsers, FaTrophy, FaStar, FaCrown } from 'react-icons/fa';
 import ProgressBar from '../components/ProgressBar';
 import { StyleRadar } from '../components/StyleRadar';
 import { LevelSummary } from '../components/LevelSummary';
+import { isBadgeUnlocked } from '../utils/badgeUtils';
 import '../styles/pages/breaker-profile.css';
 
 export default function BreakerProfile() {
   const { breakerId } = useParams();
   const navigate = useNavigate();
   const [breaker, setBreaker] = useState(null);
-  const [masteredMoves, setMasteredMoves] = useState([]);
-  const [earnedBadges, setEarnedBadges] = useState([]);
-  const [coverPhoto] = useState('https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&h=400&fit=crop');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Use API hooks
+  const { fetchUserById } = useUsers();
+  const { moves: allMoves, loading: movesLoading } = useMoves({ limit: 1000 });
+  const { badges, loading: badgesLoading } = useBadges();
 
   useEffect(() => {
-    // Find the breaker from all crews
-    let foundBreaker = null;
-    crews.forEach(crew => {
-      const member = crew.members.find(m => m.id.toString() === breakerId);
-      if (member) {
-        foundBreaker = {
-          ...member,
-          crew: crew.name,
-          crewColor: crew.color
-        };
+    const fetchBreaker = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch the specific user by ID
+        const userData = await fetchUserById(breakerId);
+        setBreaker(userData);
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching breaker:', err);
+      } finally {
+        setLoading(false);
       }
-    });
+    };
 
-    if (foundBreaker) {
-      setBreaker(foundBreaker);
-      
-      // Simulate mastered moves (in real app, this would come from API)
-      const simulatedMasteredMoves = allMoves
-        .filter(move => Math.random() > 0.6) // Randomly master some moves
-        .slice(0, Math.floor(Math.random() * 20) + 5); // 5-25 moves
-      
-      setMasteredMoves(simulatedMasteredMoves);
-      
-      // Calculate earned badges
-      const earned = badges.filter(badge => badge.unlock(simulatedMasteredMoves));
-      setEarnedBadges(earned);
+    if (breakerId) {
+      fetchBreaker();
     }
-  }, [breakerId]);
+  }, [breakerId, fetchUserById]);
 
-  if (!breaker) {
+  // Show loading state while data is being fetched
+  if (loading || movesLoading || badgesLoading) {
     return (
       <div className="breaker-profile-page">
         <div className="loading">
+          <div className="loading-spinner"></div>
           <h2>Loading...</h2>
         </div>
       </div>
     );
   }
 
-  // Calculate XP and level (similar to Home page logic)
-  const totalXP = masteredMoves.reduce((sum, move) => sum + move.xp, 0);
-  const level = Math.floor(totalXP / 1000) + 1;
-  const progress = (totalXP % 1000) / 1000;
+  // Show error state
+  if (error) {
+    return (
+      <div className="breaker-profile-page">
+        <div className="loading">
+          <h2>Error loading breaker</h2>
+          <p>{error}</p>
+          <button onClick={() => navigate('/breakers')} className="back-button">
+            <FaArrowLeft />
+            <span>Back to Breakers</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!breaker) {
+    return (
+      <div className="breaker-profile-page">
+        <div className="loading">
+          <h2>Breaker not found</h2>
+          <button onClick={() => navigate('/breakers')} className="back-button">
+            <FaArrowLeft />
+            <span>Back to Breakers</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Calculate XP and level (using same thresholds as backend)
+  const xpThresholds = [0, 100, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000];
+  const totalXP = breaker.xp || 0;
+  
+  const getLevelFromXP = (xp) => {
+    for (let i = xpThresholds.length - 1; i >= 0; i--) {
+      if (xp >= xpThresholds[i]) return i + 1;
+    }
+    return 1;
+  };
+  
+  const getNextLevelXP = (xp) => {
+    const currentLevel = getLevelFromXP(xp);
+    return xpThresholds[currentLevel] || null;
+  };
+  
+  // Combined level calculation (same as backend)
+  const calculateLevel = (xp, masteredMovesCount) => {
+    // Base level from XP
+    let xpLevel = 1;
+    
+    for (let i = 0; i < xpThresholds.length; i++) {
+      if (xp >= xpThresholds[i]) {
+        xpLevel = i + 1;
+      } else {
+        break;
+      }
+    }
+    
+    // Level from moves mastered (more weight on moves)
+    const movesLevel = Math.min(Math.floor(masteredMovesCount / 2) + 1, 15);
+    
+    // Combine both factors, giving more weight to moves
+    const combinedLevel = Math.round((movesLevel * 0.7) + (xpLevel * 0.3));
+    
+    return Math.min(Math.max(combinedLevel, 1), 15);
+  };
+  
+  const getProgress = (xp, masteredMovesCount) => {
+    const currentLevel = calculateLevel(xp, masteredMovesCount);
+    const nextLevelXP = getNextLevelXP(xp);
+    const currentLevelXP = currentLevel > 1 ? xpThresholds[currentLevel - 2] : 0;
+    
+    // Handle edge cases
+    if (nextLevelXP === null || nextLevelXP === xp) return 100;
+    if (currentLevelXP >= nextLevelXP) return 100;
+    
+    const totalXPNeeded = nextLevelXP - currentLevelXP;
+    const xpProgress = xp - currentLevelXP;
+    
+    // Ensure progress is between 0 and 100
+    const progress = Math.max(0, Math.min(100, Math.round((xpProgress / totalXPNeeded) * 100)));
+    
+    return progress;
+  };
+  
+  const level = calculateLevel(totalXP, breaker.masteredMoves?.length || 0);
+  const progress = getProgress(totalXP, breaker.masteredMoves?.length || 0);
 
   // Calculate style data for radar
   const categories = ['Toprock', 'Footwork', 'Freezes', 'Power', 'Tricks', 'GoDowns'];
   const styleData = categories.map((cat) => {
     const totalCat = allMoves.filter((m) => m.category === cat).length;
-    const masteredCat = masteredMoves.filter((m) => m.category === cat).length;
+    const masteredCat = breaker.masteredMoves?.filter((m) => m.category === cat).length || 0;
     const pct = totalCat ? Math.round((masteredCat / totalCat) * 100) : 0;
     return { category: cat, score: pct };
   });
 
-  // Calculate level summary data
-  const totalByLevel = allMoves.reduce((acc, m) => {
-    acc[m.level] = (acc[m.level] || 0) + 1;
+  // Calculate category summary data
+  const totalByCategory = allMoves.reduce((acc, m) => {
+    acc[m.category] = (acc[m.category] || 0) + 1;
     return acc;
   }, {});
-  const masteredByLevel = masteredMoves.reduce((acc, m) => {
-    acc[m.level] = (acc[m.level] || 0) + 1;
+  const masteredByCategory = (breaker.masteredMoves || []).reduce((acc, m) => {
+    acc[m.category] = (acc[m.category] || 0) + 1;
     return acc;
   }, {});
 
@@ -85,7 +168,11 @@ export default function BreakerProfile() {
     <>
       {/* Cover Photo - Outside main container */}
       <div className="cover-photo-wrapper">
-        <img src={coverPhoto} alt="Cover" className="cover-photo" />
+        <img 
+          src={breaker.coverImage || 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&h=400&fit=crop'} 
+          alt="Cover" 
+          className="cover-photo" 
+        />
       </div>
 
       <div className="main-content">
@@ -95,9 +182,12 @@ export default function BreakerProfile() {
             <div className="profile-info">
               <div className="profile-pic-wrapper">
                 <img
-                  src={breaker.profileImage}
+                  src={breaker.profileImage || '/src/assets/placeholder.jpg'}
                   alt={breaker.name}
                   className="profile-pic"
+                  onError={(e) => {
+                    e.target.src = '/src/assets/placeholder.jpg';
+                  }}
                 />
               </div>
               <div>
@@ -122,10 +212,10 @@ export default function BreakerProfile() {
             <div className="section-card">
               <h2 className="section-heading">Badges</h2>
               <div className="badges-wrapper">
-                {earnedBadges.length > 0 ? (
+                {breaker.badges && breaker.badges.length > 0 ? (
                   <div className="badges-row">
-                    {earnedBadges.map((badge) => (
-                      <div key={badge.id} className="game-badge-minimal">
+                    {breaker.badges.map((badge) => (
+                      <div key={badge._id || badge.name} className="game-badge-minimal">
                         <div className="badge-icon">
                           {badge.image.startsWith('/src/assets/badges/') ? (
                             <img src={badge.image} alt={badge.name} className="badge-image" />
@@ -156,26 +246,36 @@ export default function BreakerProfile() {
             </div>
             {/* Style identity video */}
             <div className="video-container mt-6">
-              <video
-                src="https://www.w3schools.com/html/mov_bbb.mp4"
-                controls
-                className="style-video"
-                aria-label="Style identity video"
-              />
+              {breaker.battleVideos && breaker.battleVideos.length > 0 ? (
+                <video
+                  src={breaker.battleVideos[0]}
+                  controls
+                  className="style-video"
+                  aria-label="Style identity video"
+                />
+              ) : (
+                <div className="no-video-placeholder">
+                  <div className="placeholder-content">
+                    <FaUsers className="placeholder-icon" />
+                    <h3>No Battle Videos Yet</h3>
+                    <p>Battle videos will appear here when available.</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Level summary */}
           <div className="section-card mt-6 width100">
-            <LevelSummary masteredByLevel={masteredByLevel} totalByLevel={totalByLevel} />
+            <LevelSummary masteredByCategory={masteredByCategory} totalByCategory={totalByCategory} />
           </div>
 
           {/* Mastered Moves */}
           <div className="section-card mt-8">
             <h2 className="section-heading">Mastered Moves</h2>
-            {masteredMoves.length ? (
+            {breaker.masteredMoves && breaker.masteredMoves.length ? (
               <div className="mastered-grid">
-                {masteredMoves.map((move) => (
+                {breaker.masteredMoves.map((move) => (
                   <div key={move.name} className="mastered-card">
                     <h3 className={`move-name level-${move.level?.toLowerCase()}`}>{move.name}</h3>
                     <p className="move-cat">{move.category}</p>

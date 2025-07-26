@@ -315,6 +315,37 @@
   font-size: 0.9rem;
 }
 
+/* Loading and Error States */
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.loading-spinner {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  color: #ffd700;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-state p,
+.error-state p {
+  font-size: 1.2rem;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.error-state p {
+  color: #ff6b6b;
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;

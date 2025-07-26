@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useProfile } from '../context/ProfileContext';
-import { crews } from '../data/crews';
+import { useCrews } from '../hooks/useCrews';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import CrewCard from '../components/CrewCard';
 import CrewSelection from '../components/CrewSelection';
 import { FaUsers, FaTrophy, FaChartLine, FaArrowLeft } from 'react-icons/fa';
@@ -20,6 +21,15 @@ export default function Profile() {
   const { xp, level, progress, masteredMoves } = useProfile();
   const [selectedCrew, setSelectedCrew] = useState(null);
   const [activeTab, setActiveTab] = useState('crew');
+  
+  // Use the API hook
+  const { crews, loading, error } = useCrews();
+
+  // Auto-refresh data when user profile changes
+  useAutoRefresh(() => {
+    // The ProfileContext will automatically update the masteredMoves, xp, level, etc.
+    // This hook ensures the component re-renders when data changes
+  });
 
   const tabs = [
     { id: 'crew', label: 'Crew', icon: FaUsers },
@@ -34,6 +44,30 @@ export default function Profile() {
     setSelectedCrew(null);
     setActiveTab('crew');
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="main-content">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading crews...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="main-content">
+        <div className="error-container">
+          <p>Error loading crews: {error}</p>
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      </div>
+    );
+  }
 
   // Show crew selection if no crew is selected
   if (!selectedCrew) {

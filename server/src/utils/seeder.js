@@ -4,151 +4,14 @@ import User from '../models/user.models.js';
 import Event from '../models/event.models.js';
 import Battle from '../models/battle.models.js';
 import Crew from '../models/crew.models.js';
+import mongoose from 'mongoose';
 
-// Sample moves data
-const movesData = [
-  // Level 1 – Beginner
-  { name: 'Two step', category: 'Toprock', level: 'Beginner', xp: 25, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Basic toprock step' },
-  { name: 'Salsa step', category: 'Toprock', level: 'Beginner', xp: 25, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Salsa-style toprock' },
-  { name: 'CC', category: 'Footwork', level: 'Beginner', xp: 25, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Basic footwork pattern' },
-  { name: 'Kick outs', category: 'Footwork', level: 'Beginner', xp: 25, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Kicking footwork' },
-  { name: 'Yoga freeze', category: 'Freezes', level: 'Beginner', xp: 40, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Basic freeze position' },
-  { name: 'Turtle freeze', category: 'Freezes', level: 'Beginner', xp: 40, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Turtle-style freeze' },
-  { name: 'Butt spin', category: 'Power', level: 'Beginner', xp: 50, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Basic power move' },
-  { name: 'Cartwheel', category: 'Tricks', level: 'Beginner', xp: 40, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Basic trick' },
-  { name: 'Squat down', category: 'GoDowns', level: 'Beginner', xp: 35, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Basic godown' },
-  { name: 'Corkspin drop', category: 'GoDowns', level: 'Beginner', xp: 35, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Corkspin-style drop' },
-
-  // Level 2 – Novice
-  { name: 'Indian step', category: 'Toprock', level: 'Novice', xp: 35, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Indian-style toprock' },
-  { name: 'Charlie rock', category: 'Toprock', level: 'Novice', xp: 35, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Charlie-style toprock' },
-  { name: 'Coffee grinder', category: 'Footwork', level: 'Novice', xp: 35, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Coffee grinder pattern' },
-  { name: '2 step', category: 'Footwork', level: 'Novice', xp: 35, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Two-step footwork' },
-  { name: '3 step', category: 'Footwork', level: 'Novice', xp: 35, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Three-step footwork' },
-  { name: 'Hooks', category: 'Footwork', level: 'Novice', xp: 35, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Hooking footwork' },
-  { name: 'Zulu spin', category: 'Footwork', level: 'Novice', xp: 35, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Zulu spin pattern' },
-  { name: 'Baby love', category: 'Footwork', level: 'Novice', xp: 35, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Baby love pattern' },
-  { name: 'Knee rock', category: 'Footwork', level: 'Novice', xp: 35, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Knee rocking pattern' },
-  { name: 'Russian step', category: 'Footwork', level: 'Novice', xp: 35, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Russian step pattern' },
-  { name: 'Baby freeze', category: 'Freezes', level: 'Novice', xp: 50, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Baby freeze position' },
-  { name: 'Spider freeze', category: 'Freezes', level: 'Novice', xp: 50, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Spider freeze position' },
-  { name: 'Headstand', category: 'Freezes', level: 'Novice', xp: 50, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Headstand position' },
-  { name: 'Back spin', category: 'Power', level: 'Novice', xp: 60, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Back spinning power move' },
-  { name: 'Baby swipe', category: 'Power', level: 'Novice', xp: 60, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Baby swipe power move' },
-  { name: 'Ormen', category: 'Tricks', level: 'Novice', xp: 50, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Ormen trick' },
-  { name: 'Knee drop', category: 'GoDowns', level: 'Novice', xp: 45, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Knee dropping godown' },
-  { name: 'Knee rock drop', category: 'GoDowns', level: 'Novice', xp: 45, videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', description: 'Knee rock dropping godown' }
-];
-
-// Sample badges data
-const badgesData = [
-  {
-    name: 'Footwork Master',
-    description: 'Master of footwork moves',
-    category: 'Footwork',
-    level: 'Advanced',
-    image: '/badges/footwork.png',
-    emoji: '🦶',
-    requirements: {
-      xpRequired: 500,
-      levelRequired: 3
-    },
-    rarity: 'Rare'
-  },
-  {
-    name: 'Power Mover',
-    description: 'Master of power moves',
-    category: 'Power',
-    level: 'Advanced',
-    image: '/badges/power.png',
-    emoji: '💪',
-    requirements: {
-      xpRequired: 800,
-      levelRequired: 4
-    },
-    rarity: 'Epic'
-  },
-  {
-    name: 'Freeze King',
-    description: 'Master of freeze positions',
-    category: 'Freezes',
-    level: 'Intermediate',
-    image: '/badges/freezes.png',
-    emoji: '🧊',
-    requirements: {
-      xpRequired: 300,
-      levelRequired: 2
-    },
-    rarity: 'Common'
-  }
-];
-
-// Sample events data
-const eventsData = [
-  {
-    title: 'Nordic Break Championship',
-    description: 'Annual breakdance championship in the Nordic region',
-    category: 'Competition',
-    date: new Date('2024-06-15'),
-    endDate: new Date('2024-06-17'),
-    location: 'Stockholm, Sweden',
-    image: '/events/nordic-break.jpg',
-    website: 'https://nordicbreak.com',
-    organizer: 'Nordic Break Federation',
-    maxParticipants: 200,
-    price: 50,
-    tags: ['championship', 'international', 'cash-prize']
-  },
-  {
-    title: 'Workshop with DLoi',
-    description: 'Learn advanced footwork from the legendary DLoi',
-    category: 'Workshop',
-    date: new Date('2024-05-20'),
-    location: 'Berlin, Germany',
-    image: '/events/workshop-dloi.jpg',
-    website: 'https://dloi-workshop.com',
-    organizer: 'DLoi Academy',
-    maxParticipants: 30,
-    price: 80,
-    tags: ['workshop', 'footwork', 'advanced']
-  }
-];
-
-// Sample users data
-const usersData = [
-  {
-    username: 'admin',
-    email: 'admin@breakverse.com',
-    password: 'admin123',
-    name: 'Admin User',
-    level: 10,
-    xp: 5000,
-    status: 'admin',
-    isAdmin: true
-  },
-  {
-    username: 'breaker1',
-    email: 'breaker1@example.com',
-    password: 'password123',
-    name: 'John Doe',
-    level: 5,
-    xp: 1200,
-    status: 'active'
-  },
-  {
-    username: 'breaker2',
-    email: 'breaker2@example.com',
-    password: 'password123',
-    name: 'Jane Smith',
-    level: 3,
-    xp: 600,
-    status: 'active'
-  }
-];
+// Import data from seeder data file (without image imports)
+import { moves, users, crews, badges, events, battles } from './seeder-data.js';
 
 export const seedDatabase = async () => {
   try {
-    console.log('🌱 Starting database seeding...');
+    console.log('🌱 Starting comprehensive database seeding...');
 
     // Clear existing data
     await Move.deleteMany({});
@@ -160,29 +23,216 @@ export const seedDatabase = async () => {
 
     console.log('🗑️ Cleared existing data');
 
-    // Seed moves
-    const moves = await Move.insertMany(movesData);
-    console.log(`✅ Seeded ${moves.length} moves`);
+    // Seed moves first (needed for references)
+    console.log('📝 Seeding moves...');
+    const movesToInsert = moves.map(move => ({
+      name: move.name,
+      category: move.category,
+      level: move.level,
+      xp: move.xp,
+      videoUrl: move.videoUrl,
+      description: move.description || `${move.name} - ${move.level} level move`,
+      difficulty: getDifficultyFromLevel(move.level),
+      isActive: true
+    }));
+
+    const insertedMoves = await Move.insertMany(movesToInsert);
+    console.log(`✅ Seeded ${insertedMoves.length} moves`);
+
+    // Create a map of move names to ObjectIds for recommendations
+    const moveNameToId = {};
+    insertedMoves.forEach(move => {
+      moveNameToId[move.name] = move._id;
+    });
+
+    // Update moves with recommendations (ObjectId references)
+    console.log('🔄 Updating moves with recommendations...');
+    for (let i = 0; i < moves.length; i++) {
+      const originalMove = moves[i];
+      const insertedMove = insertedMoves[i];
+      
+      if (originalMove.recommendations && originalMove.recommendations.length > 0) {
+        const recommendationIds = originalMove.recommendations
+          .map(recName => moveNameToId[recName])
+          .filter(id => id); // Filter out any undefined IDs
+        
+        await Move.findByIdAndUpdate(insertedMove._id, {
+          recommendations: recommendationIds
+        });
+      }
+    }
+
+    // Seed users first (needed for crew leaders)
+    console.log('👤 Seeding users...');
+    const usersToInsert = users.map(user => {
+      // Map mastered moves from names to ObjectIds
+      const masteredMoveIds = user.masteredMoves
+        .map(moveName => moveNameToId[moveName])
+        .filter(id => id);
+
+      // Map pending moves from names to ObjectIds
+      const pendingMoveIds = user.pendingMoves
+        .map(moveName => moveNameToId[moveName])
+        .filter(id => id);
+
+      return {
+        username: user.username,
+        email: user.email,
+        password: user.password, // Will be hashed by the model
+        name: user.name,
+        level: user.level,
+        xp: user.xp,
+        joinDate: user.joinDate,
+        status: user.status,
+        profileImage: user.profileImage,
+        crew: null, // Will be updated after crews are created
+        specialty: user.specialty,
+        masteredMoves: masteredMoveIds,
+        pendingMoves: pendingMoveIds,
+        achievements: user.achievements,
+        battleVideos: user.battleVideos,
+        bio: user.bio,
+        location: user.location,
+        socialMedia: user.socialMedia,
+        isAdmin: user.status === 'admin'
+      };
+    });
+
+    const insertedUsers = await User.insertMany(usersToInsert);
+    console.log(`✅ Seeded ${insertedUsers.length} users`);
+
+    // Seed crews with leaders
+    console.log('👥 Seeding crews...');
+    const crewsToInsert = crews.map(crew => {
+      // Find the first user from this crew to be the leader
+      const crewUsers = insertedUsers.filter(user => user.crew === crew.name);
+      const leader = crewUsers.length > 0 ? crewUsers[0] : insertedUsers[0]; // Fallback to first user
+
+      return {
+        name: crew.name,
+        description: crew.description,
+        logo: crew.logo || null,
+        color: crew.color || '#ffd700',
+        location: 'Denmark', // Default location
+        leader: leader._id, // Set the leader
+        isActive: true,
+        isPublic: true
+      };
+    });
+
+    const insertedCrews = await Crew.insertMany(crewsToInsert);
+    console.log(`✅ Seeded ${insertedCrews.length} crews`);
+
+    // Create a map of crew names to ObjectIds
+    const crewNameToId = {};
+    insertedCrews.forEach(crew => {
+      crewNameToId[crew.name] = crew._id;
+    });
+
+    // Update users with crew references
+    console.log('🔄 Updating users with crew references...');
+    for (const user of insertedUsers) {
+      const crewId = crewNameToId[user.crew];
+      if (crewId) {
+        await User.findByIdAndUpdate(user._id, { crew: crewId });
+      }
+    }
+
+    // Update crews with members
+    console.log('👑 Updating crews with members...');
+    for (const crew of insertedCrews) {
+      const crewUsers = insertedUsers.filter(user => 
+        user.crew === crew.name
+      );
+      
+      if (crewUsers.length > 0) {
+        const leader = crewUsers[0]; // First user is leader
+        await Crew.findByIdAndUpdate(crew._id, {
+          members: crewUsers.map(user => ({
+            user: user._id,
+            role: user._id.toString() === leader._id.toString() ? 'Leader' : 'Member',
+            joinedAt: new Date()
+          }))
+        });
+      }
+    }
 
     // Seed badges
-    const badges = await Badge.insertMany(badgesData);
-    console.log(`✅ Seeded ${badges.length} badges`);
+    console.log('🏆 Seeding badges...');
+    const badgesToInsert = badges.map(badge => ({
+      name: badge.name,
+      description: badge.description,
+      category: badge.category,
+      level: getBadgeLevel(badge.category),
+      image: badge.image || '/badges/default.png',
+      emoji: getBadgeEmoji(badge.category),
+      requirements: {
+        xpRequired: getBadgeXPRequirement(badge.category),
+        levelRequired: getBadgeLevelRequirement(badge.category)
+      },
+      rarity: getBadgeRarity(badge.category),
+      isActive: true
+    }));
+
+    const insertedBadges = await Badge.insertMany(badgesToInsert);
+    console.log(`✅ Seeded ${insertedBadges.length} badges`);
 
     // Seed events
-    const events = await Event.insertMany(eventsData);
-    console.log(`✅ Seeded ${events.length} events`);
+    console.log('📅 Seeding events...');
+    const eventsToInsert = events.map(event => ({
+      title: event.title,
+      description: event.description,
+      category: event.category,
+      status: event.status,
+      date: new Date(event.date),
+      endDate: event.endDate ? new Date(event.endDate) : null,
+      location: event.location,
+      image: event.image || null,
+      website: event.website,
+      organizer: event.organizer,
+      maxParticipants: event.maxParticipants,
+      price: parseFloat(event.entryFee.replace(/[^\d.]/g, '')) || 0,
+      currency: 'DKK',
+      tags: [event.category.toLowerCase(), 'breaking'],
+      isActive: true
+    }));
 
-    // Seed users
-    const users = await User.insertMany(usersData);
-    console.log(`✅ Seeded ${users.length} users`);
+    const insertedEvents = await Event.insertMany(eventsToInsert);
+    console.log(`✅ Seeded ${insertedEvents.length} events`);
+
+    // Seed battles
+    console.log('⚔️ Seeding battles...');
+    const battlesToInsert = battles.map(battle => {
+      // Find challenger and opponent users by name
+      const challengerUser = insertedUsers.find(u => u.name === battle.challenger.name);
+      const opponentUser = insertedUsers.find(u => u.name === battle.opponent.name);
+
+      return {
+        title: `${battle.challenger.name} vs ${battle.opponent.name}`,
+        description: battle.description,
+        category: battle.category,
+        status: battle.status,
+        challenger: challengerUser ? challengerUser._id : null,
+        opponent: opponentUser ? opponentUser._id : null,
+        videos: battle.videos,
+        stakes: battle.stakes,
+        deadline: battle.deadline ? new Date(battle.deadline) : null,
+        isActive: true
+      };
+    }).filter(battle => battle.challenger && battle.opponent); // Only include battles with valid users
+
+    const insertedBattles = await Battle.insertMany(battlesToInsert);
+    console.log(`✅ Seeded ${insertedBattles.length} battles`);
 
     console.log('🎉 Database seeding completed successfully!');
     
     return {
-      moves: moves.length,
-      badges: badges.length,
-      events: events.length,
-      users: users.length
+      moves: insertedMoves.length,
+      badges: insertedBadges.length,
+      events: insertedEvents.length,
+      users: insertedUsers.length,
+      crews: insertedCrews.length,
+      battles: insertedBattles.length
     };
   } catch (error) {
     console.error('❌ Error seeding database:', error);
@@ -190,16 +240,60 @@ export const seedDatabase = async () => {
   }
 };
 
-// Run seeder if this file is executed directly
-import dotenv from 'dotenv';
-dotenv.config();
+// Helper functions
+function getDifficultyFromLevel(level) {
+  const difficultyMap = {
+    'Beginner': 1,
+    'Novice': 2,
+    'Intermediate': 3,
+    'Advanced': 4,
+    'Skilled': 5,
+    'Master': 6,
+    'Grandmaster': 7
+  };
+  return difficultyMap[level] || 1;
+}
 
-import mongoose from 'mongoose';
+function getBadgeLevel(category) {
+  if (category === 'Special') return 'Advanced';
+  return 'Advanced';
+}
+
+function getBadgeEmoji(category) {
+  const emojiMap = {
+    'Toprock': '🦶',
+    'Footwork': '🦶',
+    'Freezes': '🧊',
+    'Power': '💪',
+    'Tricks': '🎯',
+    'GoDowns': '⬇️',
+    'Special': '🏆'
+  };
+  return emojiMap[category] || '🏆';
+}
+
+function getBadgeXPRequirement(category) {
+  if (category === 'Special') return 1000;
+  return 500;
+}
+
+function getBadgeLevelRequirement(category) {
+  if (category === 'Special') return 5;
+  return 3;
+}
+
+function getBadgeRarity(category) {
+  if (category === 'Special') return 'Legendary';
+  return 'Rare';
+}
+
+// Run seeder if this file is executed directly
+const MONGO_URI = 'mongodb+srv://spkzdloi:btTDAPh0XXhiURtb@breakverse.p9k1nq1.mongodb.net/?retryWrites=true&w=majority&appName=breakverse';
 
 const runSeeder = async () => {
   try {
     console.log('🔌 Connecting to MongoDB...');
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(MONGO_URI);
     console.log('📦 Connected to MongoDB');
     
     const result = await seedDatabase();

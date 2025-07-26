@@ -3,6 +3,7 @@ import { useBadges } from '../hooks/useBadges';
 import BadgeCard from '../components/BadgeCard';
 import { FaTrophy, FaLock, FaStar, FaCrown, FaLayerGroup, FaFire, FaUsers } from 'react-icons/fa';
 import { useState } from 'react';
+import { isBadgeUnlocked } from '../utils/badgeUtils';
 import '../styles/pages/badges.css';
 
 export default function Badges() {
@@ -16,25 +17,25 @@ export default function Badges() {
   const badgesArray = Array.isArray(badges) ? badges : [];
 
   // Calculate badge statistics
-  const earnedBadges = badgesArray.filter(badge => badge.unlock && badge.unlock(masteredMoves));
+  const earnedBadges = badgesArray.filter(badge => isBadgeUnlocked(badge, masteredMoves));
   const totalBadges = badgesArray.length;
   const earnedPercentage = Math.round((earnedBadges.length / totalBadges) * 100);
 
   // Group badges by category
   const elementBadges = badgesArray.filter(badge => 
     badge.category && 
-    badge.category !== 'Level' &&
-    (badge.category !== 'Power' || badge.id === 'power-master')
+    badge.category !== 'Special' &&
+    (badge.category !== 'Power' || badge.name === 'Power Master')
   );
-  const levelBadges = badgesArray.filter(badge => badge.category === 'Level');
-  const specialBadges = badgesArray.filter(badge => badge.category === 'Power' && badge.id !== 'power-master');
+  const levelBadges = badgesArray.filter(badge => badge.category === 'Special');
+  const specialBadges = badgesArray.filter(badge => badge.category === 'Power' && badge.name !== 'Power Master');
 
   // Navigation categories
   const navCategories = [
     { id: 'all', name: 'All Badges', icon: FaTrophy, count: totalBadges, earned: earnedBadges.length },
-    { id: 'level', name: 'Level Mastery', icon: FaLayerGroup, count: levelBadges.length, earned: levelBadges.filter(b => b.unlock(masteredMoves)).length },
-    { id: 'element', name: 'Element Mastery', icon: FaFire, count: elementBadges.length, earned: elementBadges.filter(b => b.unlock(masteredMoves)).length },
-    { id: 'power', name: 'Power Specialists', icon: FaUsers, count: specialBadges.length, earned: specialBadges.filter(b => b.unlock(masteredMoves)).length }
+    { id: 'level', name: 'Level Mastery', icon: FaLayerGroup, count: levelBadges.length, earned: levelBadges.filter(b => isBadgeUnlocked(b, masteredMoves)).length },
+    { id: 'element', name: 'Element Mastery', icon: FaFire, count: elementBadges.length, earned: elementBadges.filter(b => isBadgeUnlocked(b, masteredMoves)).length },
+    { id: 'power', name: 'Power Specialists', icon: FaUsers, count: specialBadges.length, earned: specialBadges.filter(b => isBadgeUnlocked(b, masteredMoves)).length }
   ];
 
   // Get badges for active category
@@ -109,23 +110,12 @@ export default function Badges() {
         <div className="badges-container">
           {/* Active Category Badges */}
           <div className="badge-section">
-            <div className="section-header">
-              <h2 className="section-title">
-                {navCategories.find(cat => cat.id === activeCategory)?.name || 'All Badges'}
-              </h2>
-              <p className="section-description">
-                {activeCategory === 'all' && 'Browse all available badges and track your progress'}
-                {activeCategory === 'level' && 'Progress through each skill level to earn these achievement badges'}
-                {activeCategory === 'element' && 'Master all moves in each element to earn these prestigious badges'}
-                {activeCategory === 'power' && 'Prove your mastery of ground and air power moves'}
-              </p>
-            </div>
             <div className="badges-grid">
               {getActiveBadges().map((badge) => (
                 <BadgeCard 
-                  key={badge.id} 
+                  key={badge._id || badge.name} 
                   badge={badge} 
-                  isEarned={badge.unlock(masteredMoves)}
+                  isEarned={isBadgeUnlocked(badge, masteredMoves)}
                   masteredMoves={masteredMoves}
                 />
               ))}

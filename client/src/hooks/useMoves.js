@@ -3,7 +3,7 @@ import { movesAPI } from '../services/api';
 
 export const useMoves = (filters = {}) => {
   const [moves, setMoves] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!filters.skipInitialFetch);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -135,9 +135,11 @@ export const useMoves = (filters = {}) => {
     }
   };
 
-  // Initial fetch - only run once on mount
+  // Initial fetch - only run once on mount if not skipped
   useEffect(() => {
-    fetchMoves();
+    if (!filters.skipInitialFetch) {
+      fetchMoves();
+    }
   }, []); // Empty dependency array to run only once
 
   return {

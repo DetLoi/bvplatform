@@ -1,6 +1,7 @@
 import User from '../models/user.models.js';
 import Move from '../models/move.models.js';
 import Badge from '../models/badge.models.js';
+import bcrypt from 'bcryptjs';
 
 // Get all users with filtering and pagination
 export const getAllUsers = async (req, res) => {
@@ -54,6 +55,57 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+// Get all users with password info for admin
+export const getAllUsersWithPasswords = async (req, res) => {
+  try {
+    const { 
+      search, 
+      status, 
+      level,
+      page = 1, 
+      limit = 20,
+      sortBy = 'username',
+      sortOrder = 'asc'
+    } = req.query;
+
+    const filter = {};
+    
+    if (search) {
+      filter.$or = [
+        { username: { $regex: search, $options: 'i' } },
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    if (status) filter.status = status;
+    if (level) filter.level = { $gte: parseInt(level) };
+
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    const users = await User.find(filter)
+      .sort(sort)
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .populate('masteredMoves', 'name category level xp')
+      .populate('pendingMoves', 'name category level xp')
+      .populate('crew', 'name')
+      .populate('badges', 'name image emoji');
+
+    const total = await User.countDocuments(filter);
+
+    res.json({
+      users,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page),
+      total
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // Get user by ID
 export const getUserById = async (req, res) => {
   try {
@@ -69,6 +121,44 @@ export const getUserById = async (req, res) => {
     }
     
     res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Login user
+export const loginUser = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+      return res.status(400).json({ message: 'Brugernavn og adgangskode er påkrævet' });
+    }
+    
+    const user = await User.findOne({ username })
+      .populate('masteredMoves', 'name category level xp')
+      .populate('pendingMoves', 'name category level xp')
+      .populate('crew', 'name logo color')
+      .populate('badges', 'name image emoji category level');
+    
+    if (!user) {
+      return res.status(401).json({ message: 'Ugyldigt brugernavn eller adgangskode' });
+    }
+    
+    // Compare password using the model's method
+    const isValidPassword = await user.comparePassword(password);
+    
+    if (!isValidPassword) {
+      return res.status(401).json({ message: 'Ugyldigt brugernavn eller adgangskode' });
+    }
+    
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    
+    res.json({
+      success: true,
+      user: userResponse
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -90,17 +180,53 @@ export const createUser = async (req, res) => {
 // Update user
 export const updateUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    ).select('-password');
+    const { id } = req.params;
+    const updateData = { ...req.body };
     
+    // Find the user first
+    const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
     
-    res.json(user);
+    // If mastered moves are being updated, recalculate level and XP
+    if (updateData.masteredMoves && Array.isArray(updateData.masteredMoves)) {
+      // Get the moves to calculate total XP
+      const moves = await Move.find({ _id: { $in: updateData.masteredMoves } });
+      const totalXP = moves.reduce((sum, move) => sum + move.xp, 0);
+      
+      // Update XP based on mastered moves
+      updateData.xp = totalXP;
+    }
+    
+    // Handle password update specifically to ensure hashing
+    if (updateData.password && updateData.password.trim() !== '') {
+      // Set password directly to trigger the pre-save hook
+      user.password = updateData.password;
+      delete updateData.password; // Remove from updateData to avoid double assignment
+    }
+    
+    // Update other fields
+    Object.assign(user, updateData);
+    
+    // Save the user - this will trigger the pre-save hooks for password hashing
+    await user.save();
+    
+    // Check for new badges
+    const newBadges = await user.checkAndAssignBadges();
+    
+    // Get updated user data with populated fields
+    const updatedUser = await User.findById(id)
+      .select('-password')
+      .populate('masteredMoves', 'name category level xp')
+      .populate('pendingMoves', 'name category level xp')
+      .populate('crew', 'name logo color')
+      .populate('badges', 'name image emoji category level');
+    
+    res.json({
+      ...updatedUser.toObject(),
+      newBadges: newBadges.length > 0 ? newBadges : null
+    });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -145,16 +271,28 @@ export const addMasteredMove = async (req, res) => {
     // Add move to mastered moves and add XP
     user.masteredMoves.push(moveId);
     user.xp += move.xp;
-    user.level = user.calculateLevel();
+    user.level = user.calculateLevel(); // Auto-calculate level based on moves
     
     // Remove from pending moves if it exists
     user.pendingMoves = user.pendingMoves.filter(id => id.toString() !== moveId);
     
+    // Check and assign new badges
+    const newBadges = await user.checkAndAssignBadges();
+    
     await user.save();
+    
+    // Populate the user data for response
+    const updatedUser = await User.findById(userId)
+      .select('-password')
+      .populate('masteredMoves', 'name category level xp')
+      .populate('pendingMoves', 'name category level xp')
+      .populate('crew', 'name logo color')
+      .populate('badges', 'name image emoji category level');
     
     res.json({ 
       message: 'Move added to mastered moves',
-      user: await User.findById(userId).select('-password')
+      user: updatedUser,
+      newBadges: newBadges.length > 0 ? newBadges : null
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -185,13 +323,25 @@ export const removeMasteredMove = async (req, res) => {
     // Remove move from mastered moves and subtract XP
     user.masteredMoves = user.masteredMoves.filter(id => id.toString() !== moveId);
     user.xp = Math.max(0, user.xp - move.xp);
-    user.level = user.calculateLevel();
+    user.level = user.calculateLevel(); // Auto-calculate level based on moves
+    
+    // Check and assign new badges (in case some badges should be removed)
+    const newBadges = await user.checkAndAssignBadges();
     
     await user.save();
     
+    // Populate the user data for response
+    const updatedUser = await User.findById(userId)
+      .select('-password')
+      .populate('masteredMoves', 'name category level xp')
+      .populate('pendingMoves', 'name category level xp')
+      .populate('crew', 'name logo color')
+      .populate('badges', 'name image emoji category level');
+    
     res.json({ 
       message: 'Move removed from mastered moves',
-      user: await User.findById(userId).select('-password')
+      user: updatedUser,
+      newBadges: newBadges.length > 0 ? newBadges : null
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -261,13 +411,25 @@ export const approvePendingMove = async (req, res) => {
     user.pendingMoves = user.pendingMoves.filter(id => id.toString() !== moveId);
     user.masteredMoves.push(moveId);
     user.xp += move.xp;
-    user.level = user.calculateLevel();
+    user.level = user.calculateLevel(); // Auto-calculate level based on moves
+    
+    // Check and assign new badges
+    const newBadges = await user.checkAndAssignBadges();
     
     await user.save();
     
+    // Populate the user data for response
+    const updatedUser = await User.findById(userId)
+      .select('-password')
+      .populate('masteredMoves', 'name category level xp')
+      .populate('pendingMoves', 'name category level xp')
+      .populate('crew', 'name logo color')
+      .populate('badges', 'name image emoji category level');
+    
     res.json({ 
       message: 'Move request approved',
-      user: await User.findById(userId).select('-password')
+      user: updatedUser,
+      newBadges: newBadges.length > 0 ? newBadges : null
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -330,6 +492,96 @@ export const getUserStats = async (req, res) => {
     });
     
     res.json(stats);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}; 
+
+// Recalculate all users' levels based on their moves
+export const recalculateAllUserLevels = async (req, res) => {
+  try {
+    const users = await User.find().populate('masteredMoves');
+    let updatedCount = 0;
+    
+    for (const user of users) {
+      const oldLevel = user.level;
+      user.level = user.calculateLevel();
+      
+      if (oldLevel !== user.level) {
+        await user.save();
+        updatedCount++;
+      }
+    }
+    
+    res.json({ 
+      message: `Updated levels for ${updatedCount} users`,
+      updatedCount,
+      totalUsers: users.length
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Recalculate all users' badges based on their moves
+export const recalculateAllUserBadges = async (req, res) => {
+  try {
+    const users = await User.find().populate('masteredMoves');
+    let updatedCount = 0;
+    let totalNewBadges = 0;
+    
+    for (const user of users) {
+      const oldBadgeCount = user.badges.length;
+      const newBadges = await user.checkAndAssignBadges();
+      
+      if (newBadges.length > 0) {
+        await user.save();
+        updatedCount++;
+        totalNewBadges += newBadges.length;
+      }
+    }
+    
+    res.json({ 
+      message: `Updated badges for ${updatedCount} users`,
+      updatedCount,
+      totalNewBadges,
+      totalUsers: users.length
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}; 
+
+// Get all pending move requests (for admin)
+export const getAllPendingMoveRequests = async (req, res) => {
+  try {
+    const users = await User.find({ 'pendingMoves.0': { $exists: true } })
+      .select('username name level pendingMoves')
+      .populate('pendingMoves', 'name category level xp videoUrl description');
+    
+    const pendingRequests = [];
+    
+    users.forEach(user => {
+      user.pendingMoves.forEach(move => {
+        pendingRequests.push({
+          id: `${user._id}-${move._id}`,
+          userId: user._id,
+          userName: user.name || user.username,
+          userLevel: user.level,
+          moveId: move._id,
+          moveName: move.name,
+          moveCategory: move.category,
+          moveLevel: move.level,
+          moveXP: move.xp,
+          videoUrl: move.videoUrl,
+          description: move.description,
+          requestDate: user.updatedAt,
+          status: 'pending'
+        });
+      });
+    });
+    
+    res.json(pendingRequests);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

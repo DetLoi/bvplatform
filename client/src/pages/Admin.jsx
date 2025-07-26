@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { FaArrowLeft, FaUsers, FaTrophy, FaDumbbell, FaCalendar, FaUserEdit, FaTrash, FaPlus, FaEdit, FaSave, FaTimes, FaSearch, FaCheckCircle, FaTimesCircle, FaClipboardCheck } from 'react-icons/fa';
+import { FaArrowLeft, FaUsers, FaTrophy, FaDumbbell, FaCalendar, FaUserEdit, FaTrash, FaPlus, FaEdit, FaSave, FaTimes, FaSearch, FaCheckCircle, FaTimesCircle, FaClipboardCheck, FaSync } from 'react-icons/fa';
 import { useMoves } from '../hooks/useMoves';
 import { useUsers } from '../hooks/useUsers';
 import { useBadges } from '../hooks/useBadges';
 import { useEvents } from '../hooks/useEvents';
+import { useCrews } from '../hooks/useCrews';
+import { usePendingMoves } from '../hooks/usePendingMoves';
 import { useProfile } from '../context/ProfileContext';
+import { useAuth } from '../context/AuthContext';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import { FaMinus } from 'react-icons/fa';
 import Toast from '../components/Toast';
-import { moves } from '../data/moves';
-import { badges } from '../data/badges';
-import { events } from '../data/events';
-import { crews } from '../data/crews';
+
 import '../styles/pages/admin.css';
 
 // Edit Form Components
@@ -547,6 +548,8 @@ const EditEventForm = ({ event, onSave, onCancel, formRef }) => {
 };
 
 const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
+  const { users, loading: usersLoading, error: usersError } = useUsers();
+  
   const [formData, setFormData] = useState({
     name: crew.name,
     description: crew.description || '',
@@ -556,18 +559,6 @@ const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
   });
 
   const [logoPreview, setLogoPreview] = useState(crew.logo || '');
-  const [availableUsers, setAvailableUsers] = useState([
-    { id: 1, name: "DLoi", level: 15, xp: 8500, profileImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face", specialty: "Power Moves", status: "online" },
-    { id: 2, name: "Benji", level: 13, xp: 7200, profileImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face", specialty: "Footwork", status: "online" },
-    { id: 3, name: "Kien", level: 12, xp: 6500, profileImage: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face", specialty: "Spins", status: "online" },
-    { id: 4, name: "Pele", level: 11, xp: 5800, profileImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face", specialty: "Freezes", status: "offline" },
-    { id: 5, name: "Oritami", level: 10, xp: 5200, profileImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face", specialty: "Toprock", status: "online" },
-    { id: 6, name: "Yung M", level: 9, xp: 4600, profileImage: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face", specialty: "Windmills", status: "online" },
-    { id: 7, name: "Niels", level: 8, xp: 4000, profileImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face", specialty: "Headspins", status: "offline" },
-    { id: 8, name: "Armony", level: 7, xp: 3400, profileImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face", specialty: "Backspins", status: "online" },
-    { id: 9, name: "Cpt. Jomar", level: 6, xp: 2800, profileImage: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face", specialty: "Baby Freezes", status: "online" },
-    { id: 10, name: "Ronway", level: 5, xp: 2200, profileImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face", specialty: "Basics", status: "offline" }
-  ]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -594,7 +585,7 @@ const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
   };
 
   const addMember = (user) => {
-    if (!formData.members.find(member => member.id === user.id)) {
+    if (!formData.members.find(member => member._id === user._id)) {
       setFormData(prev => ({
         ...prev,
         members: [...prev.members, user]
@@ -605,7 +596,7 @@ const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
   const removeMember = (memberId) => {
     setFormData(prev => ({
       ...prev,
-      members: prev.members.filter(member => member.id !== memberId)
+      members: prev.members.filter(member => member._id !== memberId)
     }));
   };
 
@@ -619,9 +610,18 @@ const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
     });
   };
 
-  const availableUsersForCrew = availableUsers.filter(user => 
-    !formData.members.find(member => member.id === user.id)
+  // Filter out users who are already members
+  const availableUsersForCrew = users.filter(user => 
+    !formData.members.find(member => member._id === user._id)
   );
+
+  if (usersLoading) {
+    return <div className="loading">Loading users...</div>;
+  }
+
+  if (usersError) {
+    return <div className="error">Error loading users: {usersError}</div>;
+  }
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="edit-form">
@@ -668,9 +668,9 @@ const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
               accept="image/*"
               onChange={handleLogoUpload}
               className="image-upload-input"
-              id={`logo-upload-${crew.id}`}
+              id={`logo-upload-${crew._id}`}
             />
-            <label htmlFor={`logo-upload-${crew.id}`} className="image-upload-label">
+            <label htmlFor={`logo-upload-${crew._id}`} className="image-upload-label">
               {logoPreview ? 'Change Logo' : 'Upload Logo'}
             </label>
             {logoPreview && (
@@ -691,15 +691,15 @@ const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
               ) : (
                 <div className="members-grid">
                   {formData.members.map(member => (
-                    <div key={member.id} className="member-card">
-                      <img src={member.profileImage} alt={member.name} />
+                    <div key={member._id} className="member-card">
+                      <img src={member.profileImage || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"} alt={member.name} />
                       <div className="member-info">
                         <span className="member-name">{member.name}</span>
                         <span className="member-level">Level {member.level}</span>
                       </div>
                       <button
                         type="button"
-                        onClick={() => removeMember(member.id)}
+                        onClick={() => removeMember(member._id)}
                         className="remove-member-btn"
                       >
                         ×
@@ -717,8 +717,8 @@ const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
               ) : (
                 <div className="available-users">
                   {availableUsersForCrew.map(user => (
-                    <div key={user.id} className="user-card">
-                      <img src={user.profileImage} alt={user.name} />
+                    <div key={user._id} className="user-card">
+                      <img src={user.profileImage || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"} alt={user.name} />
                       <div className="user-info">
                         <span className="user-name">{user.name}</span>
                         <span className="user-level">Level {user.level}</span>
@@ -742,13 +742,27 @@ const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
   );
 };
 
-const EditUserForm = ({ user, onSave, onCancel, formRef }) => {
+const EditUserForm = ({ user, onSave, onCancel, formRef, moves }) => {
+  // Convert move objects to move names for the form
+  const masteredMoveNames = user.masteredMoves ? 
+    user.masteredMoves.map(move => {
+      // Handle both populated objects and string IDs
+      if (typeof move === 'string') {
+        // If it's a string ID, we need to find the move name
+        const foundMove = moves.find(m => m._id === move);
+        return foundMove ? foundMove.name : move;
+      } else {
+        // If it's a populated object, use the name
+        return move.name;
+      }
+    }) : [];
+  
   const [formData, setFormData] = useState({
     username: user.username,
     password: user.password || '',
     name: user.name || '',
     email: user.email,
-    masteredMoves: user.masteredMoves || [],
+    masteredMoves: masteredMoveNames,
     battleVideos: user.battleVideos || [],
     level: user.level || 1,
     status: user.status || 'active'
@@ -791,10 +805,43 @@ const EditUserForm = ({ user, onSave, onCancel, formRef }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({
+    
+    // Debug: Log the moves array to see its structure
+    console.log('🔍 moves array structure:', moves.slice(0, 3));
+    console.log('🔍 moves array length:', moves.length);
+    console.log('🔍 formData.masteredMoves:', formData.masteredMoves);
+    
+    // Convert move names back to move IDs for the API
+    const masteredMoveIds = formData.masteredMoves
+      .map(moveName => {
+        const move = moves.find(m => m.name === moveName);
+        console.log(`🔍 Looking for move "${moveName}":`, move ? `Found: ${move._id}` : 'Not found');
+        return move ? move._id : null; // Return null if move not found
+      })
+      .filter(id => id !== null); // Filter out null values
+    
+    // Debug: Log the data being processed
+    console.log('🔍 masteredMoveIds:', masteredMoveIds);
+    
+    // Only include password if it's been changed (not empty)
+    const updateData = {
       ...user,
-      ...formData
-    });
+      ...formData,
+      masteredMoves: masteredMoveIds // Use the converted IDs
+    };
+    
+    // Debug: Log the final updateData
+    console.log('🔍 updateData:', updateData);
+    console.log('🔍 updateData.masteredMoves:', updateData.masteredMoves);
+    console.log('🔍 updateData.masteredMoves type:', typeof updateData.masteredMoves);
+    console.log('🔍 updateData.masteredMoves is array:', Array.isArray(updateData.masteredMoves));
+    
+    // Remove password if it's empty (not changed)
+    if (!formData.password || formData.password.trim() === '') {
+      delete updateData.password;
+    }
+    
+    onSave(updateData);
   };
 
   return (
@@ -837,15 +884,15 @@ const EditUserForm = ({ user, onSave, onCancel, formRef }) => {
             />
           </div>
           <div className="form-group">
-            <label>Level</label>
+            <label>Level (Auto-calculated)</label>
             <input
               type="number"
               name="level"
               value={formData.level}
-              onChange={handleChange}
               className="edit-input"
-              min="1"
-              max="100"
+              readOnly
+              disabled
+              style={{ backgroundColor: '#2a2a2a', color: '#888' }}
             />
           </div>
         </div>
@@ -908,8 +955,8 @@ const EditUserForm = ({ user, onSave, onCancel, formRef }) => {
                       !formData.masteredMoves.includes(move.name) &&
                       move.name.toLowerCase().includes(moveSearchTerm.toLowerCase())
                     )
-                    .map(move => (
-                      <div key={move.name} className="move-item">
+                    .map((move, index) => (
+                      <div key={`${move.name}-${index}`} className="move-item">
                         <span className={`move-name level-${move.level?.toLowerCase()}`}>
                           {move.name}
                         </span>
@@ -929,10 +976,10 @@ const EditUserForm = ({ user, onSave, onCancel, formRef }) => {
               <div className="mastered-moves">
                 <h4>Mastered Moves ({formData.masteredMoves.length})</h4>
                 <div className="moves-grid">
-                  {formData.masteredMoves.map(moveName => {
+                  {formData.masteredMoves.map((moveName, index) => {
                     const move = moves.find(m => m.name === moveName);
                     return (
-                      <div key={moveName} className="move-item mastered">
+                      <div key={`${moveName}-${index}`} className="move-item mastered">
                         <span className={`move-name level-${move?.level?.toLowerCase() || 'beginner'}`}>
                           {moveName}
                         </span>
@@ -971,12 +1018,56 @@ const EditUserForm = ({ user, onSave, onCancel, formRef }) => {
 export default function Admin() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { currentUser, isAdmin } = useAuth();
+  
+  // Check if user is logged in and is admin
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
+    
+    if (!isAdmin()) {
+      navigate('/dashboard');
+      return;
+    }
+  }, [currentUser, isAdmin, navigate]);
+  
+  // Show loading or redirect if not admin
+  if (!currentUser || !isAdmin()) {
+    return (
+      <div className="admin-page">
+        <div className="admin-content">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Checking admin access...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   // Use API hooks
-  const { moves: apiMoves, loading: movesLoading, error: movesError, createMove, updateMove, deleteMove } = useMoves();
-  const { users: apiUsers, loading: usersLoading, error: usersError, createUser, updateUser, deleteUser, addMasteredMove, removeMasteredMove, approvePendingMove, rejectPendingMove } = useUsers();
-  const { badges: apiBadges, loading: badgesLoading, error: badgesError, createBadge, updateBadge, deleteBadge } = useBadges();
-  const { events: apiEvents, loading: eventsLoading, error: eventsError, createEvent, updateEvent, deleteEvent } = useEvents();
+  const { moves: apiMoves, loading: movesLoading, error: movesError, createMove, updateMove, deleteMove, refetch: refetchMoves } = useMoves();
+  const { users: apiUsers, loading: usersLoading, error: usersError, createUser, updateUser, deleteUser, addMasteredMove, removeMasteredMove, approvePendingMove, rejectPendingMove, fetchUsersWithPasswords, refetch: refetchUsers } = useUsers();
+  const { crews: apiCrews, loading: crewsLoading, error: crewsError, refetch: refetchCrews } = useCrews();
+  const { badges: apiBadges, loading: badgesLoading, error: badgesError, createBadge, updateBadge, deleteBadge, refetch: refetchBadges } = useBadges();
+  const { events: apiEvents, loading: eventsLoading, error: eventsError, createEvent, updateEvent, deleteEvent, refetch: refetchEvents } = useEvents();
+  const { pendingRequests, loading: pendingLoading, error: pendingError, approveRequest, rejectRequest, refetch: refetchPendingMoves } = usePendingMoves();
+  
+  // Get refreshUserData from ProfileContext
+  const { refreshUserData } = useProfile();
+  
+  // Auto-refresh data when user profile changes
+  useAutoRefresh(() => {
+    // Refresh all data when user profile changes
+    refetchMoves();
+    refetchUsers();
+    refetchCrews();
+    refetchBadges();
+    refetchEvents();
+    refetchPendingMoves();
+  });
   
   // Initialize activeTab based on URL parameters
   const getInitialTab = () => {
@@ -989,6 +1080,7 @@ export default function Admin() {
   const [isAdding, setIsAdding] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [toast, setToast] = useState({ show: false, message: '' });
+  const [showPasswords, setShowPasswords] = useState(false);
 
   // Update tab when URL parameters change and check for success messages
   useEffect(() => {
@@ -1015,68 +1107,31 @@ export default function Admin() {
     setSearchParams({ tab });
   };
 
-  // Mock users data - in a real app this would come from a database
-  const [users, setUsers] = useState([
-    { 
-      id: 1, 
-      username: 'breaker1', 
-      name: 'John Smith',
-      password: 'password123',
-      email: 'breaker1@example.com', 
-      level: 5, 
-      joinDate: '2024-01-15', 
-      status: 'active',
-      masteredMoves: ['Two step', 'Salsa step', 'CC', 'Windmill'],
-      battleVideos: ['https://youtube.com/watch?v=abc123', 'https://vimeo.com/def456']
-    },
-    { 
-      id: 2, 
-      username: 'dancer2', 
-      name: 'Sarah Johnson',
-      password: 'dance2024',
-      email: 'dancer2@example.com', 
-      level: 3, 
-      joinDate: '2024-02-20', 
-      status: 'active',
-      masteredMoves: ['Two step', 'Baby freeze'],
-      battleVideos: ['https://youtube.com/watch?v=ghi789']
-    },
-    { 
-      id: 3, 
-      username: 'admin_user', 
-      name: 'Admin User',
-      password: 'admin123',
-      email: 'admin@breakverse.com', 
-      level: 10, 
-      joinDate: '2024-01-01', 
-      status: 'admin',
-      masteredMoves: ['Two step', 'Salsa step', 'CC', 'Windmill', 'Headspin', 'Flare'],
-      battleVideos: ['https://youtube.com/watch?v=xyz123', 'https://vimeo.com/uvw456', 'https://youtube.com/watch?v=rst789']
-    },
-  ]);
+  // Use real API data
+  const users = apiUsers || [];
+  const movesData = apiMoves || [];
+  const badgesData = apiBadges || [];
+  const eventsData = apiEvents || [];
+  const crewsData = apiCrews || [];
 
-  const [movesData, setMovesData] = useState(moves);
-  const [badgesData, setBadgesData] = useState(badges);
-  const [eventsData, setEventsData] = useState(events);
-  const [crewsData, setCrewsData] = useState(crews);
 
-  // Get pending moves from ProfileContext
-  const { pendingMoves, approveMoveRequest, rejectMoveRequest } = useProfile();
-  
-  // Convert pending moves to approval requests format
-  const moveApprovals = pendingMoves.map((move, index) => ({
-    id: index + 1,
-    userId: 1, // Mock user ID
-    userName: 'Current User', // Mock user name
-    userLevel: 5, // Mock user level
-    moveName: move.name,
-    moveCategory: move.category,
-    moveLevel: move.level,
-    requestDate: new Date().toISOString().split('T')[0],
-    status: 'pending',
-    videoUrl: move.videoUrl || 'https://youtube.com/watch?v=example',
-    description: `User has requested approval for ${move.name} move.`,
-    moveData: move // Store the actual move data for approval
+
+  // Convert pending requests to approval requests format
+  const moveApprovals = pendingRequests.map((request) => ({
+    id: request.id,
+    userId: request.userId,
+    userName: request.userName,
+    userLevel: request.userLevel,
+    moveId: request.moveId,
+    moveName: request.moveName,
+    moveCategory: request.moveCategory,
+    moveLevel: request.moveLevel,
+    moveXP: request.moveXP,
+    requestDate: new Date(request.requestDate).toLocaleDateString(),
+    status: request.status,
+    videoUrl: request.videoUrl,
+    description: request.description || `User has requested approval for ${request.moveName} move.`,
+    moveData: { _id: request.moveId, name: request.moveName, category: request.moveCategory, level: request.moveLevel, xp: request.moveXP }
   }));
 
   const handleEdit = (item, type) => {
@@ -1115,7 +1170,21 @@ export default function Admin() {
           break;
         case 'users':
           itemName = itemData.username || 'User';
-          await updateUser(itemData._id, itemData);
+          const response = await updateUser(itemData._id, itemData);
+          // Refresh user data in ProfileContext after updating a user
+          if (refreshUserData) {
+            refreshUserData();
+          }
+          // Show badge notification if new badges were earned
+          if (response && response.newBadges && response.newBadges.length > 0) {
+            const badgeNames = response.newBadges.map(badge => badge.name).join(', ');
+            showToast(`🎉 ${itemName} earned new badges: ${badgeNames}!`);
+          }
+          break;
+        case 'crews':
+          itemName = itemData.name || 'Crew';
+          // TODO: Add crew update API call when available
+          showToast(`${itemName} updated successfully!`);
           break;
         default:
           showToast(`${itemName} updated successfully!`);
@@ -1172,15 +1241,28 @@ export default function Admin() {
     }
   };
 
-  const handleApproval = (id, status) => {
+  const handleApproval = async (id, status) => {
     const request = moveApprovals.find(req => req.id === id);
-    if (request && request.moveData) {
-      if (status === 'approved') {
-        approveMoveRequest(request.moveData.name);
-        showToast(`Move request approved successfully`);
-      } else if (status === 'rejected') {
-        rejectMoveRequest(request.moveData.name);
-        showToast(`Move request rejected`);
+    if (request) {
+      try {
+        if (status === 'approved') {
+          const response = await approveRequest(request.userId, request.moveId);
+          showToast(`Move request approved successfully`);
+          // Show badge notification if new badges were earned
+          if (response && response.newBadges && response.newBadges.length > 0) {
+            const badgeNames = response.newBadges.map(badge => badge.name).join(', ');
+            showToast(`🎉 User earned new badges: ${badgeNames}!`);
+          }
+          // Trigger global update to refresh all components
+          refreshUserData();
+        } else if (status === 'rejected') {
+          await rejectRequest(request.userId, request.moveId);
+          showToast(`Move request rejected`);
+          // Trigger global update to refresh all components
+          refreshUserData();
+        }
+      } catch (error) {
+        showToast(`Error ${status === 'approved' ? 'approving' : 'rejecting'} move request: ${error.message}`);
       }
     }
   };
@@ -1240,6 +1322,9 @@ export default function Admin() {
             <button className="add-btn" onClick={() => navigate(`/admin/add-move?tab=${activeTab}`)}>
               <FaPlus /> Add Move
             </button>
+            <button className="refresh-btn" onClick={() => refetchMoves()}>
+              <FaSync /> Refresh
+            </button>
           </div>
         </div>
                   <div className="data-grid">
@@ -1253,9 +1338,15 @@ export default function Admin() {
                       <button onClick={() => setEditingItem(null)} className="cancel-btn">
                         <FaTimes />
                       </button>
-                      <button onClick={() => {
+                      <button onClick={(e) => {
+                        e.preventDefault();
                         if (formRefs[move.id]) {
-                          formRefs[move.id].requestSubmit();
+                          // Manually trigger the form submission
+                          const form = formRefs[move.id];
+                          if (form) {
+                            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+                            form.dispatchEvent(submitEvent);
+                          }
                         }
                       }} className="save-btn">
                         <FaSave />
@@ -1331,6 +1422,9 @@ export default function Admin() {
             <button className="add-btn" onClick={() => navigate(`/admin/add-badge?tab=${activeTab}`)}>
               <FaPlus /> Add Badge
             </button>
+            <button className="refresh-btn" onClick={() => refetchBadges()}>
+              <FaSync /> Refresh
+            </button>
           </div>
         </div>
         <div className="data-grid">
@@ -1344,9 +1438,14 @@ export default function Admin() {
                       <button onClick={() => setEditingItem(null)} className="cancel-btn">
                         <FaTimes />
                       </button>
-                      <button onClick={() => {
+                      <button onClick={(e) => {
+                        e.preventDefault();
                         if (formRefs[badge.id]) {
-                          formRefs[badge.id].requestSubmit();
+                          const form = formRefs[badge.id];
+                          if (form) {
+                            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+                            form.dispatchEvent(submitEvent);
+                          }
                         }
                       }} className="save-btn">
                         <FaSave />
@@ -1420,6 +1519,9 @@ export default function Admin() {
             <button className="add-btn" onClick={() => navigate(`/admin/add-event?tab=${activeTab}`)}>
               <FaPlus /> Add Event
             </button>
+            <button className="refresh-btn" onClick={() => refetchEvents()}>
+              <FaSync /> Refresh
+            </button>
           </div>
         </div>
         <div className="data-grid">
@@ -1433,9 +1535,14 @@ export default function Admin() {
                       <button onClick={() => setEditingItem(null)} className="cancel-btn">
                         <FaTimes />
                       </button>
-                      <button onClick={() => {
+                      <button onClick={(e) => {
+                        e.preventDefault();
                         if (formRefs[event.id]) {
-                          formRefs[event.id].requestSubmit();
+                          const form = formRefs[event.id];
+                          if (form) {
+                            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+                            form.dispatchEvent(submitEvent);
+                          }
                         }
                       }} className="save-btn">
                         <FaSave />
@@ -1488,6 +1595,28 @@ export default function Admin() {
 
   const renderCrewsTab = () => {
     const formRefs = {};
+    
+    if (crewsLoading) {
+      return (
+        <div className="admin-content">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading crews...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (crewsError) {
+      return (
+        <div className="admin-content">
+          <div className="error-container">
+            <p>Error loading crews: {crewsError}</p>
+          </div>
+        </div>
+      );
+    }
+    
     // Filter crews based on search term
     const filteredCrews = crewsData.filter(crew =>
       crew.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1512,22 +1641,30 @@ export default function Admin() {
             <button className="add-btn" onClick={() => navigate(`/admin/add-crew?tab=${activeTab}`)}>
               <FaPlus /> Add Crew
             </button>
+            <button className="refresh-btn" onClick={() => refetchCrews()}>
+              <FaSync /> Refresh
+            </button>
           </div>
         </div>
         <div className="data-grid">
           {filteredCrews.map((crew) => (
-            <div key={crew.id} className={`data-card ${editingItem && editingItem.id === crew.id && editingItem.type === 'crews' ? 'editing' : ''}`}>
+            <div key={crew._id} className={`data-card ${editingItem && editingItem._id === crew._id && editingItem.type === 'crews' ? 'editing' : ''}`}>
               <div className="card-header">
                 <h3>{crew.name}</h3>
                 <div className="card-actions">
-                  {editingItem && editingItem.id === crew.id && editingItem.type === 'crews' ? (
+                  {editingItem && editingItem._id === crew._id && editingItem.type === 'crews' ? (
                     <>
                       <button onClick={() => setEditingItem(null)} className="cancel-btn">
                         <FaTimes />
                       </button>
-                      <button onClick={() => {
-                        if (formRefs[crew.id]) {
-                          formRefs[crew.id].requestSubmit();
+                      <button onClick={(e) => {
+                        e.preventDefault();
+                        if (formRefs[crew._id]) {
+                          const form = formRefs[crew._id];
+                          if (form) {
+                            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+                            form.dispatchEvent(submitEvent);
+                          }
                         }
                       }} className="save-btn">
                         <FaSave />
@@ -1538,7 +1675,7 @@ export default function Admin() {
                       <button onClick={() => handleEdit(crew, 'crews')} className="edit-btn">
                         <FaEdit />
                       </button>
-                      <button onClick={() => handleDelete(crew.id, 'crews')} className="delete-btn">
+                      <button onClick={() => handleDelete(crew._id, 'crews')} className="delete-btn">
                         <FaTrash />
                       </button>
                     </>
@@ -1551,7 +1688,7 @@ export default function Admin() {
                     crew={editingItem}
                     onSave={handleSave}
                     onCancel={() => setEditingItem(null)}
-                    formRef={(ref) => formRefs[crew.id] = ref}
+                    formRef={(ref) => formRefs[crew._id] = ref}
                   />
                 ) : (
                   <>
@@ -1574,6 +1711,29 @@ export default function Admin() {
 
   const renderUsersTab = () => {
     const formRefs = {};
+    
+    if (usersLoading) {
+      return (
+        <div className="admin-content">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading users...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (usersError) {
+      return (
+        <div className="admin-content">
+          <div className="error-container">
+            <p>Error loading users: {usersError}</p>
+            <button onClick={() => window.location.reload()}>Retry</button>
+          </div>
+        </div>
+      );
+    }
+    
     // Filter users based on search term
     const filteredUsers = users.filter(user =>
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1600,22 +1760,41 @@ export default function Admin() {
             <button className="add-btn" onClick={() => navigate(`/admin/add-user?tab=${activeTab}`)}>
               <FaPlus /> Add User
             </button>
+            <button className="refresh-btn" onClick={() => refetchUsers()}>
+              <FaSync /> Refresh
+            </button>
+            <button className="add-btn" onClick={() => {
+              if (showPasswords) {
+                refetchUsers();
+                setShowPasswords(false);
+              } else {
+                fetchUsersWithPasswords();
+                setShowPasswords(true);
+              }
+            }}>
+              <FaUsers /> {showPasswords ? 'Hide Passwords' : 'Show Passwords'}
+            </button>
           </div>
         </div>
         <div className="data-grid">
           {filteredUsers.map((user) => (
-            <div key={user.id} className={`data-card ${editingItem && editingItem.id === user.id && editingItem.type === 'users' ? 'editing' : ''}`}>
+            <div key={user._id} className={`data-card ${editingItem && editingItem._id === user._id && editingItem.type === 'users' ? 'editing' : ''}`}>
               <div className="card-header">
                 <h3>{user.username}</h3>
                 <div className="card-actions">
-                  {editingItem && editingItem.id === user.id && editingItem.type === 'users' ? (
+                  {editingItem && editingItem._id === user._id && editingItem.type === 'users' ? (
                     <>
                       <button onClick={() => setEditingItem(null)} className="cancel-btn">
                         <FaTimes />
                       </button>
-                      <button onClick={() => {
-                        if (formRefs[user.id]) {
-                          formRefs[user.id].requestSubmit();
+                      <button onClick={(e) => {
+                        e.preventDefault();
+                        if (formRefs[user._id]) {
+                          const form = formRefs[user._id];
+                          if (form) {
+                            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+                            form.dispatchEvent(submitEvent);
+                          }
                         }
                       }} className="save-btn">
                         <FaSave />
@@ -1626,7 +1805,7 @@ export default function Admin() {
                       <button onClick={() => handleEdit(user, 'users')} className="edit-btn">
                         <FaEdit />
                       </button>
-                      <button onClick={() => handleDelete(user.id, 'users')} className="delete-btn">
+                      <button onClick={() => handleDelete(user._id, 'users')} className="delete-btn">
                         <FaTrash />
                       </button>
                     </>
@@ -1634,21 +1813,28 @@ export default function Admin() {
                 </div>
               </div>
               <div className="card-content">
-                {editingItem && editingItem.id === user.id && editingItem.type === 'users' ? (
+                {editingItem && editingItem._id === user._id && editingItem.type === 'users' ? (
                   <EditUserForm
                     user={editingItem}
                     onSave={handleSave}
                     onCancel={() => setEditingItem(null)}
-                    formRef={(ref) => formRefs[user.id] = ref}
+                    formRef={(ref) => formRefs[user._id] = ref}
+                    moves={movesData}
                   />
                 ) : (
                   <>
                     <p><strong>Name:</strong> {user.name || 'Not specified'}</p>
                     <p><strong>Email:</strong> {user.email}</p>
+                    <p><strong>Password:</strong> {user.password ? (showPasswords ? user.password : '••••••••') : 'No password set'}</p>
                     <p><strong>Level:</strong> {user.level}</p>
+                    <p><strong>XP:</strong> {user.xp}</p>
                     <p><strong>Status:</strong> <span className={`status-${user.status}`}>{user.status}</span></p>
-                    <p><strong>Mastered Moves:</strong> {user.masteredMoves && user.masteredMoves.length > 0 ? user.masteredMoves.join(', ') : 'None'}</p>
+                    <p><strong>Admin:</strong> {user.isAdmin ? 'Yes' : 'No'}</p>
+                    <p><strong>Mastered Moves:</strong> {user.masteredMoves && user.masteredMoves.length > 0 ? user.masteredMoves.length + ' moves' : 'None'}</p>
+                    <p><strong>Pending Moves:</strong> {user.pendingMoves && user.pendingMoves.length > 0 ? user.pendingMoves.length + ' moves' : 'None'}</p>
                     <p><strong>Battle Videos:</strong> {user.battleVideos && user.battleVideos.length > 0 ? user.battleVideos.length + ' videos' : 'None'}</p>
+                    <p><strong>Badges:</strong> {user.badges && user.badges.length > 0 ? user.badges.length + ' badges' : 'None'}</p>
+                    <p><strong>Joined:</strong> {new Date(user.createdAt).toLocaleDateString()}</p>
                   </>
                 )}
               </div>
@@ -1660,6 +1846,28 @@ export default function Admin() {
   };
 
   const renderApprovalsTab = () => {
+    if (pendingLoading) {
+      return (
+        <div className="admin-content">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading pending move requests...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (pendingError) {
+      return (
+        <div className="admin-content">
+          <div className="error-container">
+            <p>Error loading pending move requests: {pendingError}</p>
+            <button onClick={() => window.location.reload()}>Retry</button>
+          </div>
+        </div>
+      );
+    }
+
     const filteredApprovals = moveApprovals.filter(request =>
       request.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.moveName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1681,6 +1889,9 @@ export default function Admin() {
                 className="search-input"
               />
             </div>
+            <button className="refresh-btn" onClick={() => refetchPendingMoves()}>
+              <FaSync /> Refresh
+            </button>
           </div>
         </div>
         
@@ -1714,10 +1925,13 @@ export default function Admin() {
                 <div className="card-content">
                   <p><strong>User:</strong> {request.userName} (Level {request.userLevel})</p>
                   <p><strong>Move:</strong> {request.moveName} - {request.moveCategory} ({request.moveLevel})</p>
+                  <p><strong>XP:</strong> {request.moveXP}</p>
                   <p><strong>Request Date:</strong> {request.requestDate}</p>
                   <p><strong>Status:</strong> <span className="status-pending">Pending</span></p>
                   <p><strong>Description:</strong> {request.description}</p>
-                  <p><strong>Video:</strong> <a href={request.videoUrl} target="_blank" rel="noopener noreferrer" className="video-link">Watch Video</a></p>
+                  {request.videoUrl && (
+                    <p><strong>Video:</strong> <a href={request.videoUrl} target="_blank" rel="noopener noreferrer" className="video-link">Watch Video</a></p>
+                  )}
                 </div>
               </div>
             ))}
@@ -1745,6 +1959,9 @@ export default function Admin() {
                 className="search-input"
               />
             </div>
+            <button className="refresh-btn" onClick={() => window.location.reload()}>
+              <FaSync /> Refresh
+            </button>
           </div>
         </div>
         

@@ -6,10 +6,11 @@ import MoveCard from '../components/MoveCard';
 import RecommendationsPanel from '../components/RecommendationsPanel';
 import { toast } from 'react-hot-toast';
 
-const categories = ['Toprock', 'Footwork', 'Freezes', 'Power', 'Tricks', 'GoDowns'];
+const categories = ['All Moves', 'Toprock', 'Footwork', 'Freezes', 'Power', 'Tricks', 'GoDowns'];
 
 // Default category videos (replace with real URLs)
 const categoryVideos = {
+  'All Moves': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
   Toprock: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
   Footwork: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
   Freezes: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
@@ -19,23 +20,14 @@ const categoryVideos = {
 };
 
 export function Moves({ setToastMessage }) {
-  const [category, setCategory] = useState('Toprock');
+  const [category, setCategory] = useState('All Moves');
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [selectedMove, setSelectedMove] = useState(null);
   const movesPageRef = useRef(null);
   const [searchParams] = useSearchParams();
   
-  // Use the API hook
-  const { moves, loading, error, fetchMovesByCategory } = useMoves();
-
-  // Memoize the fetch function to prevent infinite loops
-  const fetchCategoryMoves = useCallback(async (categoryName) => {
-    try {
-      await fetchMovesByCategory(categoryName);
-    } catch (err) {
-      console.error('Error fetching moves by category:', err);
-    }
-  }, [fetchMovesByCategory]);
+  // Use the API hook without automatic initial fetch
+  const { moves, loading, error, fetchMovesByCategory, fetchMoves } = useMoves({ skipInitialFetch: true });
 
   // Handle URL parameter for specific move
   useEffect(() => {
@@ -51,8 +43,21 @@ export function Moves({ setToastMessage }) {
 
   // Fetch moves by category when category changes
   useEffect(() => {
-    fetchCategoryMoves(category);
-  }, [category, fetchCategoryMoves]);
+    const fetchMovesForCategory = async () => {
+      try {
+        if (category === 'All Moves') {
+          // Fetch all moves without any level filter to show everything
+          await fetchMoves({ limit: 1000 }); // Request a high limit to get all moves
+        } else {
+          await fetchMovesByCategory(category);
+        }
+      } catch (err) {
+        console.error('Error fetching moves by category:', err);
+      }
+    };
+
+    fetchMovesForCategory();
+  }, [category]); // Only depend on category to avoid infinite loops
 
   function handleAddMove(move) {
     toast.success(`Request sent to certified instructor for ${move.name}!`);
@@ -145,6 +150,7 @@ export function Moves({ setToastMessage }) {
               selectedMove={selectedMove} 
               onMoveSelect={handleVideoSelect}
               currentCategory={category}
+              moves={moves}
             />
             
             <div className="video-info">
@@ -185,14 +191,54 @@ export function Moves({ setToastMessage }) {
       {/* Moves Grid */}
       <div className="moves-grid">
         {moves && moves.length > 0 ? (
-          moves.map((move) => (
-            <MoveCard 
-              key={move.name} 
-              move={move} 
-              onAdd={handleAddMove}
-              onVideoSelect={() => handleVideoSelect(move)}
-            />
-          ))
+          category === 'All Moves' ? (
+            // Group moves by level for All Moves tab
+            (() => {
+              // Map database level values to our expected order
+              const levelOrder = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Skilled', 'Master'];
+              const groupedMoves = {};
+              
+              // Group moves by level
+              moves.forEach(move => {
+                const level = move.level || 'Beginner';
+                if (!groupedMoves[level]) {
+                  groupedMoves[level] = [];
+                }
+                groupedMoves[level].push(move);
+              });
+              
+              return levelOrder.map(level => {
+                const levelMoves = groupedMoves[level];
+                if (!levelMoves || levelMoves.length === 0) return null;
+                
+                return (
+                  <div key={level} className="level-section">
+                    <h3 className="level-title">{level.charAt(0).toUpperCase() + level.slice(1)}</h3>
+                    <div className="level-moves-grid">
+                      {levelMoves.map((move) => (
+                        <MoveCard 
+                          key={move.name} 
+                          move={move} 
+                          onAdd={handleAddMove}
+                          onVideoSelect={() => handleVideoSelect(move)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              });
+            })()
+          ) : (
+            // Regular grid for specific categories
+            moves.map((move) => (
+              <MoveCard 
+                key={move.name} 
+                move={move} 
+                onAdd={handleAddMove}
+                onVideoSelect={() => handleVideoSelect(move)}
+              />
+            ))
+          )
         ) : (
           <div className="no-moves">
             <p>No moves found for {category}</p>

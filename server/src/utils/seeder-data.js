@@ -1,3 +1,4 @@
+// Seeder data without image imports
 export const moves = [
   // Level 1 – Beginner
   { id: 1, name: 'Two step', category: 'Toprock', level: 'Beginner', xp: 25, videoUrl: 'https://www.youtube.com/watch?v=8jLOx1hD3_o', recommendations: ['Knee drop', 'Salsa step', 'CC'] },
@@ -109,8 +110,358 @@ export const moves = [
   { id: 97, name: 'Airtrack', category: 'Power', level: 'Master', xp: 2000, videoUrl: 'https://www.youtube.com/watch?v=8jLOx1hD3_o', recommendations: ['Airflare', 'Starstruck', 'Critical'] },
   { id: 98, name: 'Starstruck', category: 'Power', level: 'Master', xp: 2000, videoUrl: 'https://www.youtube.com/watch?v=QZ9vXj8BpM0', recommendations: ['Airtrack', 'Critical', 'Corkscrew'] },
   { id: 99, name: 'Critical', category: 'Power', level: 'Master', xp: 2000, videoUrl: 'https://www.youtube.com/watch?v=6WREgZ9YtYI', recommendations: ['Airtrack', 'Starstruck', 'Corkscrew'] },
-  { id: 100, name: 'Corkscrew', category: 'Tricks', level: 'Master', xp: 900, videoUrl: 'https://www.youtube.com/watch?v=YQHsXMglC9A', recommendations: ['Backflip', 'Butterfly Twist', 'Starstruck'] },
-
-  // Level 7 – Grandmaster (badge only)
-  // No moves – badge reward only
+  { id: 100, name: 'Corkscrew', category: 'Tricks', level: 'Master', xp: 900, videoUrl: 'https://www.youtube.com/watch?v=YQHsXMglC9A', recommendations: ['Backflip', 'Butterfly Twist', 'Starstruck'] }
 ];
+
+export const users = [
+  {
+    id: 1,
+    username: 'admin',
+    name: 'Admin User',
+    email: 'admin@breakverse.com',
+    password: 'admin123',
+    level: 15,
+    xp: 15000,
+    joinDate: '2024-01-01',
+    status: 'admin',
+    profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+    coverImage: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&h=400&fit=crop',
+    crew: 'Specific Kidz',
+    specialty: 'Power Moves',
+    masteredMoves: ['Two step', 'Salsa step', 'CC', 'Windmill', 'Headspin', 'Flare', 'Back spin', 'Baby swipe', 'Turtles', 'Tapmill'],
+    pendingMoves: [],
+    achievements: 12,
+    battleVideos: ['https://youtube.com/watch?v=xyz123', 'https://vimeo.com/uvw456'],
+    bio: 'Admin of Breakverse - helping breakers level up their game!',
+    location: 'Copenhagen, Denmark',
+    socialMedia: {
+      instagram: '@admin_breaker',
+      facebook: 'Admin Breaker'
+    }
+  },
+  {
+    id: 2,
+    username: 'dloi',
+    name: 'DLoi',
+    email: 'dloi@example.com',
+    password: 'password123',
+    level: 12,
+    xp: 8500,
+    joinDate: '2024-01-15',
+    status: 'active',
+    profileImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
+    coverImage: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&h=400&fit=crop',
+    crew: 'Specific Kidz',
+    specialty: 'Power Moves',
+    masteredMoves: ['Two step', 'Salsa step', 'CC', 'Windmill', 'Headspin'],
+    pendingMoves: ['Flare', 'Tapmill'],
+    achievements: 8,
+    battleVideos: ['https://youtube.com/watch?v=dloi_battle1'],
+    bio: 'Power move specialist from Specific Kidz crew',
+    location: 'Copenhagen, Denmark',
+    socialMedia: {
+      instagram: '@dloi_breaker',
+      facebook: 'DLoi Breaker'
+    }
+  },
+  {
+    id: 3,
+    username: 'benji',
+    name: 'Benji',
+    email: 'benji@example.com',
+    password: 'password123',
+    level: 10,
+    xp: 6500,
+    joinDate: '2024-02-01',
+    status: 'active',
+    profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    coverImage: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&h=400&fit=crop',
+    crew: 'Specific Kidz',
+    specialty: 'Footwork',
+    masteredMoves: ['Two step', 'Salsa step', 'CC', 'Coffee grinder', '2 step', '3 step'],
+    pendingMoves: ['6 step', 'Hooks'],
+    achievements: 6,
+    battleVideos: ['https://youtube.com/watch?v=benji_footwork'],
+    bio: 'Footwork master with smooth transitions',
+    location: 'Aarhus, Denmark',
+    socialMedia: {
+      instagram: '@benji_footwork',
+      facebook: 'Benji Footwork'
+    }
+  }
+];
+
+export const crews = [
+  {
+    id: 'specific-kidz',
+    name: 'Specific Kidz',
+    logo: null,
+    description: 'Breaking crew from Denmark',
+    memberCount: 12,
+    totalXP: 32500,
+    level: 14,
+    color: '#e6c77b',
+    members: []
+  },
+  {
+    id: 'familia-loca',
+    name: 'Famillia Loca',
+    logo: null,
+    description: 'Breaking crew from Denmark',
+    memberCount: 6,
+    totalXP: 14500,
+    level: 9,
+    color: '#ff6b6b',
+    members: []
+  }
+];
+
+export const badges = [
+  {
+    id: 'toprock-master',
+    name: 'Toprock Master',
+    description: 'Complete all Toprock moves',
+    image: '/badges/topbadge.png',
+    category: 'Toprock',
+    requirement: 'Complete all moves in Toprock category'
+  },
+  {
+    id: 'footwork-master',
+    name: 'Footwork Master',
+    description: 'Complete all Footwork moves',
+    image: '/badges/footwork.png',
+    category: 'Footwork',
+    requirement: 'Complete all moves in Footwork category'
+  },
+  {
+    id: 'freezes-master',
+    name: 'Freezes Master',
+    description: 'Complete all Freezes moves',
+    image: '/badges/freezes.png',
+    category: 'Freezes',
+    requirement: 'Complete all moves in Freezes category'
+  },
+  {
+    id: 'power-master',
+    name: 'Power Master',
+    description: 'Complete all Power moves',
+    image: '/badges/Powermoves.png',
+    category: 'Power',
+    requirement: 'Complete all moves in Power category'
+  },
+  {
+    id: 'tricks-master',
+    name: 'Tricks Master',
+    description: 'Complete all Tricks moves',
+    image: '/badges/Tricks.png',
+    category: 'Tricks',
+    requirement: 'Complete all moves in Tricks category'
+  },
+  {
+    id: 'godowns-master',
+    name: 'GoDowns Master',
+    description: 'Complete all GoDowns moves',
+    image: '/badges/Godown.png',
+    category: 'GoDowns',
+    requirement: 'Complete all moves in GoDowns category'
+  },
+  {
+    id: 'ground-power-master',
+    name: 'Ground Master',
+    description: 'Complete all ground power moves',
+    image: '/badges/ground.png',
+    category: 'Power',
+    requirement: 'Complete all ground power moves'
+  },
+  {
+    id: 'air-power-master',
+    name: 'Air Power Master',
+    description: 'Complete all air power moves',
+    image: '/badges/air.png',
+    category: 'Power',
+    requirement: 'Complete all air power moves'
+  },
+  {
+    id: 'beginner-master',
+    name: 'Beginner',
+    description: 'Complete all Beginner level moves',
+    image: '/badges/beginner.png',
+    category: 'Special',
+    requirement: 'Complete all Beginner level moves'
+  },
+  {
+    id: 'novice-master',
+    name: 'Novice',
+    description: 'Complete all Novice level moves',
+    image: '/badges/novice.png',
+    category: 'Special',
+    requirement: 'Complete all Novice level moves'
+  },
+  {
+    id: 'intermediate-master',
+    name: 'Intermediate',
+    description: 'Complete all Intermediate level moves',
+    image: '/badges/intermediate.png',
+    category: 'Special',
+    requirement: 'Complete all Intermediate level moves'
+  },
+  {
+    id: 'advanced-master',
+    name: 'Advanced',
+    description: 'Complete all Advanced level moves',
+    image: '/badges/Advanced.png',
+    category: 'Special',
+    requirement: 'Complete all Advanced level moves'
+  },
+  {
+    id: 'skilled-master',
+    name: 'Skilled',
+    description: 'Complete all Skilled level moves',
+    image: '/badges/skilled.png',
+    category: 'Special',
+    requirement: 'Complete all Skilled level moves'
+  },
+  {
+    id: 'master',
+    name: 'Master',
+    description: 'Complete all Master level moves',
+    image: '/badges/master.png',
+    category: 'Special',
+    requirement: 'Complete all Master level moves'
+  },
+  {
+    id: 'grandmaster',
+    name: 'Grandmaster',
+    description: 'Complete all moves in the game',
+    image: '/badges/grandmaster.png',
+    category: 'Special',
+    requirement: 'Complete all moves in the game'
+  }
+];
+
+export const events = [
+  {
+    id: 1,
+    title: "Nordic Break League 2025",
+    date: "March 15, 2025",
+    time: "18:00 - 22:00",
+    location: "Copenhagen Breakdance Center",
+    battleFormat: "2v2 international + kids battle",
+    category: "Competition",
+    description: "The biggest breaking competition of the year! Show off your skills and compete against the best breakers in Denmark. Categories include: Toprock, Footwork, Freezes, Power Moves, and All-Style. Cash prizes and trophies for winners.",
+    image: null,
+    status: "upcoming",
+    featured: true,
+    registrationOpen: true,
+    maxParticipants: 32,
+    currentParticipants: 24,
+    entryFee: "Free",
+    prizes: "Cash prizes and trophies",
+    organizer: "Nordic Break League",
+    contactEmail: "info@nordicbreakleague.com",
+    website: "https://nordicbreak.dk",
+    socialMedia: {
+      instagram: "@nordicbreakleague",
+      facebook: "Nordic Break League"
+    }
+  },
+  {
+    id: 2,
+    title: "Workshop with DLoi - Power Moves Masterclass",
+    date: "February 28, 2024",
+    time: "14:00 - 17:00",
+    location: "Urban Dance Studio, Copenhagen",
+    participants: 18,
+    maxParticipants: 20,
+    category: "Workshop",
+    description: "Join DLoi from Specific Kidz for an intensive 3-hour workshop focusing on power moves and transitions. Perfect for intermediate to advanced breakers looking to level up their game. Learn proper technique, safety, and progression methods.",
+    image: null,
+    status: "upcoming",
+    featured: false,
+    registrationOpen: true,
+    entryFee: "150 DKK",
+    prizes: "Certificate of completion",
+    organizer: "Urban Dance Studio",
+    contactEmail: "workshops@urbandancestudio.dk",
+    website: "https://urbandancestudio.dk",
+    socialMedia: {
+      instagram: "@urbandancestudio",
+      facebook: "Urban Dance Studio"
+    }
+  }
+];
+
+export const battles = [
+  {
+    id: 1,
+    challenger: {
+      id: "user1",
+      name: "DLoi",
+      level: "Advanced",
+      crew: "Specific Kidz"
+    },
+    opponent: {
+      id: "user2", 
+      name: "Yung M",
+      level: "Skilled",
+      crew: "Famillia Loca"
+    },
+    status: "pending",
+    callOutDate: "2024-01-15T10:30:00Z",
+    responseDate: null,
+    acceptedBy: null,
+    acceptedDate: null,
+    roomId: null,
+    videos: {
+      challenger: null,
+      opponent: null
+    },
+    adminReview: {
+      isReady: false,
+      judgedBy: null,
+      winner: null,
+      score: null,
+      comments: null,
+      judgedDate: null
+    },
+    category: "All Style",
+    description: "Let's see who has the better footwork! Been watching your moves and I think we should battle it out.",
+    stakes: "Respect and bragging rights"
+  },
+  {
+    id: 2,
+    challenger: {
+      id: "user3",
+      name: "Benji",
+      level: "Advanced", 
+      crew: "Specific Kidz"
+    },
+    opponent: {
+      id: "user1",
+      name: "DLoi",
+      level: "Advanced",
+      crew: "Specific Kidz"
+    },
+    status: "accepted",
+    callOutDate: "2024-01-10T14:20:00Z",
+    responseDate: "2024-01-12T09:15:00Z",
+    acceptedBy: "opponent",
+    acceptedDate: "2024-01-12T09:15:00Z",
+    roomId: "battle_room_2",
+    videos: {
+      challenger: null,
+      opponent: null
+    },
+    adminReview: {
+      isReady: false,
+      judgedBy: null,
+      winner: null,
+      score: null,
+      comments: null,
+      judgedDate: null
+    },
+    category: "1v1",
+    description: "Power move battle - let's see who can throw down harder! Been practicing my flares and I want to test them against you.",
+    stakes: "Respect and bragging rights"
+  }
+]; 

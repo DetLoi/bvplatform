@@ -59,6 +59,28 @@
   color: #b084f7;
 }
 
+/* Logout Button */
+.logout-btn {
+  background: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 1rem;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 59, 48, 0.2);
+  border-color: #ff3b30;
+  transform: translateY(-1px);
+}
+
 /* LOGO */
 .logo img {
   height: 40px;
@@ -180,5 +202,10 @@
 .level-item{display:flex;align-items:center;gap:.75rem;}
 .level-label{min-width:90px;font-weight:600;}
 .level-bar{flex:1;height:10px;background:#333;border-radius:6px;overflow:hidden;}
-.level-fill{height:100%;background:linear-gradient(90deg,#ffd700,#ffd700);} 
+.level-fill{height:100%;} 
 .level-count{min-width:50px;font-size:.8rem;color:#ccc;}
+
+/* Simple, calm color for all progress bars */
+.level-fill { 
+  background: #4ade80; /* A calm green color that's easy on the eyes */
+}

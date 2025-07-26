@@ -40,6 +40,35 @@ export const useUsers = (filters = {}) => {
     }
   }, [filters]);
 
+  const fetchUsersWithPasswords = useCallback(async (params = {}) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await usersAPI.getAllWithPasswords({
+        ...filters,
+        ...params
+      });
+      
+      // Handle both array and object responses
+      const usersArray = Array.isArray(response) ? response : (response.users || []);
+      setUsers(usersArray);
+      
+      if (response.pagination) {
+        setPagination({
+          currentPage: response.currentPage || 1,
+          totalPages: response.totalPages || 1,
+          total: response.total || 0
+        });
+      }
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching users with passwords:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
+
   const fetchUserById = useCallback(async (id) => {
     try {
       setLoading(true);
@@ -218,6 +247,7 @@ export const useUsers = (filters = {}) => {
     error,
     pagination,
     fetchUsers,
+    fetchUsersWithPasswords,
     fetchUserById,
     createUser,
     updateUser,

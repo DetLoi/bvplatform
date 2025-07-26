@@ -12,14 +12,11 @@ import './styles/pages/badges.css';
 import './styles/pages/events.css';
 import './styles/pages/battles.css';
 import './styles/pages/breaker-profile.css';
-import { ProfileProvider } from './context/ProfileContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <ProfileProvider>
-        <App />
-      </ProfileProvider>
+      <App />
     </BrowserRouter>
   </React.StrictMode>
 );

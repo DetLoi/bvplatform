@@ -16,7 +16,14 @@ export const getAllMoves = async (req, res) => {
     const filter = { isActive: true };
     
     if (category) filter.category = category;
-    if (level) filter.level = level;
+    if (level) {
+      // Support both single level and array of levels
+      if (Array.isArray(level)) {
+        filter.level = { $in: level };
+      } else {
+        filter.level = level;
+      }
+    }
     if (search) {
       filter.name = { $regex: search, $options: 'i' };
     }

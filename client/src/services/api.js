@@ -1,5 +1,7 @@
-// Force localhost for now to test locally
-const API_BASE_URL = 'http://localhost:5000/api';
+// Use localhost for development, Render for production
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://breakverse-api.onrender.com/api'
+  : 'http://localhost:5000/api';
 
 // Generic API request function
 const apiRequest = async (endpoint, options = {}) => {
@@ -40,7 +42,18 @@ const apiRequest = async (endpoint, options = {}) => {
 // Moves API
 export const movesAPI = {
   getAll: (params = {}) => {
-    const queryString = new URLSearchParams(params).toString();
+    const searchParams = new URLSearchParams();
+    
+    // Handle array parameters properly
+    Object.entries(params).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach(item => searchParams.append(key, item));
+      } else {
+        searchParams.append(key, value);
+      }
+    });
+    
+    const queryString = searchParams.toString();
     return apiRequest(`/moves?${queryString}`);
   },
   
@@ -67,9 +80,19 @@ export const movesAPI = {
 
 // Users API
 export const usersAPI = {
+  login: (username, password) => apiRequest('/users/login', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+  }),
+  
   getAll: (params = {}) => {
     const queryString = new URLSearchParams(params).toString();
     return apiRequest(`/users?${queryString}`);
+  },
+  
+  getAllWithPasswords: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/users/admin/with-passwords?${queryString}`);
   },
   
   getById: (id) => apiRequest(`/users/${id}`),
@@ -81,14 +104,24 @@ export const usersAPI = {
     body: JSON.stringify(userData),
   }),
   
-  update: (id, userData) => apiRequest(`/users/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(userData),
-  }),
+  update: (id, userData) => {
+    console.log('🔧 Updating user with data:', userData);
+    console.log('🔧 masteredMoves in userData:', userData.masteredMoves);
+    console.log('🔧 masteredMoves type:', typeof userData.masteredMoves);
+    console.log('🔧 masteredMoves is array:', Array.isArray(userData.masteredMoves));
+    console.log('🔧 JSON.stringify(userData):', JSON.stringify(userData));
+    return apiRequest(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(userData),
+    });
+  },
   
   delete: (id) => apiRequest(`/users/${id}`, {
     method: 'DELETE',
   }),
+  
+  // Get all pending move requests (admin)
+  getPendingMoveRequests: () => apiRequest('/users/pending-moves'),
   
   // Move management
   addMasteredMove: (userId, moveId) => apiRequest(`/users/${userId}/moves/${moveId}/master`, {

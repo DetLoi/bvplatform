@@ -1,58 +1,69 @@
-// Badge Controller - Placeholder implementation
+import Badge from '../models/badge.models.js';
+
+// Get all badges
 export const getAllBadges = async (req, res) => {
   try {
-    res.json({ 
-      message: 'Get all badges - Not implemented yet',
-      badges: []
-    });
+    const badges = await Badge.find().sort({ level: 1, name: 1 });
+    res.json(badges);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+// Get badge by ID
 export const getBadgeById = async (req, res) => {
   try {
-    const { id } = req.params;
-    res.json({ 
-      message: 'Get badge by ID - Not implemented yet',
-      id
-    });
+    const badge = await Badge.findById(req.params.id);
+    
+    if (!badge) {
+      return res.status(404).json({ message: 'Badge not found' });
+    }
+    
+    res.json(badge);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
+// Create badge
 export const createBadge = async (req, res) => {
   try {
-    res.json({ 
-      message: 'Create badge - Not implemented yet',
-      data: req.body
-    });
+    const badge = await Badge.create(req.body);
+    res.status(201).json(badge);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
 
+// Update badge
 export const updateBadge = async (req, res) => {
   try {
-    const { id } = req.params;
-    res.json({ 
-      message: 'Update badge - Not implemented yet',
-      id,
-      data: req.body
-    });
+    const badge = await Badge.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    
+    if (!badge) {
+      return res.status(404).json({ message: 'Badge not found' });
+    }
+    
+    res.json(badge);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
 
+// Delete badge
 export const deleteBadge = async (req, res) => {
   try {
-    const { id } = req.params;
-    res.json({ 
-      message: 'Delete badge - Not implemented yet',
-      id
-    });
+    const badge = await Badge.findByIdAndDelete(req.params.id);
+    
+    if (!badge) {
+      return res.status(404).json({ message: 'Badge not found' });
+    }
+    
+    res.json({ message: 'Badge deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

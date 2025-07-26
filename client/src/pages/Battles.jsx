@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaCrosshairs, FaClock, FaCheck, FaTimes, FaVideo, FaUpload, FaTrophy, FaEye, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
-import { battles, getBattlesByUser, getPendingCallOuts, getMyCallOuts, getActiveBattles, getCompletedBattles, getJudgedBattles, respondToCallOut, uploadVideo } from '../data/battles';
+import { useBattles } from '../hooks/useBattles';
 
 export default function Battles() {
   const navigate = useNavigate();
@@ -9,13 +9,15 @@ export default function Battles() {
   const [selectedBattle, setSelectedBattle] = useState(null);
   const [currentUserId] = useState("user1"); // In real app, get from auth context
 
-  // Get battles for current user
-  const userBattles = getBattlesByUser(currentUserId);
-  const pendingCallOuts = getPendingCallOuts(currentUserId);
-  const myCallOuts = getMyCallOuts(currentUserId);
-  const activeBattles = getActiveBattles(currentUserId);
-  const completedBattles = getCompletedBattles(currentUserId);
-  const judgedBattles = getJudgedBattles(currentUserId);
+  // Use the API hook
+  const { battles, loading, error, fetchBattlesByStatus } = useBattles();
+
+  // Filter battles by status for different tabs
+  const pendingCallOuts = battles.filter(battle => battle.status === 'pending');
+  const myCallOuts = battles.filter(battle => battle.status === 'accepted');
+  const activeBattles = battles.filter(battle => battle.status === 'in_progress');
+  const completedBattles = battles.filter(battle => battle.status === 'completed');
+  const judgedBattles = battles.filter(battle => battle.status === 'judged');
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -41,16 +43,45 @@ export default function Battles() {
     }
   };
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="main-content">
+        <section className="battles-page">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading battles...</p>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="main-content">
+        <section className="battles-page">
+          <div className="error-container">
+            <p>Error loading battles: {error}</p>
+            <button onClick={() => window.location.reload()}>Retry</button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   const handleRespondToCallOut = (battleId, response) => {
-    respondToCallOut(battleId, response, currentUserId);
+    // TODO: Implement API call to respond to call out
+    console.log('Respond to call out:', battleId, response);
     setSelectedBattle(null);
   };
 
   const handleUploadVideo = (battleId) => {
-    // In real app, this would handle file upload
+    // TODO: Implement API call to upload video
     const videoUrl = prompt("Enter video URL:");
     if (videoUrl) {
-      uploadVideo(battleId, currentUserId, videoUrl);
+      console.log('Upload video:', battleId, videoUrl);
       setSelectedBattle(null);
     }
   };

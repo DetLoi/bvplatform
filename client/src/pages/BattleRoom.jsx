@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaThumbsUp, FaHandshake, FaTrophy, FaVideo, FaUpload } from 'react-icons/fa';
-import { battles } from '../data/battles';
+import { useBattles } from '../hooks/useBattles';
 import '../styles/pages/battle-room.css';
 
 export default function BattleRoom() {
@@ -12,19 +12,22 @@ export default function BattleRoom() {
   const [hasVoted, setHasVoted] = useState(false);
   const [currentUserId] = useState("user1"); // In real app, get from auth context
 
+  // Use the API hook
+  const { battles, loading, error } = useBattles();
+
   useEffect(() => {
     // Find the battle by ID
     console.log('BattleRoom: Looking for battle with ID:', battleId);
-    const foundBattle = battles.find(b => b.id === parseInt(battleId));
+    const foundBattle = battles.find(b => b._id === battleId || b.id === parseInt(battleId));
     console.log('BattleRoom: Found battle:', foundBattle);
     if (foundBattle) {
       setBattle(foundBattle);
-    } else {
-      // If battle not found, redirect back to battles
+    } else if (!loading) {
+      // If battle not found and not loading, redirect back to battles
       console.log('BattleRoom: Battle not found, redirecting');
       navigate('/battles');
     }
-  }, [battleId, navigate]);
+  }, [battleId, navigate, battles, loading]);
 
   const handleVote = (voteType) => {
     if (!hasVoted) {
@@ -60,10 +63,36 @@ export default function BattleRoom() {
   const isChallenger = battle?.challenger.id === currentUserId;
   const isOpponent = battle?.opponent.id === currentUserId;
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="main-content">
+        <div className="loading">
+          <div className="loading-spinner"></div>
+          <p>Loading battle...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="main-content">
+        <div className="error-container">
+          <p>Error loading battle: {error}</p>
+          <button onClick={() => navigate('/battles')}>Back to Battles</button>
+        </div>
+      </div>
+    );
+  }
+
   if (!battle) {
     return (
       <div className="main-content">
-        <div className="loading">Loading battle...</div>
+        <div className="loading">
+          <p>Battle not found</p>
+        </div>
       </div>
     );
   }

@@ -1,30 +1,82 @@
 // Home.jsx – dashboard with StyleRadar & LevelSummary + Cover and Profile Upload
 import { useProfile } from '../context/ProfileContext';
+import { useAuth } from '../context/AuthContext';
 import ProgressBar from '../components/ProgressBar';
 import BadgeCard from '../components/BadgeCard';
 import placeholder from '../assets/placeholder.jpg';
 import { StyleRadar } from '../components/StyleRadar';
 import { LevelSummary } from '../components/LevelSummary';
-import { moves as allMoves } from '../data/moves';
-import { badges } from '../data/badges';
-import { useState } from 'react';
+import CoverPhotoSection from '../components/CoverPhotoSection';
+import { useMoves } from '../hooks/useMoves';
+import { useBadges } from '../hooks/useBadges';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaEdit, FaVideo } from 'react-icons/fa';
+import { FaEdit, FaVideo, FaSignOutAlt, FaCog, FaUser, FaTrophy, FaDumbbell, FaCalendar, FaUsers, FaPlay } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import { isBadgeUnlocked } from '../utils/badgeUtils';
 
-export default function Home({ coverPhoto, setCoverPhoto, isEditing, setIsEditing }) {
+export default function Home() {
   const navigate = useNavigate();
+  const { currentUser, logout, isAdmin } = useAuth();
   const {
     masteredMoves,
     profileImage,
     setProfileImage,
+    coverPhoto,
+    setCoverPhoto,
     xp,
     level,
     progress,
     battleVideo,
+    uploadProfileImage,
+    uploadCoverImage,
   } = useProfile();
+  
+  // Use API hooks - fetch all moves with high limit to get complete data
+  const { moves: allMoves, loading: movesLoading } = useMoves({ limit: 1000 });
+  const { badges, loading: badgesLoading } = useBadges();
 
+  // Auto-refresh data when user profile changes
+  useAutoRefresh(() => {
+    // The ProfileContext will automatically update the masteredMoves, xp, level, etc.
+    // This hook ensures the component re-renders when data changes
+  });
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [tempProfileImage, setTempProfileImage] = useState(null);
+  const [tempCoverPhoto, setTempCoverPhoto] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/login');
+    }
+  }, [currentUser, navigate]);
+
+  // Show loading state while data is being fetched
+  if (movesLoading || badgesLoading) {
+    return (
+      <div className="main-content">
+        <section className="moves-page">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading...</p>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const handleNavigate = (path) => {
+    navigate(path);
+  };
   
   // Add some test moves for badge testing (remove this later)
   const testMoves = [
@@ -47,12 +99,12 @@ export default function Home({ coverPhoto, setCoverPhoto, isEditing, setIsEditin
     return { category: cat, score: pct };
   });
 
-  const totalByLevel = allMoves.reduce((acc, m) => {
-    acc[m.level] = (acc[m.level] || 0) + 1;
+  const totalByCategory = allMoves.reduce((acc, m) => {
+    acc[m.category] = (acc[m.category] || 0) + 1;
     return acc;
   }, {});
-  const masteredByLevel = masteredMoves.reduce((acc, m) => {
-    acc[m.level] = (acc[m.level] || 0) + 1;
+  const masteredByCategory = masteredMoves.reduce((acc, m) => {
+    acc[m.category] = (acc[m.category] || 0) + 1;
     return acc;
   }, {});
 
@@ -88,59 +140,153 @@ export default function Home({ coverPhoto, setCoverPhoto, isEditing, setIsEditin
   const userStyle = styleProfiles[topCategory.category];
 
   return (
-    <div className="main-content">
-      <section className="moves-page">
+    <>
+      {/* Cover Photo Section - Outside main container for full width */}
+      <CoverPhotoSection 
+        isEditing={isEditing}
+        tempCoverPhoto={tempCoverPhoto}
+        setTempCoverPhoto={setTempCoverPhoto}
+        setCoverPhoto={setCoverPhoto}
+      />
 
-        {/* Profile header */}
-        <div className="profile-header">
-          <div className="profile-info">
-            <div className="profile-pic-wrapper">
-              <img
-                src={selectedImage || profileImage || placeholder}
-                alt="Profile"
-                className="profile-pic"
-              />
-              {isEditing && (
-                <label className="edit-icon-periphery" tabIndex={0} aria-label="Edit profile picture">
-                  <FaEdit />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const imageUrl = URL.createObjectURL(e.target.files[0]);
-                      setSelectedImage(imageUrl);
-                      setProfileImage(imageUrl);
+      <div className="main-content">
+        <section className="moves-page">
+
+          {/* Profile header */}
+          <div className="profile-header">
+            <div className="profile-info">
+              <div className="profile-pic-wrapper">
+                {tempProfileImage || profileImage ? (
+                  <img
+                    src={tempProfileImage || profileImage}
+                    alt="Profile"
+                    className="profile-pic"
+                    onError={(e) => {
+                      console.error('Failed to load profile image:', tempProfileImage || profileImage);
+                      e.target.style.display = 'none';
                     }}
-                    hidden
+                    onLoad={() => console.log('Profile image loaded successfully:', tempProfileImage || profileImage)}
                   />
-                </label>
-              )}
+                ) : (
+                  <div className="profile-pic-placeholder">
+                    <span>Upload Photo</span>
+                  </div>
+                )}
+                {isEditing && (
+                  <label className="edit-icon-periphery" tabIndex={0} aria-label="Edit profile picture">
+                    <FaEdit />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          try {
+                            // Upload the file to server
+                            const imageUrl = await uploadProfileImage(file);
+                            setTempProfileImage(imageUrl);
+                            setProfileImage(imageUrl); // Update the actual profile image immediately
+                            toast.success('Profile image uploaded!');
+                          } catch (error) {
+                            console.error('Error uploading profile image:', error);
+                            toast.error('Failed to upload profile image');
+                          }
+                        }
+                      }}
+                      hidden
+                    />
+                  </label>
+                )}
+              </div>
+              <div>
+                  <h1 className="dashboard-title">{currentUser?.name || 'Breaker'}</h1>
+                  <div className="header-progress-container">
+                      <p className="xp-text">{xp} XP – Niveau {level}</p>
+                      <ProgressBar progress={progress} />
+                  </div>
+              </div>
             </div>
-            <div>
-                <h1 className="dashboard-title">DLoi</h1>
-                <div className="header-progress-container">
-                    <p className="xp-text">{xp} XP – Level {level}</p>
-                    <ProgressBar progress={progress} />
-                </div>
+            <div className="profile-buttons">
+              <button
+                className="edit-profile-btn"
+                onClick={() => {
+                  if (isEditing) {
+                    // Clear temp states since images are already saved
+                    setTempProfileImage(null);
+                    setTempCoverPhoto(null);
+                    toast.success('Profil gemt!');
+                    setIsEditing(false);
+                  } else {
+                    setIsEditing(true);
+                  }
+                }}
+              >
+                {isEditing ? 'Gem' : 'Rediger Profil'}
+              </button>
+              {isAdmin() && (
+                <button
+                  className="admin-btn"
+                  onClick={() => navigate('/admin')}
+                >
+                  <FaCog />
+                  Admin
+                </button>
+              )}
+              <button
+                className="logout-btn"
+                onClick={handleLogout}
+              >
+                <FaSignOutAlt />
+                Logout
+              </button>
             </div>
           </div>
-          <div className="profile-buttons">
-            <button
-              className="edit-profile-btn"
-              onClick={() => {
-                if (isEditing) {
-                  toast.success('Profil gemt!');
-                }
-                setIsEditing((edit) => !edit);
-              }}
+
+        {/* Quick Actions */}
+        <div className="section-card mt-6">
+          <h2 className="section-heading">Hurtige Handlinger</h2>
+          <div className="quick-actions-grid">
+            <button 
+              className="quick-action-btn"
+              onClick={() => handleNavigate('/moves')}
             >
-              {isEditing ? 'Gem' : 'Rediger profil'}
+              <FaDumbbell />
+              <span>Lær Moves</span>
             </button>
-            <button
-              className="admin-btn"
-              onClick={() => navigate('/admin')}
+            <button 
+              className="quick-action-btn"
+              onClick={() => handleNavigate('/badges')}
             >
-              Admin
+              <FaTrophy />
+              <span>Se Badges</span>
+            </button>
+            <button 
+              className="quick-action-btn"
+              onClick={() => handleNavigate('/events')}
+            >
+              <FaCalendar />
+              <span>Events</span>
+            </button>
+            <button 
+              className="quick-action-btn"
+              onClick={() => handleNavigate('/battles')}
+            >
+              <FaPlay />
+              <span>Battles</span>
+            </button>
+            <button 
+              className="quick-action-btn"
+              onClick={() => handleNavigate('/breakers')}
+            >
+              <FaUsers />
+              <span>Fællesskab</span>
+            </button>
+            <button 
+              className="quick-action-btn"
+              onClick={() => handleNavigate('/profile')}
+            >
+              <FaUsers />
+              <span>Crews</span>
             </button>
           </div>
         </div>
@@ -150,12 +296,13 @@ export default function Home({ coverPhoto, setCoverPhoto, isEditing, setIsEditin
           <div className="section-card">
             <h2 className="section-heading">Badges</h2>
             <div className="badges-wrapper">
-              {badges.filter(badge => badge.unlock(masteredMoves)).length > 0 ? (
+              {badges.filter(badge => isBadgeUnlocked(badge, masteredMoves)).length > 0 ? (
                 <div className="badges-row">
                   {badges
-                    .filter(badge => badge.unlock(masteredMoves))
+                    .filter(badge => isBadgeUnlocked(badge, masteredMoves))
+                    .filter(badge => badge.name !== 'Grandmaster')
                     .map((badge) => (
-                      <div key={badge.id} className="game-badge-minimal">
+                      <div key={badge._id || badge.name} className="game-badge-minimal">
                         <div className="badge-icon">
                           {badge.image.startsWith('/src/assets/badges/') ? (
                             <img src={badge.image} alt={badge.name} className="badge-image" />
@@ -170,13 +317,13 @@ export default function Home({ coverPhoto, setCoverPhoto, isEditing, setIsEditin
               ) : (
                 <div className="no-badges-cta">
                   <div className="cta-icon">🏆</div>
-                  <h3>Clear a mission to earn a badge</h3>
-                  <p>Master moves in each category to unlock prestigious badges</p>
+                  <h3>Fuldfør en mission for at tjene en badge</h3>
+                  <p>Mester moves i hver kategori for at låse op for prestigefyldte badges</p>
                   <button 
                     className="cta-button"
                     onClick={() => window.location.href = '/badges'}
                   >
-                    View All Badges
+                    Se Alle Badges
                   </button>
                 </div>
               )}
@@ -202,13 +349,13 @@ export default function Home({ coverPhoto, setCoverPhoto, isEditing, setIsEditin
               <div className="no-video-placeholder">
                 <div className="placeholder-content">
                   <FaVideo className="placeholder-icon" />
-                  <h3>No Battle Video Yet</h3>
-                  <p>Your first battle video will appear here once you participate in a battle.</p>
+                  <h3>Ingen Battle Video Endnu</h3>
+                  <p>Din første battle video vil vises her når du deltager i en battle.</p>
                   <button 
                     onClick={() => navigate('/battles')}
                     className="battle-button"
                   >
-                    Join a Battle
+                    Tilslut Dig En Battle
                   </button>
                 </div>
               </div>
@@ -217,12 +364,12 @@ export default function Home({ coverPhoto, setCoverPhoto, isEditing, setIsEditin
         </div>
  {/* Level summary */}
  <div className="section-card mt-6 width100">
-            <LevelSummary masteredByLevel={masteredByLevel} totalByLevel={totalByLevel} />
+            <LevelSummary masteredByCategory={masteredByCategory} totalByCategory={totalByCategory} />
           </div>
 
         {/* Mastered Moves */}
         <div className="section-card mt-8">
-          <h2 className="section-heading">Mastered Moves</h2>
+          <h2 className="section-heading">Mesterede Moves</h2>
           {masteredMoves.length ? (
             <div className="mastered-grid">
               {masteredMoves.map((move) => (
@@ -234,7 +381,7 @@ export default function Home({ coverPhoto, setCoverPhoto, isEditing, setIsEditin
               ))}
             </div>
           ) : (
-            <p className="text-muted">No moves mastered yet. Head to the Moves page!</p>
+            <p className="text-muted">Ingen moves mesteret endnu. Gå til Moves siden!</p>
           )}
         </div>
   
@@ -242,5 +389,6 @@ export default function Home({ coverPhoto, setCoverPhoto, isEditing, setIsEditin
        
       </section>
     </div>
+    </>
   );
 }

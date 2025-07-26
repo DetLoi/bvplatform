@@ -8,13 +8,11 @@ const eventSchema = new Schema(
       trim: true
     },
     description: { 
-      type: String, 
-      required: true 
+      type: String,
     },
     category: { 
       type: String, 
       enum: ['Workshop', 'Competition', 'Jam', 'Battle', 'Showcase'],
-      required: true 
     },
     status: { 
       type: String, 
@@ -22,15 +20,13 @@ const eventSchema = new Schema(
       default: 'upcoming'
     },
     date: { 
-      type: Date, 
-      required: true 
+      type: Date,
     },
     endDate: { 
       type: Date 
     },
     location: { 
-      type: String, 
-      required: true 
+      type: String,
     },
     image: { 
       type: String 
@@ -39,8 +35,7 @@ const eventSchema = new Schema(
       type: String 
     },
     organizer: { 
-      type: String, 
-      required: true 
+      type: String,
     },
     participants: [{ 
       type: Schema.Types.ObjectId, 
