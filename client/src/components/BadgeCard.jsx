@@ -21,6 +21,8 @@ export default function BadgeCard({ badge, isEarned, masteredMoves = [] }) {
       <div className="badge-icon">
         {badge.image.startsWith('/src/assets/badges/') ? (
           <img src={badge.image} alt={badge.name} className="badge-image" />
+        ) : badge.image.startsWith('/uploads/') ? (
+          <img src={`http://localhost:5000${badge.image}`} alt={badge.name} className="badge-image" />
         ) : (
           <span className="badge-emoji">{badge.image}</span>
         )}

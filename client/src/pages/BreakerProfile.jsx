@@ -5,8 +5,8 @@ import { useMoves } from '../hooks/useMoves';
 import { useBadges } from '../hooks/useBadges';
 import { FaArrowLeft, FaUsers, FaTrophy, FaStar, FaCrown } from 'react-icons/fa';
 import ProgressBar from '../components/ProgressBar';
-import { StyleRadar } from '../components/StyleRadar';
 import { LevelSummary } from '../components/LevelSummary';
+import { BattleStatistics } from '../components/BattleStatistics';
 import { isBadgeUnlocked } from '../utils/badgeUtils';
 import '../styles/pages/breaker-profile.css';
 
@@ -129,30 +129,21 @@ export default function BreakerProfile() {
     const nextLevelXP = getNextLevelXP(xp);
     const currentLevelXP = currentLevel > 1 ? xpThresholds[currentLevel - 2] : 0;
     
-    // Handle edge cases
-    if (nextLevelXP === null || nextLevelXP === xp) return 100;
-    if (currentLevelXP >= nextLevelXP) return 100;
+    // Handle edge cases - cap at 99% to avoid showing 100% completion
+    if (nextLevelXP === null || nextLevelXP === xp) return 99;
+    if (currentLevelXP >= nextLevelXP) return 99;
     
     const totalXPNeeded = nextLevelXP - currentLevelXP;
     const xpProgress = xp - currentLevelXP;
     
-    // Ensure progress is between 0 and 100
-    const progress = Math.max(0, Math.min(100, Math.round((xpProgress / totalXPNeeded) * 100)));
+    // Ensure progress is between 0 and 99 (never 100%)
+    const progress = Math.max(0, Math.min(99, Math.round((xpProgress / totalXPNeeded) * 100)));
     
     return progress;
   };
   
   const level = calculateLevel(totalXP, breaker.masteredMoves?.length || 0);
   const progress = getProgress(totalXP, breaker.masteredMoves?.length || 0);
-
-  // Calculate style data for radar
-  const categories = ['Toprock', 'Footwork', 'Freezes', 'Power', 'Tricks', 'GoDowns'];
-  const styleData = categories.map((cat) => {
-    const totalCat = allMoves.filter((m) => m.category === cat).length;
-    const masteredCat = breaker.masteredMoves?.filter((m) => m.category === cat).length || 0;
-    const pct = totalCat ? Math.round((masteredCat / totalCat) * 100) : 0;
-    return { category: cat, score: pct };
-  });
 
   // Calculate category summary data
   const totalByCategory = allMoves.reduce((acc, m) => {
@@ -192,10 +183,15 @@ export default function BreakerProfile() {
               </div>
               <div>
                 <h1 className="dashboard-title">{breaker.name}</h1>
-                <div className="header-progress-container">
-                  <p className="xp-text">{totalXP} XP – Level {level}</p>
-                  <ProgressBar progress={progress} />
-                </div>
+                                 <div className="header-progress-container">
+                   <p className="xp-text">Level {level}</p>
+                   <ProgressBar 
+                     progress={progress} 
+                     currentXP={totalXP}
+                     nextLevelXP={getNextLevelXP(totalXP)}
+                     currentLevel={level}
+                   />
+                 </div>
               </div>
             </div>
             <button
@@ -219,6 +215,8 @@ export default function BreakerProfile() {
                         <div className="badge-icon">
                           {badge.image.startsWith('/src/assets/badges/') ? (
                             <img src={badge.image} alt={badge.name} className="badge-image" />
+                          ) : badge.image.startsWith('/uploads/') ? (
+                            <img src={`http://localhost:5000${badge.image}`} alt={badge.name} className="badge-image" />
                           ) : (
                             <span className="badge-emoji">{badge.image}</span>
                           )}
@@ -238,35 +236,26 @@ export default function BreakerProfile() {
             </div>
           </div>
 
-          {/* Style Analysis Section */}
-          <div className="flex">
-            {/* Style radar */}
-            <div className="section-card mt-6 widthfc">
-              <StyleRadar data={styleData} />
-            </div>
-            {/* Style identity video */}
-            <div className="video-container mt-6">
-              {breaker.battleVideos && breaker.battleVideos.length > 0 ? (
-                <video
-                  src={breaker.battleVideos[0]}
-                  controls
-                  className="style-video"
-                  aria-label="Style identity video"
-                />
-              ) : (
-                <div className="no-video-placeholder">
-                  <div className="placeholder-content">
-                    <FaUsers className="placeholder-icon" />
-                    <h3>No Battle Videos Yet</h3>
-                    <p>Battle videos will appear here when available.</p>
-                  </div>
-                </div>
-              )}
-            </div>
+          {/* Battle Statistics Section */}
+          <div className="section-card mt-6">
+            <BattleStatistics 
+              battleStats={{
+                battlesWon: 0, // TODO: Connect to actual battle data
+                battlesLost: 0,
+                battlesTied: 0,
+                winStreak: 0,
+                bestWinStreak: 0,
+                totalBattles: 0
+              }}
+            />
           </div>
 
-          {/* Level summary */}
-          <div className="section-card mt-6 width100">
+          {/* Level Summary Section */}
+          <div className="section-card mt-6">
+            <div className="section-header">
+              <h2 className="section-heading">Foundation Progress</h2>
+              <p className="section-subtitle">Track your progress by category</p>
+            </div>
             <LevelSummary masteredByCategory={masteredByCategory} totalByCategory={totalByCategory} />
           </div>
 

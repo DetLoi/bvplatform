@@ -14,6 +14,11 @@ const eventSchema = new Schema(
       type: String, 
       enum: ['Workshop', 'Competition', 'Jam', 'Battle', 'Showcase'],
     },
+    eventType: {
+      type: String,
+      enum: ['international', 'national'],
+      default: 'national'
+    },
     status: { 
       type: String, 
       enum: ['upcoming', 'ongoing', 'completed', 'cancelled'],

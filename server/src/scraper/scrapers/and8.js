@@ -72,28 +72,34 @@ export default async function scrapeAnd8() {
     const categoryRaw = fullText.replace(title, '').trim();
     const venue = $(el).find('td:nth-child(3)').text().trim();
     const countryFlag = $(el).find('td:nth-child(3) img');
-    const countryName = countryFlag.attr('title') || 'Unknown';
+    const countryName = countryFlag.attr('title') || '';
+
+    // Filter out events without an organizer (country)
+    if (!countryName || countryName === 'Unknown') {
+      return; // Skip this event
+    }
 
     const category = ['Workshop', 'Competition', 'Jam', 'Battle', 'Showcase'].includes(categoryRaw)
       ? categoryRaw
-      : 'Workshop';
+      : 'Battle'; // Changed default from 'Workshop' to 'Battle'
 
     const dateParsed = parseEventDate(dateText);
-    if (!dateParsed) return;
+    if (!dateParsed.startDate) return; // Skip events with invalid dates
 
     const { startDate: date, endDate } = dateParsed;
 
     events.push({
         title,               // from scraper (event name)
         description: '',     // NOT available in scraper, set empty string
-        category,            // from scraper (mapped category or default)
+        category,            // from scraper (mapped category or default to 'Battle')
+        eventType: 'international', // mark as international scraped event
         status: 'upcoming',  // NOT scraped, set default
         date,                // parsed start date (Date object)
         endDate,             // parsed end date if range, else null
         location: venue,     // from scraper (venue/location)
         image: null,         // NOT available, set null
         website,             // from scraper (event URL)
-        organizer: countryName, // from scraper (country or fallback string)
+        organizer: countryName, // from scraper (country name)
         participants: [],    // NOT available, set empty array
         maxParticipants: null, // NOT available, set null
         price: 0,            // NOT available, default 0

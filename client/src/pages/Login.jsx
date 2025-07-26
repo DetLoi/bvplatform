@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import '../styles/pages/login.css';
@@ -15,6 +15,10 @@ export default function Login() {
   
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the intended destination from the redirect state
+  const from = location.state?.from?.pathname || '/dashboard';
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,11 +39,11 @@ export default function Login() {
       const result = await login(formData.username, formData.password);
       
       if (result.success) {
-        // Redirect based on user status
-        if (result.user.status === 'admin') {
+        // Redirect to the intended destination or based on user status
+        if (result.user.status === 'admin' && from === '/dashboard') {
           navigate('/admin');
         } else {
-          navigate('/dashboard');
+          navigate(from);
         }
       } else {
         setError(result.error);

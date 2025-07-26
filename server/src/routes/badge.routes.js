@@ -6,6 +6,7 @@ import {
   updateBadge,
   deleteBadge
 } from '../controllers/badge.controller.js';
+import { uploadBadgeImage } from '../middleware/upload.js';
 
 const router = Router();
 
@@ -16,7 +17,7 @@ router.get('/', getAllBadges);
 router.get('/:id', getBadgeById);
 
 // Create badge
-router.post('/', createBadge);
+router.post('/', uploadBadgeImage, createBadge);
 
 // Update badge
 router.put('/:id', updateBadge);

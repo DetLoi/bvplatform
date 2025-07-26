@@ -1,4 +1,5 @@
 import Badge from '../models/badge.models.js';
+import Move from '../models/move.models.js';
 
 // Get all badges
 export const getAllBadges = async (req, res) => {
@@ -28,9 +29,58 @@ export const getBadgeById = async (req, res) => {
 // Create badge
 export const createBadge = async (req, res) => {
   try {
-    const badge = await Badge.create(req.body);
+    let badgeData = { ...req.body };
+    
+    // Handle file upload if present
+    if (req.file) {
+      badgeData.image = `/uploads/${req.file.filename}`;
+    } else if (req.body.image) {
+      // If no file uploaded but image URL provided
+      badgeData.image = req.body.image;
+    }
+    
+    // Handle requirements field - convert move names to ObjectIds
+    if (req.body.requirements) {
+      let requirements;
+      try {
+        requirements = JSON.parse(req.body.requirements);
+      } catch (e) {
+        requirements = req.body.requirements;
+      }
+      
+      if (Array.isArray(requirements)) {
+        const requirementIds = [];
+        
+        for (const moveName of requirements) {
+          if (typeof moveName === 'string') {
+            // If it's a string (move name), find the move and get its ObjectId
+            const moveDoc = await Move.findOne({ name: moveName.trim() });
+            if (moveDoc) {
+              requirementIds.push(moveDoc._id);
+            }
+          } else if (moveName && typeof moveName === 'object' && moveName._id) {
+            // If it's already an ObjectId, use it
+            requirementIds.push(moveName._id);
+          }
+        }
+        
+        badgeData.requirements = {
+          moves: requirementIds,
+          xpRequired: 0,
+          levelRequired: 1
+        };
+      }
+    }
+    
+    // Set default level if not provided
+    if (!badgeData.level) {
+      badgeData.level = 'Beginner';
+    }
+    
+    const badge = await Badge.create(badgeData);
     res.status(201).json(badge);
   } catch (error) {
+    console.error('Error creating badge:', error);
     res.status(400).json({ error: error.message });
   }
 };

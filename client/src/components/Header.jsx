@@ -7,7 +7,7 @@ import { FaTwitch, FaSignOutAlt } from 'react-icons/fa';
 export default function Header({ menuOpen, setMenuOpen }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, logout, isAdmin } = useAuth();
+  const { currentUser, logout, isAdmin, loading } = useAuth();
   const [mobileTitle, setMobileTitle] = useState('');
 
   useEffect(() => {
@@ -17,7 +17,7 @@ export default function Header({ menuOpen, setMenuOpen }) {
     else if (path === '/dashboard') setMobileTitle('Dashboard');
     else if (path.startsWith('/moves')) setMobileTitle('Moves');
     else if (path.startsWith('/badges')) setMobileTitle('Badges');
-    else if (path.startsWith('/profile')) setMobileTitle('Crews');
+    else if (path.startsWith('/crews')) setMobileTitle('Crews');
     else if (path.startsWith('/breakers')) setMobileTitle('Breakers');
     else if (path.startsWith('/events')) setMobileTitle('Events');
     else if (path.startsWith('/battles')) setMobileTitle('Battles');
@@ -29,6 +29,25 @@ export default function Header({ menuOpen, setMenuOpen }) {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
     return () => (document.body.style.overflow = '');
   }, [menuOpen]);
+
+  const handleLogout = () => {
+    logout();
+    setMenuOpen(false);
+    navigate('/');
+  };
+
+  // Don't render header content while loading to prevent flash of wrong state
+  if (loading) {
+    return (
+      <nav className="nav">
+        <div className="nav-container">
+          <div className="logo">
+            <img src={logo} alt="Breakverse Logo" className="h-10 w-auto" />
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav className="nav">
@@ -46,7 +65,7 @@ export default function Header({ menuOpen, setMenuOpen }) {
               <li><Link to="/events" className={location.pathname.startsWith('/events') ? 'active' : ''}>Events</Link></li>
               <li><Link to="/battles" className={location.pathname.startsWith('/battles') ? 'active' : ''}>Battles</Link></li>
               <li><Link to="/breakers" className={location.pathname.startsWith('/breakers') ? 'active' : ''}>Breakers</Link></li>
-              <li><Link to="/profile" className={location.pathname.startsWith('/profile') ? 'active' : ''}>Crews</Link></li>
+              <li><Link to="/crews" className={location.pathname.startsWith('/crews') ? 'active' : ''}>Crews</Link></li>
               {isAdmin() && (
                 <li><Link to="/admin" className={location.pathname.startsWith('/admin') ? 'active' : ''}>Admin</Link></li>
               )}
@@ -60,11 +79,7 @@ export default function Header({ menuOpen, setMenuOpen }) {
         </div>
         {currentUser && (
           <button
-            onClick={() => {
-              logout();
-              setMenuOpen(false);
-              navigate('/');
-            }}
+            onClick={handleLogout}
             className="logout-btn"
             aria-label="Logout"
           >

@@ -48,15 +48,15 @@ const getProgress = (xp, masteredMovesCount) => {
   const nextLevelXP = getNextLevelXP(xp);
   const currentLevelXP = currentLevel > 1 ? xpThresholds[currentLevel - 2] : 0;
   
-  // Handle edge cases
-  if (nextLevelXP === null || nextLevelXP === xp) return 100;
-  if (currentLevelXP >= nextLevelXP) return 100;
+  // Handle edge cases - cap at 99% to avoid showing 100% completion
+  if (nextLevelXP === null || nextLevelXP === xp) return 99;
+  if (currentLevelXP >= nextLevelXP) return 99;
   
   const totalXPNeeded = nextLevelXP - currentLevelXP;
   const xpProgress = xp - currentLevelXP;
   
-  // Ensure progress is between 0 and 100
-  const progress = Math.max(0, Math.min(100, Math.round((xpProgress / totalXPNeeded) * 100)));
+  // Ensure progress is between 0 and 99 (never 100%)
+  const progress = Math.max(0, Math.min(99, Math.round((xpProgress / totalXPNeeded) * 100)));
   
   return progress;
 };
@@ -350,6 +350,7 @@ export function ProfileProvider({ children }) {
         rejectMoveRequest,
         xp,
         level,
+        nextXP,
         profileImage,
         setProfileImage: saveProfileImage,
         coverPhoto,

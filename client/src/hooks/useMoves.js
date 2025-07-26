@@ -18,7 +18,9 @@ export const useMoves = (filters = {}) => {
       
       const response = await movesAPI.getAll({
         ...filters,
-        ...params
+        ...params,
+        limit: 1000, // Request a large number to get all moves
+        page: 1
       });
       
       setMoves(response.moves);

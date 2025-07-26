@@ -183,6 +183,7 @@ export const seedDatabase = async () => {
       title: event.title,
       description: event.description,
       category: event.category,
+      eventType: 'national', // All seeded events are national Danish events
       status: event.status,
       date: new Date(event.date),
       endDate: event.endDate ? new Date(event.endDate) : null,

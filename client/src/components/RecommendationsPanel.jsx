@@ -10,7 +10,15 @@ export default function RecommendationsPanel({ selectedMove, onMoveSelect, curre
 
   // Show specific recommendations for the selected move
   const recommendedMoves = selectedMove.recommendations
-    .map(moveName => moves.find(move => move.name === moveName))
+    .map(rec => {
+      // Handle both populated move objects and move names
+      if (typeof rec === 'object' && rec.name) {
+        return rec; // Already a move object
+      } else if (typeof rec === 'string') {
+        return moves.find(move => move.name === rec); // Find by name
+      }
+      return null;
+    })
     .filter(Boolean);
 
   if (recommendedMoves.length === 0) {

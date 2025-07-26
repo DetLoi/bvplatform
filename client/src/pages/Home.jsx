@@ -2,9 +2,7 @@
 import { useProfile } from '../context/ProfileContext';
 import { useAuth } from '../context/AuthContext';
 import ProgressBar from '../components/ProgressBar';
-import BadgeCard from '../components/BadgeCard';
-import placeholder from '../assets/placeholder.jpg';
-import { StyleRadar } from '../components/StyleRadar';
+import { BattleStatistics } from '../components/BattleStatistics';
 import { LevelSummary } from '../components/LevelSummary';
 import CoverPhotoSection from '../components/CoverPhotoSection';
 import { useMoves } from '../hooks/useMoves';
@@ -12,25 +10,23 @@ import { useBadges } from '../hooks/useBadges';
 import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaEdit, FaVideo, FaSignOutAlt, FaCog, FaUser, FaTrophy, FaDumbbell, FaCalendar, FaUsers, FaPlay } from 'react-icons/fa';
+import { FaEdit, FaTrophy, FaDumbbell, FaCalendar, FaUsers, FaPlay } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { isBadgeUnlocked } from '../utils/badgeUtils';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { currentUser, logout, isAdmin } = useAuth();
+  const { currentUser } = useAuth();
   const {
     masteredMoves,
     profileImage,
     setProfileImage,
-    coverPhoto,
     setCoverPhoto,
     xp,
     level,
     progress,
-    battleVideo,
+    nextXP,
     uploadProfileImage,
-    uploadCoverImage,
   } = useProfile();
   
   // Use API hooks - fetch all moves with high limit to get complete data
@@ -46,7 +42,6 @@ export default function Home() {
   const [isEditing, setIsEditing] = useState(false);
   const [tempProfileImage, setTempProfileImage] = useState(null);
   const [tempCoverPhoto, setTempCoverPhoto] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -69,35 +64,30 @@ export default function Home() {
     );
   }
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
+
 
   const handleNavigate = (path) => {
     navigate(path);
   };
   
   // Add some test moves for badge testing (remove this later)
-  const testMoves = [
-    { name: 'Two step', category: 'Toprock', level: 'Beginner', xp: 25 },
-    { name: 'Salsa step', category: 'Toprock', level: 'Beginner', xp: 25 },
-    { name: 'CC', category: 'Footwork', level: 'Beginner', xp: 25 },
-    { name: 'Kick outs', category: 'Footwork', level: 'Beginner', xp: 25 },
-  ];
+  // const testMoves = [
+  //   { name: 'Two step', category: 'Toprock', level: 'Beginner', xp: 25 },
+  //   { name: 'Salsa step', category: 'Toprock', level: 'Beginner', xp: 25 },
+  //   { name: 'CC', category: 'Footwork', level: 'Beginner', xp: 25 },
+  //   { name: 'Kick outs', category: 'Footwork', level: 'Beginner', xp: 25 },
+  // ];
   
   // Uncomment this line to test badges with some moves
   // React.useEffect(() => { testMoves.forEach(move => addMasteredMove(move)); }, []);
-  // const [coverPhoto, setCoverPhoto] = useState(null); // removed
-  // const [isEditing, setIsEditing] = useState(false); // removed
 
-  const categories = ['Toprock', 'Footwork', 'Freezes', 'Power', 'Tricks', 'GoDowns'];
-  const styleData = categories.map((cat) => {
-    const totalCat = allMoves.filter((m) => m.category === cat).length;
-    const masteredCat = masteredMoves.filter((m) => m.category === cat).length;
-    const pct = totalCat ? Math.round((masteredCat / totalCat) * 100) : 0;
-    return { category: cat, score: pct };
-  });
+  // const categories = ['Toprock', 'Footwork', 'Freezes', 'Power', 'Tricks', 'GoDowns'];
+  // const styleData = categories.map((cat) => {
+  //   const totalCat = allMoves.filter((m) => m.category === cat).length;
+  //   const masteredCat = masteredMoves.filter((m) => m.category === cat).length;
+  //   const pct = totalCat ? Math.round((masteredCat / totalCat) * 100) : 0;
+  //   return { category: cat, score: pct };
+  // });
 
   const totalByCategory = allMoves.reduce((acc, m) => {
     acc[m.category] = (acc[m.category] || 0) + 1;
@@ -108,36 +98,7 @@ export default function Home() {
     return acc;
   }, {});
 
-  const topCategory = styleData.reduce((max, cur) => (cur.score > max.score ? cur : max), styleData[0]);
 
-  const styleProfiles = {
-    Toprock: {
-      title: 'Rhythm Ruler',
-      desc: 'The beat guides your body. You ride the music like it\'s part of you.'
-    },
-    Footwork: {
-      title: 'Foundation Master',
-      desc: 'Your roots are deep. Your style is built on strong Footwork and solid flow.'
-    },
-    Freezes: {
-      title: 'Freeze Frame',
-      desc: 'You\'re a statue in motion. Freezes are your signature.'
-    },
-    Power: {
-      title: 'Powerhead',
-      desc: 'Explosive and high-risk, your power defines your presence.'
-    },
-    Tricks: {
-      title: 'Style Trickster',
-      desc: 'Your creativity surprises the floor with unexpected twists.'
-    },
-    GoDowns: {
-      title: 'Flow Hacker',
-      desc: 'You stitch moves together with slick transitions and control.'
-    },
-  };
-
-  const userStyle = styleProfiles[topCategory.category];
 
   return (
     <>
@@ -201,8 +162,13 @@ export default function Home() {
               <div>
                   <h1 className="dashboard-title">{currentUser?.name || 'Breaker'}</h1>
                   <div className="header-progress-container">
-                      <p className="xp-text">{xp} XP – Niveau {level}</p>
-                      <ProgressBar progress={progress} />
+                      <p className="xp-text">Level {level}</p>
+                      <ProgressBar 
+                        progress={progress} 
+                        currentXP={xp}
+                        nextLevelXP={nextXP}
+                        currentLevel={level}
+                      />
                   </div>
               </div>
             </div>
@@ -223,74 +189,10 @@ export default function Home() {
               >
                 {isEditing ? 'Gem' : 'Rediger Profil'}
               </button>
-              {isAdmin() && (
-                <button
-                  className="admin-btn"
-                  onClick={() => navigate('/admin')}
-                >
-                  <FaCog />
-                  Admin
-                </button>
-              )}
-              <button
-                className="logout-btn"
-                onClick={handleLogout}
-              >
-                <FaSignOutAlt />
-                Logout
-              </button>
             </div>
           </div>
 
-        {/* Quick Actions */}
-        <div className="section-card mt-6">
-          <h2 className="section-heading">Hurtige Handlinger</h2>
-          <div className="quick-actions-grid">
-            <button 
-              className="quick-action-btn"
-              onClick={() => handleNavigate('/moves')}
-            >
-              <FaDumbbell />
-              <span>Lær Moves</span>
-            </button>
-            <button 
-              className="quick-action-btn"
-              onClick={() => handleNavigate('/badges')}
-            >
-              <FaTrophy />
-              <span>Se Badges</span>
-            </button>
-            <button 
-              className="quick-action-btn"
-              onClick={() => handleNavigate('/events')}
-            >
-              <FaCalendar />
-              <span>Events</span>
-            </button>
-            <button 
-              className="quick-action-btn"
-              onClick={() => handleNavigate('/battles')}
-            >
-              <FaPlay />
-              <span>Battles</span>
-            </button>
-            <button 
-              className="quick-action-btn"
-              onClick={() => handleNavigate('/breakers')}
-            >
-              <FaUsers />
-              <span>Fællesskab</span>
-            </button>
-            <button 
-              className="quick-action-btn"
-              onClick={() => handleNavigate('/profile')}
-            >
-              <FaUsers />
-              <span>Crews</span>
-            </button>
-          </div>
-        </div>
-
+  
         {/* Badges */}
         <div className="dashboard-grid mt-6">
           <div className="section-card">
@@ -306,6 +208,8 @@ export default function Home() {
                         <div className="badge-icon">
                           {badge.image.startsWith('/src/assets/badges/') ? (
                             <img src={badge.image} alt={badge.name} className="badge-image" />
+                          ) : badge.image.startsWith('/uploads/') ? (
+                            <img src={`http://localhost:5000${badge.image}`} alt={badge.name} className="badge-image" />
                           ) : (
                             <span className="badge-emoji">{badge.image}</span>
                           )}
@@ -330,42 +234,31 @@ export default function Home() {
             </div>
           </div>
         </div>
-              {/* Style Analysis Section */}
-              <div className="flex">
-          {/* Style radar */}
-          <div className="section-card mt-6 widthfc">
-            <StyleRadar data={styleData} />
-          </div>
-          {/* Battle Video Display */}
-          <div className="video-container mt-6">
-            {battleVideo ? (
-              <video
-                src={battleVideo}
-                controls
-                className="style-video"
-                aria-label="Latest battle video"
-              />
-            ) : (
-              <div className="no-video-placeholder">
-                <div className="placeholder-content">
-                  <FaVideo className="placeholder-icon" />
-                  <h3>Ingen Battle Video Endnu</h3>
-                  <p>Din første battle video vil vises her når du deltager i en battle.</p>
-                  <button 
-                    onClick={() => navigate('/battles')}
-                    className="battle-button"
-                  >
-                    Tilslut Dig En Battle
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+     
+        {/* Battle Statistics Section */}
+        <div className="section-card mt-6">
+          <BattleStatistics 
+            battleStats={{
+              battlesWon: 0, // TODO: Connect to actual battle data
+              battlesLost: 0,
+              battlesTied: 0,
+              winStreak: 0,
+              bestWinStreak: 0,
+              totalBattles: 0
+            }}
+          />
         </div>
- {/* Level summary */}
- <div className="section-card mt-6 width100">
-            <LevelSummary masteredByCategory={masteredByCategory} totalByCategory={totalByCategory} />
+                 {/* Level Summary Section */}
+                 <div className="section-card mt-6">
+          <div className="section-header">
+            <h2 className="section-heading">Foundation Progress</h2>
+            <p className="section-subtitle">Track your progress by category</p>
           </div>
+          <LevelSummary 
+            masteredByCategory={masteredByCategory}
+            totalByCategory={totalByCategory}
+          />
+        </div>
 
         {/* Mastered Moves */}
         <div className="section-card mt-8">

@@ -1,8 +1,8 @@
 import { useProfile } from '../context/ProfileContext';
 import { useBadges } from '../hooks/useBadges';
 import BadgeCard from '../components/BadgeCard';
-import { FaTrophy, FaLock, FaStar, FaCrown, FaLayerGroup, FaFire, FaUsers } from 'react-icons/fa';
-import { useState } from 'react';
+import { FaTrophy, FaLock, FaStar, FaCrown, FaLayerGroup, FaFire, FaUsers, FaTag } from 'react-icons/fa';
+import { useState, useMemo } from 'react';
 import { isBadgeUnlocked } from '../utils/badgeUtils';
 import '../styles/pages/badges.css';
 
@@ -21,35 +21,65 @@ export default function Badges() {
   const totalBadges = badgesArray.length;
   const earnedPercentage = Math.round((earnedBadges.length / totalBadges) * 100);
 
-  // Group badges by category
-  const elementBadges = badgesArray.filter(badge => 
-    badge.category && 
-    badge.category !== 'Special' &&
-    (badge.category !== 'Power' || badge.name === 'Power Master')
-  );
-  const levelBadges = badgesArray.filter(badge => badge.category === 'Special');
-  const specialBadges = badgesArray.filter(badge => badge.category === 'Power' && badge.name !== 'Power Master');
+  // Category to icon mapping
+  const categoryIconMap = {
+    'Level': FaLayerGroup,
+    'Element': FaFire,
+    'Power': FaUsers,
+    'Special': FaLayerGroup, // Legacy support
+  };
 
-  // Navigation categories
-  const navCategories = [
-    { id: 'all', name: 'All Badges', icon: FaTrophy, count: totalBadges, earned: earnedBadges.length },
-    { id: 'level', name: 'Level Mastery', icon: FaLayerGroup, count: levelBadges.length, earned: levelBadges.filter(b => isBadgeUnlocked(b, masteredMoves)).length },
-    { id: 'element', name: 'Element Mastery', icon: FaFire, count: elementBadges.length, earned: elementBadges.filter(b => isBadgeUnlocked(b, masteredMoves)).length },
-    { id: 'power', name: 'Power Specialists', icon: FaUsers, count: specialBadges.length, earned: specialBadges.filter(b => isBadgeUnlocked(b, masteredMoves)).length }
-  ];
+  // Get unique categories from badges
+  const uniqueCategories = useMemo(() => {
+    const categories = [...new Set(badgesArray.map(badge => badge.category))].filter(Boolean);
+    return categories.sort();
+  }, [badgesArray]);
+
+  // Group badges by category
+  const badgesByCategory = useMemo(() => {
+    const grouped = {};
+    uniqueCategories.forEach(category => {
+      grouped[category] = badgesArray.filter(badge => badge.category === category);
+    });
+    return grouped;
+  }, [badgesArray, uniqueCategories]);
+
+  // Navigation categories - dynamic based on actual badge categories
+  const navCategories = useMemo(() => {
+    const categories = [
+      { id: 'all', name: 'All Badges', icon: FaTrophy, count: totalBadges, earned: earnedBadges.length }
+    ];
+
+    // Add category-specific tabs
+    uniqueCategories.forEach(category => {
+      const categoryBadges = badgesByCategory[category];
+      const earnedCount = categoryBadges.filter(b => isBadgeUnlocked(b, masteredMoves)).length;
+      const icon = categoryIconMap[category] || FaTag; // Use FaTag as fallback for custom categories
+      
+      categories.push({
+        id: category.toLowerCase(),
+        name: category,
+        icon: icon,
+        count: categoryBadges.length,
+        earned: earnedCount
+      });
+    });
+
+    return categories;
+  }, [badgesArray, uniqueCategories, badgesByCategory, masteredMoves, totalBadges, earnedBadges.length]);
 
   // Get badges for active category
   const getActiveBadges = () => {
-    switch (activeCategory) {
-      case 'level':
-        return levelBadges;
-      case 'element':
-        return elementBadges;
-      case 'power':
-        return specialBadges;
-      default:
-        return badgesArray;
+    if (activeCategory === 'all') {
+      return badgesArray;
     }
+    
+    // Find the category that matches the active category (case-insensitive)
+    const matchingCategory = uniqueCategories.find(category => 
+      category.toLowerCase() === activeCategory
+    );
+    
+    return matchingCategory ? badgesByCategory[matchingCategory] : badgesArray;
   };
 
   // Show loading state

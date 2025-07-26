@@ -8,7 +8,7 @@ export const getAllMoves = async (req, res) => {
       level, 
       search, 
       page = 1, 
-      limit = 50,
+      limit = 1000, // Increased default limit to get all moves
       sortBy = 'name',
       sortOrder = 'asc'
     } = req.query;
@@ -69,7 +69,29 @@ export const getMoveById = async (req, res) => {
 // Create new move
 export const createMove = async (req, res) => {
   try {
-    const move = await Move.create(req.body);
+    let moveData = { ...req.body };
+    
+    // Handle recommendations field - convert move names to ObjectIds
+    if (req.body.recommendations && Array.isArray(req.body.recommendations)) {
+      const recommendationIds = [];
+      
+      for (const rec of req.body.recommendations) {
+        if (typeof rec === 'string') {
+          // If it's a string (move name), find the move and get its ObjectId
+          const moveDoc = await Move.findOne({ name: rec.trim() });
+          if (moveDoc) {
+            recommendationIds.push(moveDoc._id);
+          }
+        } else if (rec && typeof rec === 'object' && rec._id) {
+          // If it's already an ObjectId, use it
+          recommendationIds.push(rec._id);
+        }
+      }
+      
+      moveData.recommendations = recommendationIds;
+    }
+    
+    const move = await Move.create(moveData);
     res.status(201).json(move);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -79,9 +101,31 @@ export const createMove = async (req, res) => {
 // Update move
 export const updateMove = async (req, res) => {
   try {
+    let updateData = { ...req.body };
+    
+    // Handle recommendations field - convert move names to ObjectIds
+    if (req.body.recommendations && Array.isArray(req.body.recommendations)) {
+      const recommendationIds = [];
+      
+      for (const rec of req.body.recommendations) {
+        if (typeof rec === 'string') {
+          // If it's a string (move name), find the move and get its ObjectId
+          const moveDoc = await Move.findOne({ name: rec.trim() });
+          if (moveDoc) {
+            recommendationIds.push(moveDoc._id);
+          }
+        } else if (rec && typeof rec === 'object' && rec._id) {
+          // If it's already an ObjectId, use it
+          recommendationIds.push(rec._id);
+        }
+      }
+      
+      updateData.recommendations = recommendationIds;
+    }
+    
     const move = await Move.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
     

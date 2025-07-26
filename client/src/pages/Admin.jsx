@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { FaArrowLeft, FaUsers, FaTrophy, FaDumbbell, FaCalendar, FaUserEdit, FaTrash, FaPlus, FaEdit, FaSave, FaTimes, FaSearch, FaCheckCircle, FaTimesCircle, FaClipboardCheck, FaSync } from 'react-icons/fa';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { FaArrowLeft, FaUsers, FaTrophy, FaDumbbell, FaCalendar, FaUserEdit, FaTrash, FaPlus, FaEdit, FaSave, FaTimes, FaSearch, FaCheckCircle, FaTimesCircle, FaClipboardCheck, FaSync, FaTh, FaList, FaGlobe, FaFlag } from 'react-icons/fa';
 import { useMoves } from '../hooks/useMoves';
 import { useUsers } from '../hooks/useUsers';
 import { useBadges } from '../hooks/useBadges';
@@ -13,7 +13,27 @@ import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import { FaMinus } from 'react-icons/fa';
 import Toast from '../components/Toast';
 
+// Helper function to identify Danish events
+const isDanishEvent = (event) => {
+  const danishKeywords = ['denmark', 'danmark', 'danish', 'dansk'];
+  const nonDanishOrganizers = ['sweden', 'norway', 'finland', 'iceland', 'germany', 'france', 'spain', 'italy', 'poland', 'czech', 'austria', 'switzerland', 'belgium', 'netherlands', 'portugal', 'greece', 'hungary', 'romania', 'bulgaria', 'croatia', 'serbia', 'slovenia', 'slovakia', 'lithuania', 'latvia', 'estonia'];
+  
+  const organizer = (event.organizer || '').toLowerCase();
+  const location = (event.location || '').toLowerCase();
+  
+  // First check if organizer is clearly non-Danish
+  if (nonDanishOrganizers.some(country => organizer.includes(country))) {
+    return false;
+  }
+  
+  // Then check for Danish keywords in organizer or location
+  return danishKeywords.some(keyword => 
+    organizer.includes(keyword) || location.includes(keyword)
+  );
+};
+
 import '../styles/pages/admin.css';
+import '../styles/pages/add-form.css';
 
 // Edit Form Components
 const EditMoveForm = ({ move, onSave, onCancel, formRef }) => {
@@ -23,7 +43,7 @@ const EditMoveForm = ({ move, onSave, onCancel, formRef }) => {
     level: move.level,
     xp: move.xp,
     description: move.description || '',
-    recommendations: move.recommendations ? move.recommendations.join(', ') : '',
+    recommendations: move.recommendations ? move.recommendations.map(rec => rec.name || rec).join(', ') : '',
     videoUrl: move.videoUrl || ''
   });
 
@@ -36,6 +56,8 @@ const EditMoveForm = ({ move, onSave, onCancel, formRef }) => {
       ...prev,
       [name]: value
     }));
+    
+
   };
 
   const handleSubmit = (e) => {
@@ -46,68 +68,64 @@ const EditMoveForm = ({ move, onSave, onCancel, formRef }) => {
     onSave({ 
       ...move, 
       ...formData, 
-      recommendations: recommendationsArray 
+      recommendations: recommendationsArray,
+      type: 'moves'
     });
   };
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="edit-form">
-      <div className="edit-form-content">
-        <div className="form-row">
-          <div className="form-group">
-            <label>Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="edit-input"
-            />
-          </div>
-          <div className="form-group">
-            <label>Category</label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              required
-              className="edit-select"
-            >
-              {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="form-group">
-            <label>Level</label>
-            <select
-              name="level"
-              value={formData.level}
-              onChange={handleChange}
-              required
-              className="edit-select"
-            >
-              {levels.map(level => (
-                <option key={level} value={level}>{level}</option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group">
-            <label>XP</label>
-            <input
-              type="number"
-              name="xp"
-              value={formData.xp}
-              onChange={handleChange}
-              required
-              min="10"
-              max="100"
-              className="edit-input"
-            />
-          </div>
+    <form ref={formRef} onSubmit={handleSubmit} className="add-form">
+      <div className="form-group">
+        <label>Name</label>
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          required
+          className="form-input"
+        />
+      </div>
+      <div className="form-group">
+        <label>Category</label>
+        <select
+          name="category"
+          value={formData.category}
+          onChange={handleChange}
+          required
+          className="form-select"
+        >
+          {categories.map(category => (
+            <option key={category} value={category}>{category}</option>
+          ))}
+        </select>
+      </div>
+      <div className="form-group">
+        <label>Level</label>
+        <select
+          name="level"
+          value={formData.level}
+          onChange={handleChange}
+          required
+          className="form-select"
+        >
+          {levels.map(level => (
+            <option key={level} value={level}>{level}</option>
+          ))}
+        </select>
+      </div>
+      <div className="form-group">
+        <label>XP</label>
+        <input
+          type="number"
+          name="xp"
+            value={formData.xp}
+            onChange={handleChange}
+            required
+            min="10"
+            max="100"
+            className="form-input"
+          />
         </div>
         <div className="form-group">
           <label>Description</label>
@@ -116,7 +134,7 @@ const EditMoveForm = ({ move, onSave, onCancel, formRef }) => {
             value={formData.description}
             onChange={handleChange}
             rows="3"
-            className="edit-textarea"
+            className="form-textarea"
           />
         </div>
         <div className="form-group">
@@ -127,7 +145,7 @@ const EditMoveForm = ({ move, onSave, onCancel, formRef }) => {
             value={formData.recommendations}
             onChange={handleChange}
             placeholder="e.g., Knee drop, Salsa step, CC"
-            className="edit-input"
+            className="form-input"
           />
         </div>
         <div className="form-group">
@@ -138,11 +156,10 @@ const EditMoveForm = ({ move, onSave, onCancel, formRef }) => {
             value={formData.videoUrl}
             onChange={handleChange}
             placeholder="https://www.youtube.com/watch?v=..."
-            className="edit-input"
+            className="form-input"
           />
         </div>
-      </div>
-    </form>
+      </form>
   );
 };
 
@@ -163,6 +180,8 @@ const EditBadgeForm = ({ badge, onSave, onCancel, formRef }) => {
       ...prev,
       [name]: value
     }));
+    
+
   };
 
   const handleImageUpload = (e) => {
@@ -176,6 +195,8 @@ const EditBadgeForm = ({ badge, onSave, onCancel, formRef }) => {
           ...prev,
           image: imageUrl
         }));
+        
+
       };
       reader.readAsDataURL(file);
     }
@@ -186,36 +207,35 @@ const EditBadgeForm = ({ badge, onSave, onCancel, formRef }) => {
     onSave({
       ...badge,
       ...formData,
-      image: imagePreview
+      image: imagePreview,
+      type: 'badges'
     });
   };
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="edit-form">
       <div className="edit-form-content">
-        <div className="form-row">
-          <div className="form-group">
-            <label>Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="edit-input"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Category</label>
-            <input
-              type="text"
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="edit-input"
-              required
-            />
-          </div>
+        <div className="form-group">
+          <label>Name</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="edit-input"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Category</label>
+          <input
+            type="text"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="edit-input"
+            required
+          />
         </div>
         <div className="form-group">
           <label>Description</label>
@@ -265,22 +285,26 @@ const EditBadgeForm = ({ badge, onSave, onCancel, formRef }) => {
 };
 
 const EditEventForm = ({ event, onSave, onCancel, formRef }) => {
+  // Format date for display in the form
+  const formatDateForInput = (dateValue) => {
+    if (!dateValue) return '';
+    const date = new Date(dateValue);
+    if (isNaN(date.getTime())) return '';
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   const [formData, setFormData] = useState({
     title: event.title,
-    date: event.date,
-    time: event.time,
+    date: formatDateForInput(event.date),
     location: event.location,
     category: event.category,
     description: event.description || '',
     status: event.status || 'upcoming',
-    featured: event.featured || false,
-    registrationOpen: event.registrationOpen || true,
-    maxParticipants: event.maxParticipants || 0,
-    currentParticipants: event.currentParticipants || 0,
-    entryFee: event.entryFee || '',
-    prizes: event.prizes || '',
     organizer: event.organizer || '',
-    contactEmail: event.contactEmail || '',
     website: event.website || '',
     image: event.image || ''
   });
@@ -298,6 +322,18 @@ const EditEventForm = ({ event, onSave, onCancel, formRef }) => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image file size must be less than 5MB');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const imageUrl = e.target.result;
@@ -313,236 +349,147 @@ const EditEventForm = ({ event, onSave, onCancel, formRef }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Convert date string to Date object if it's a valid date
+    let processedData = { ...formData };
+    if (formData.date) {
+      const dateObj = new Date(formData.date);
+      if (!isNaN(dateObj.getTime())) {
+        processedData.date = dateObj.toISOString();
+      }
+    }
+    
     onSave({
       ...event,
-      ...formData,
-      image: imagePreview
+      ...processedData,
+      image: imagePreview,
+      type: 'events'
     });
   };
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="edit-form">
-      <div className="edit-form-content">
-        <div className="form-row">
-          <div className="form-group">
-            <label>Title</label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              className="edit-input"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Category</label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="edit-select"
-              required
-            >
-              <option value="Competition">Competition</option>
-              <option value="Workshop">Workshop</option>
-              <option value="Cypher">Cypher</option>
-              <option value="Battle">Battle</option>
-              <option value="Showcase">Showcase</option>
-            </select>
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="form-group">
-            <label>Date</label>
-            <input
-              type="text"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-              className="edit-input"
-              placeholder="e.g., March 15, 2025"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Time</label>
-            <input
-              type="text"
-              name="time"
-              value={formData.time}
-              onChange={handleChange}
-              className="edit-input"
-              placeholder="e.g., 18:00 - 22:00"
-              required
-            />
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="form-group">
-            <label>Location</label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              className="edit-input"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Status</label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="edit-select"
-            >
-              <option value="upcoming">Upcoming</option>
-              <option value="ongoing">Ongoing</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="form-group">
-            <label>Max Participants</label>
-            <input
-              type="number"
-              name="maxParticipants"
-              value={formData.maxParticipants}
-              onChange={handleChange}
-              className="edit-input"
-              min="0"
-            />
-          </div>
-          <div className="form-group">
-            <label>Current Participants</label>
-            <input
-              type="number"
-              name="currentParticipants"
-              value={formData.currentParticipants}
-              onChange={handleChange}
-              className="edit-input"
-              min="0"
-            />
-          </div>
-        </div>
-        <div className="form-row">
-          <div className="form-group">
-            <label>Entry Fee</label>
-            <input
-              type="text"
-              name="entryFee"
-              value={formData.entryFee}
-              onChange={handleChange}
-              className="edit-input"
-              placeholder="e.g., Free, 150 DKK"
-            />
-          </div>
-          <div className="form-group">
-            <label>Organizer</label>
-            <input
-              type="text"
-              name="organizer"
-              value={formData.organizer}
-              onChange={handleChange}
-              className="edit-input"
-            />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            className="edit-textarea"
-            rows="4"
-            placeholder="Event description..."
-          />
-        </div>
-        <div className="form-group">
-          <label>Prizes</label>
+    <form ref={formRef} onSubmit={handleSubmit} className="add-form">
+      <div className="form-group">
+        <label>Title</label>
+        <input
+          type="text"
+          name="title"
+          value={formData.title}
+          onChange={handleChange}
+          className="form-input"
+          required
+        />
+      </div>
+      <div className="form-group">
+        <label>Category</label>
+        <select
+          name="category"
+          value={formData.category}
+          onChange={handleChange}
+          className="form-select"
+          required
+        >
+          <option value="Competition">Competition</option>
+          <option value="Workshop">Workshop</option>
+          <option value="Cypher">Cypher</option>
+          <option value="Battle">Battle</option>
+          <option value="Showcase">Showcase</option>
+        </select>
+      </div>
+      <div className="form-group">
+        <label>Date</label>
+        <input
+          type="date"
+          name="date"
+          value={formData.date ? new Date(formData.date).toISOString().split('T')[0] : ''}
+          onChange={handleChange}
+          className="form-input"
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Location</label>
+        <input
+          type="text"
+          name="location"
+          value={formData.location}
+          onChange={handleChange}
+          className="form-input"
+          required
+        />
+      </div>
+      <div className="form-group">
+        <label>Status</label>
+        <select
+          name="status"
+          value={formData.status}
+          onChange={handleChange}
+          className="form-select"
+        >
+          <option value="upcoming">Upcoming</option>
+          <option value="ongoing">Ongoing</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+
+      <div className="form-group">
+        <label>Organizer</label>
+        <input
+          type="text"
+          name="organizer"
+          value={formData.organizer}
+          onChange={handleChange}
+          className="form-input"
+        />
+      </div>
+      <div className="form-group">
+        <label>Description</label>
+        <textarea
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          className="form-textarea"
+          rows="4"
+          placeholder="Event description..."
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Website</label>
+        <input
+          type="url"
+          name="website"
+          value={formData.website}
+          onChange={handleChange}
+          className="form-input"
+          placeholder="https://event.com"
+        />
+      </div>
+      <div className="form-group">
+        <label>Event Banner</label>
+        <div className="image-upload-container">
           <input
-            type="text"
-            name="prizes"
-            value={formData.prizes}
-            onChange={handleChange}
-            className="edit-input"
-            placeholder="e.g., Cash prizes and trophies"
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="image-upload-input"
+            id={`banner-upload-${event.id}`}
           />
-        </div>
-        <div className="form-row">
-          <div className="form-group">
-            <label>Contact Email</label>
-            <input
-              type="email"
-              name="contactEmail"
-              value={formData.contactEmail}
-              onChange={handleChange}
-              className="edit-input"
-              placeholder="info@event.com"
-            />
-          </div>
-          <div className="form-group">
-            <label>Website</label>
-            <input
-              type="url"
-              name="website"
-              value={formData.website}
-              onChange={handleChange}
-              className="edit-input"
-              placeholder="https://event.com"
-            />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Event Banner</label>
-          <div className="image-upload-container">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="image-upload-input"
-              id={`banner-upload-${event.id}`}
-            />
-            <label htmlFor={`banner-upload-${event.id}`} className="image-upload-label">
-              {imagePreview ? 'Change Banner' : 'Upload Banner'}
-            </label>
-            {imagePreview && (
-              <div className="image-preview">
-                <img src={imagePreview} alt="Event banner preview" />
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="form-group">
-          <div className="checkbox-group">
-            <label>
-              <input
-                type="checkbox"
-                name="featured"
-                checked={formData.featured}
-                onChange={handleChange}
-                className="edit-checkbox"
-              />
-              Featured Event
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                name="registrationOpen"
-                checked={formData.registrationOpen}
-                onChange={handleChange}
-                className="edit-checkbox"
-              />
-              Registration Open
-            </label>
-          </div>
+          <label htmlFor={`banner-upload-${event.id}`} className="image-upload-label">
+            {imagePreview ? 'Change Banner' : 'Upload Banner'}
+          </label>
+          {imagePreview && (
+            <div className="image-preview">
+              <img src={imagePreview} alt="Event banner preview" />
+            </div>
+          )}
         </div>
       </div>
+
+
     </form>
   );
 };
@@ -566,6 +513,8 @@ const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
       ...prev,
       [name]: value
     }));
+    
+
   };
 
   const handleLogoUpload = (e) => {
@@ -579,6 +528,8 @@ const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
           ...prev,
           logo: imageUrl
         }));
+        
+
       };
       reader.readAsDataURL(file);
     }
@@ -590,6 +541,8 @@ const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
         ...prev,
         members: [...prev.members, user]
       }));
+      
+
     }
   };
 
@@ -598,6 +551,8 @@ const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
       ...prev,
       members: prev.members.filter(member => member._id !== memberId)
     }));
+    
+
   };
 
   const handleSubmit = (e) => {
@@ -606,7 +561,8 @@ const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
       ...crew,
       ...formData,
       logo: logoPreview,
-      memberCount: formData.members.length
+      memberCount: formData.members.length,
+      type: 'crews'
     });
   };
 
@@ -624,117 +580,113 @@ const EditCrewForm = ({ crew, onSave, onCancel, formRef }) => {
   }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="edit-form">
-      <div className="edit-form-content">
-        <div className="form-row">
-          <div className="form-group">
-            <label>Crew Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="edit-input"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Color</label>
-            <input
-              type="color"
-              name="color"
-              value={formData.color}
-              onChange={handleChange}
-              className="edit-input color-input"
-            />
-          </div>
-        </div>
-        <div className="form-group">
-          <label>Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            className="edit-textarea"
-            rows="3"
-            placeholder="Crew description..."
+    <form ref={formRef} onSubmit={handleSubmit} className="add-form">
+      <div className="form-group">
+        <label>Crew Name</label>
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          className="form-input"
+          required
+        />
+      </div>
+      <div className="form-group">
+        <label>Color</label>
+        <input
+          type="color"
+          name="color"
+          value={formData.color}
+          onChange={handleChange}
+          className="form-input color-input"
+        />
+      </div>
+      <div className="form-group">
+        <label>Description</label>
+        <textarea
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          className="form-textarea"
+          rows="3"
+          placeholder="Crew description..."
+        />
+      </div>
+      <div className="form-group">
+        <label>Crew Logo</label>
+        <div className="image-upload-container">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleLogoUpload}
+            className="image-upload-input"
+            id={`logo-upload-${crew._id}`}
           />
+          <label htmlFor={`logo-upload-${crew._id}`} className="image-upload-label">
+            {logoPreview ? 'Change Logo' : 'Upload Logo'}
+          </label>
+          {logoPreview && (
+            <div className="image-preview">
+              <img src={logoPreview} alt="Crew logo preview" />
+            </div>
+          )}
         </div>
-        <div className="form-group">
-          <label>Crew Logo</label>
-          <div className="image-upload-container">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleLogoUpload}
-              className="image-upload-input"
-              id={`logo-upload-${crew._id}`}
-            />
-            <label htmlFor={`logo-upload-${crew._id}`} className="image-upload-label">
-              {logoPreview ? 'Change Logo' : 'Upload Logo'}
-            </label>
-            {logoPreview && (
-              <div className="image-preview">
-                <img src={logoPreview} alt="Crew logo preview" />
+      </div>
+      
+      <div className="form-group">
+        <label>Members ({formData.members.length})</label>
+        <div className="members-section">
+          <div className="current-members">
+            <h4>Current Members</h4>
+            {formData.members.length === 0 ? (
+              <p className="no-members">No members yet</p>
+            ) : (
+              <div className="members-grid">
+                {formData.members.map(member => (
+                  <div key={member._id} className="member-card">
+                    <img src={member.profileImage || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"} alt={member.name} />
+                    <div className="member-info">
+                      <span className="member-name">{member.name}</span>
+                      <span className="member-level">Level {member.level}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeMember(member._id)}
+                      className="remove-member-btn"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
-        </div>
-        
-        <div className="form-group">
-          <label>Members ({formData.members.length})</label>
-          <div className="members-section">
-            <div className="current-members">
-              <h4>Current Members</h4>
-              {formData.members.length === 0 ? (
-                <p className="no-members">No members yet</p>
-              ) : (
-                <div className="members-grid">
-                  {formData.members.map(member => (
-                    <div key={member._id} className="member-card">
-                      <img src={member.profileImage || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"} alt={member.name} />
-                      <div className="member-info">
-                        <span className="member-name">{member.name}</span>
-                        <span className="member-level">Level {member.level}</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeMember(member._id)}
-                        className="remove-member-btn"
-                      >
-                        ×
-                      </button>
+          
+          <div className="add-members">
+            <h4>Add Members</h4>
+            {availableUsersForCrew.length === 0 ? (
+              <p className="no-available">No available users</p>
+            ) : (
+              <div className="available-users">
+                {availableUsersForCrew.map(user => (
+                  <div key={user._id} className="user-card">
+                    <img src={user.profileImage || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"} alt={user.name} />
+                    <div className="user-info">
+                      <span className="user-name">{user.name}</span>
+                      <span className="user-level">Level {user.level}</span>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            <div className="add-members">
-              <h4>Add Members</h4>
-              {availableUsersForCrew.length === 0 ? (
-                <p className="no-available">No available users</p>
-              ) : (
-                <div className="available-users">
-                  {availableUsersForCrew.map(user => (
-                    <div key={user._id} className="user-card">
-                      <img src={user.profileImage || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"} alt={user.name} />
-                      <div className="user-info">
-                        <span className="user-name">{user.name}</span>
-                        <span className="user-level">Level {user.level}</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => addMember(user)}
-                        className="add-user-btn"
-                      >
-                        +
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    <button
+                      type="button"
+                      onClick={() => addMember(user)}
+                      className="add-user-btn"
+                    >
+                      +
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -777,6 +729,8 @@ const EditUserForm = ({ user, onSave, onCancel, formRef, moves }) => {
       ...prev,
       [name]: value
     }));
+    
+
   };
 
   const handleArrayChange = (field, value) => {
@@ -785,6 +739,8 @@ const EditUserForm = ({ user, onSave, onCancel, formRef, moves }) => {
       ...prev,
       [field]: items
     }));
+    
+
   };
 
   const addMove = (moveName) => {
@@ -793,6 +749,8 @@ const EditUserForm = ({ user, onSave, onCancel, formRef, moves }) => {
         ...prev,
         masteredMoves: [...prev.masteredMoves, moveName]
       }));
+      
+
     }
   };
 
@@ -801,6 +759,8 @@ const EditUserForm = ({ user, onSave, onCancel, formRef, moves }) => {
       ...prev,
       masteredMoves: prev.masteredMoves.filter(move => move !== moveName)
     }));
+    
+
   };
 
   const handleSubmit = (e) => {
@@ -841,96 +801,91 @@ const EditUserForm = ({ user, onSave, onCancel, formRef, moves }) => {
       delete updateData.password;
     }
     
-    onSave(updateData);
+    // Add the type property that handleSave expects
+    onSave({ ...updateData, type: 'users' });
   };
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="edit-form">
       <div className="edit-form-content">
-        <div className="form-row">
-          <div className="form-group">
-            <label>Username</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              className="edit-input"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Full Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="edit-input"
-              placeholder="Enter full name"
-            />
-          </div>
+        <div className="form-group">
+          <label>Username</label>
+          <input
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            className="edit-input"
+            required
+          />
         </div>
-        <div className="form-row">
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="edit-input"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label>Level (Auto-calculated)</label>
-            <input
-              type="number"
-              name="level"
-              value={formData.level}
-              className="edit-input"
-              readOnly
-              disabled
-              style={{ backgroundColor: '#2a2a2a', color: '#888' }}
-            />
-          </div>
+        <div className="form-group">
+          <label>Full Name</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="edit-input"
+            placeholder="Enter full name"
+          />
         </div>
-        <div className="form-row">
-          <div className="form-group">
-            <label>Password</label>
-            <div className="password-input-container">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="edit-input"
-                placeholder="Enter new password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="password-toggle-btn"
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
-            </div>
-          </div>
-          <div className="form-group">
-            <label>Status</label>
-            <select
-              name="status"
-              value={formData.status}
+        <div className="form-group">
+          <label>Email</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="edit-input"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Level (Auto-calculated)</label>
+          <input
+            type="number"
+            name="level"
+            value={formData.level}
+            className="edit-input"
+            readOnly
+            disabled
+            style={{ backgroundColor: '#2a2a2a', color: '#888' }}
+          />
+        </div>
+        <div className="form-group">
+          <label>Password</label>
+          <div className="password-input-container">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={formData.password}
               onChange={handleChange}
-              className="edit-select"
+              className="edit-input"
+              placeholder="Enter new password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="password-toggle-btn"
             >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="admin">Admin</option>
-              <option value="banned">Banned</option>
-            </select>
+              {showPassword ? "Hide" : "Show"}
+            </button>
           </div>
+        </div>
+        <div className="form-group">
+          <label>Status</label>
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleChange}
+            className="edit-select"
+          >
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="admin">Admin</option>
+            <option value="banned">Banned</option>
+          </select>
         </div>
         <div className="form-group">
           <label>Mastered Moves</label>
@@ -1005,7 +960,7 @@ const EditUserForm = ({ user, onSave, onCancel, formRef, moves }) => {
             name="battleVideos"
             value={formData.battleVideos.join(', ')}
             onChange={(e) => handleArrayChange('battleVideos', e.target.value)}
-            className="edit-textarea"
+            className="form-textarea"
             rows="3"
             placeholder="e.g., https://youtube.com/watch?v=..., https://vimeo.com/..."
           />
@@ -1018,7 +973,11 @@ const EditUserForm = ({ user, onSave, onCancel, formRef, moves }) => {
 export default function Admin() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { currentUser, isAdmin } = useAuth();
+  const location = useLocation();
+  const { currentUser, isAdmin, updateUser: updateAuthUser } = useAuth();
+  
+  // Check if we're on an edit page to disable auto-refresh
+  const isOnEditPage = location.pathname.includes('/edit-');
   
   // Check if user is logged in and is admin
   useEffect(() => {
@@ -1058,7 +1017,7 @@ export default function Admin() {
   // Get refreshUserData from ProfileContext
   const { refreshUserData } = useProfile();
   
-  // Auto-refresh data when user profile changes
+  // Auto-refresh data when user profile changes (disabled on edit pages)
   useAutoRefresh(() => {
     // Refresh all data when user profile changes
     refetchMoves();
@@ -1067,7 +1026,7 @@ export default function Admin() {
     refetchBadges();
     refetchEvents();
     refetchPendingMoves();
-  });
+  }, [], !isOnEditPage);
   
   // Initialize activeTab based on URL parameters
   const getInitialTab = () => {
@@ -1078,9 +1037,18 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState(getInitialTab);
   const [editingItem, setEditingItem] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerms, setSearchTerms] = useState({
+    moves: '',
+    badges: '',
+    events: '',
+    crews: '',
+    users: '',
+    approvals: ''
+  });
   const [toast, setToast] = useState({ show: false, message: '' });
   const [showPasswords, setShowPasswords] = useState(false);
+  const [viewMode, setViewMode] = useState('card'); // 'card' or 'list'
+  const [eventsSubTab, setEventsSubTab] = useState('and8'); // 'and8' or 'danish'
 
   // Update tab when URL parameters change and check for success messages
   useEffect(() => {
@@ -1105,6 +1073,13 @@ export default function Admin() {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSearchParams({ tab });
+    // Clear search term when switching tabs
+    setSearchTerms(prev => ({
+      ...prev,
+      [activeTab]: '' // Clear the current tab's search
+    }));
+    // Scroll to top when switching tabs
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Use real API data
@@ -1135,19 +1110,8 @@ export default function Admin() {
   }));
 
   const handleEdit = (item, type) => {
+    // Set the item to edit mode instead of navigating
     setEditingItem({ ...item, type });
-    
-    // Auto-scroll to the editing panel after a short delay to allow DOM update
-    setTimeout(() => {
-      const editingCard = document.querySelector('.data-card.editing');
-      if (editingCard) {
-        editingCard.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start',
-          inline: 'nearest'
-        });
-      }
-    }, 100);
   };
 
   const handleSave = async (updatedItem) => {
@@ -1174,6 +1138,10 @@ export default function Admin() {
           // Refresh user data in ProfileContext after updating a user
           if (refreshUserData) {
             refreshUserData();
+          }
+          // Update AuthContext if the updated user is the current user
+          if (currentUser && currentUser._id === itemData._id) {
+            updateAuthUser(itemData);
           }
           // Show badge notification if new badges were earned
           if (response && response.newBadges && response.newBadges.length > 0) {
@@ -1299,9 +1267,9 @@ export default function Admin() {
     
     // Filter moves based on search term
     const filteredMoves = apiMoves.filter(move =>
-      move.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      move.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      move.level.toLowerCase().includes(searchTerm.toLowerCase())
+      move.name.toLowerCase().includes(searchTerms.moves.toLowerCase()) ||
+      move.category.toLowerCase().includes(searchTerms.moves.toLowerCase()) ||
+      move.level.toLowerCase().includes(searchTerms.moves.toLowerCase())
     );
     
     return (
@@ -1314,35 +1282,51 @@ export default function Admin() {
               <input
                 type="text"
                 placeholder="Search moves..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchTerms.moves}
+                onChange={(e) => setSearchTerms(prev => ({ ...prev, moves: e.target.value }))}
                 className="search-input"
               />
             </div>
-            <button className="add-btn" onClick={() => navigate(`/admin/add-move?tab=${activeTab}`)}>
+            <div className="view-toggle">
+              <button 
+                className={`toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
+                onClick={() => setViewMode('card')}
+                title="Card View"
+              >
+                <FaTh />
+              </button>
+              <button 
+                className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title="List View"
+              >
+                <FaList />
+              </button>
+            </div>
+            <button className="header-action-btn add-btn" onClick={() => navigate(`/admin/add-move?tab=${activeTab}`)}>
               <FaPlus /> Add Move
             </button>
-            <button className="refresh-btn" onClick={() => refetchMoves()}>
+            <button className="header-action-btn refresh-btn" onClick={() => refetchMoves()}>
               <FaSync /> Refresh
             </button>
           </div>
         </div>
-                  <div className="data-grid">
+                  <div className={`data-container ${viewMode === 'list' ? 'data-list' : 'data-grid'}`}>
             {filteredMoves.map((move) => (
-            <div key={move.id} className={`data-card ${editingItem && editingItem.id === move.id && editingItem.type === 'moves' ? 'editing' : ''}`}>
+            <div key={move._id} className={`data-card ${viewMode === 'list' ? 'data-list-item' : ''} ${editingItem && editingItem._id === move._id && editingItem.type === 'moves' ? 'editing' : ''}`}>
               <div className="card-header">
                 <h3>{move.name}</h3>
                 <div className="card-actions">
-                  {editingItem && editingItem.id === move.id && editingItem.type === 'moves' ? (
+                  {editingItem && editingItem._id === move._id && editingItem.type === 'moves' ? (
                     <>
                       <button onClick={() => setEditingItem(null)} className="cancel-btn">
                         <FaTimes />
                       </button>
                       <button onClick={(e) => {
                         e.preventDefault();
-                        if (formRefs[move.id]) {
+                        if (formRefs[move._id]) {
                           // Manually trigger the form submission
-                          const form = formRefs[move.id];
+                          const form = formRefs[move._id];
                           if (form) {
                             const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
                             form.dispatchEvent(submitEvent);
@@ -1357,7 +1341,7 @@ export default function Admin() {
                       <button onClick={() => handleEdit(move, 'moves')} className="edit-btn">
                         <FaEdit />
                       </button>
-                      <button onClick={() => handleDelete(move.id, 'moves')} className="delete-btn">
+                      <button onClick={() => handleDelete(move._id, 'moves')} className="delete-btn">
                         <FaTrash />
                       </button>
                     </>
@@ -1365,19 +1349,26 @@ export default function Admin() {
                 </div>
               </div>
               <div className="card-content">
-                {editingItem && editingItem.id === move.id && editingItem.type === 'moves' ? (
-                  <EditMoveForm 
-                    move={editingItem} 
-                    onSave={handleSave} 
+                {editingItem && editingItem._id === move._id && editingItem.type === 'moves' ? (
+                  <EditMoveForm
+                    move={move}
+                    onSave={(updatedMove) => {
+                      handleSave(updatedMove);
+                      setEditingItem(null);
+                    }}
                     onCancel={() => setEditingItem(null)}
-                    formRef={(ref) => formRefs[move.id] = ref}
+                    formRef={(ref) => {
+                      if (ref) {
+                        formRefs[move._id] = ref;
+                      }
+                    }}
                   />
                 ) : (
                   <>
                     <p><strong>Category:</strong> {move.category}</p>
                     <p><strong>Level:</strong> {move.level}</p>
                     <p><strong>XP:</strong> {move.xp}</p>
-                    <p><strong>Recommendations:</strong> {move.recommendations ? move.recommendations.join(', ') : 'None'}</p>
+                    <p><strong>Recommendations:</strong> {move.recommendations ? move.recommendations.map(rec => rec.name || rec).join(', ') : 'None'}</p>
                     {move.videoUrl && (
                       <p>
                         <a href={move.videoUrl} target="_blank" rel="noopener noreferrer" className="video-link">
@@ -1399,9 +1390,9 @@ export default function Admin() {
     const formRefs = {};
     // Filter badges based on search term
     const filteredBadges = badgesData.filter(badge =>
-      badge.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      badge.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      badge.description.toLowerCase().includes(searchTerm.toLowerCase())
+      badge.name.toLowerCase().includes(searchTerms.badges.toLowerCase()) ||
+      badge.category.toLowerCase().includes(searchTerms.badges.toLowerCase()) ||
+      badge.description.toLowerCase().includes(searchTerms.badges.toLowerCase())
     );
 
     return (
@@ -1414,34 +1405,50 @@ export default function Admin() {
               <input
                 type="text"
                 placeholder="Search badges..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchTerms.badges}
+                onChange={(e) => setSearchTerms(prev => ({ ...prev, badges: e.target.value }))}
                 className="search-input"
               />
             </div>
-            <button className="add-btn" onClick={() => navigate(`/admin/add-badge?tab=${activeTab}`)}>
+            <div className="view-toggle">
+              <button 
+                className={`toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
+                onClick={() => setViewMode('card')}
+                title="Card View"
+              >
+                <FaTh />
+              </button>
+              <button 
+                className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title="List View"
+              >
+                <FaList />
+              </button>
+            </div>
+            <button className="header-action-btn add-btn" onClick={() => navigate(`/admin/add-badge?tab=${activeTab}`)}>
               <FaPlus /> Add Badge
             </button>
-            <button className="refresh-btn" onClick={() => refetchBadges()}>
+            <button className="header-action-btn refresh-btn" onClick={() => refetchBadges()}>
               <FaSync /> Refresh
             </button>
           </div>
         </div>
-        <div className="data-grid">
+        <div className={`data-container ${viewMode === 'list' ? 'data-list' : 'data-grid'}`}>
           {filteredBadges.map((badge) => (
-            <div key={badge.id} className={`data-card ${editingItem && editingItem.id === badge.id && editingItem.type === 'badges' ? 'editing' : ''}`}>
+            <div key={badge._id} className={`data-card ${viewMode === 'list' ? 'data-list-item' : ''} ${editingItem && editingItem._id === badge._id && editingItem.type === 'badges' ? 'editing' : ''}`}>
               <div className="card-header">
                 <h3>{badge.name}</h3>
                 <div className="card-actions">
-                  {editingItem && editingItem.id === badge.id && editingItem.type === 'badges' ? (
+                  {editingItem && editingItem._id === badge._id && editingItem.type === 'badges' ? (
                     <>
                       <button onClick={() => setEditingItem(null)} className="cancel-btn">
                         <FaTimes />
                       </button>
                       <button onClick={(e) => {
                         e.preventDefault();
-                        if (formRefs[badge.id]) {
-                          const form = formRefs[badge.id];
+                        if (formRefs[badge._id]) {
+                          const form = formRefs[badge._id];
                           if (form) {
                             const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
                             form.dispatchEvent(submitEvent);
@@ -1456,7 +1463,7 @@ export default function Admin() {
                       <button onClick={() => handleEdit(badge, 'badges')} className="edit-btn">
                         <FaEdit />
                       </button>
-                      <button onClick={() => handleDelete(badge.id, 'badges')} className="delete-btn">
+                      <button onClick={() => handleDelete(badge._id, 'badges')} className="delete-btn">
                         <FaTrash />
                       </button>
                     </>
@@ -1464,12 +1471,19 @@ export default function Admin() {
                 </div>
               </div>
               <div className="card-content">
-                {editingItem && editingItem.id === badge.id && editingItem.type === 'badges' ? (
+                {editingItem && editingItem._id === badge._id && editingItem.type === 'badges' ? (
                   <EditBadgeForm
-                    badge={editingItem}
-                    onSave={handleSave}
+                    badge={badge}
+                    onSave={(updatedBadge) => {
+                      handleSave(updatedBadge);
+                      setEditingItem(null);
+                    }}
                     onCancel={() => setEditingItem(null)}
-                    formRef={(ref) => formRefs[badge.id] = ref}
+                    formRef={(ref) => {
+                      if (ref) {
+                        formRefs[badge._id] = ref;
+                      }
+                    }}
                   />
                 ) : (
                   <>
@@ -1478,7 +1492,7 @@ export default function Admin() {
                     <p><strong>Requirement:</strong> {badge.requirement || 'None'}</p>
                     {badge.image && (
                       <div className="badge-image-preview">
-                        <img src={badge.image} alt={badge.name} />
+                        <img src={badge.image.startsWith('/uploads/') ? `http://localhost:5000${badge.image}` : badge.image} alt={badge.name} />
                       </div>
                     )}
                   </>
@@ -1493,13 +1507,22 @@ export default function Admin() {
 
   const renderEventsTab = () => {
     const formRefs = {};
-    // Filter events based on search term
-    const filteredEvents = eventsData.filter(event =>
-      event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.organizer.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    
+    // Filter events based on search term and Danish detection
+    const filteredEvents = eventsData.filter(event => {
+      const searchMatch = event.title.toLowerCase().includes(searchTerms.events.toLowerCase()) ||
+        event.location.toLowerCase().includes(searchTerms.events.toLowerCase()) ||
+        event.category.toLowerCase().includes(searchTerms.events.toLowerCase()) ||
+        event.organizer.toLowerCase().includes(searchTerms.events.toLowerCase());
+      
+      if (eventsSubTab === 'and8') {
+        // Show international events that are NOT Danish
+        return searchMatch && event.eventType === 'international' && !isDanishEvent(event);
+      } else {
+        // Show Danish events (either national type OR international events that are Danish)
+        return searchMatch && (event.eventType === 'national' || (event.eventType === 'international' && isDanishEvent(event)));
+      }
+    });
 
     return (
       <div className="admin-content">
@@ -1511,84 +1534,219 @@ export default function Admin() {
               <input
                 type="text"
                 placeholder="Search events..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchTerms.events}
+                onChange={(e) => setSearchTerms(prev => ({ ...prev, events: e.target.value }))}
                 className="search-input"
               />
             </div>
-            <button className="add-btn" onClick={() => navigate(`/admin/add-event?tab=${activeTab}`)}>
-              <FaPlus /> Add Event
-            </button>
-            <button className="refresh-btn" onClick={() => refetchEvents()}>
+            <div className="view-toggle">
+              <button 
+                className={`toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
+                onClick={() => setViewMode('card')}
+                title="Card View"
+              >
+                <FaTh />
+              </button>
+              <button 
+                className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title="List View"
+              >
+                <FaList />
+              </button>
+            </div>
+            {eventsSubTab === 'danish' && (
+              <button className="header-action-btn add-btn" onClick={() => navigate(`/admin/add-event?tab=${activeTab}`)}>
+                <FaPlus /> Add Danish Event
+              </button>
+            )}
+            <button className="header-action-btn refresh-btn" onClick={() => refetchEvents()}>
               <FaSync /> Refresh
             </button>
           </div>
         </div>
-        <div className="data-grid">
-          {filteredEvents.map((event) => (
-            <div key={event.id} className={`data-card ${editingItem && editingItem.id === event.id && editingItem.type === 'events' ? 'editing' : ''}`}>
-              <div className="card-header">
-                <h3>{event.title}</h3>
-                <div className="card-actions">
-                  {editingItem && editingItem.id === event.id && editingItem.type === 'events' ? (
-                    <>
-                      <button onClick={() => setEditingItem(null)} className="cancel-btn">
-                        <FaTimes />
-                      </button>
-                      <button onClick={(e) => {
-                        e.preventDefault();
-                        if (formRefs[event.id]) {
-                          const form = formRefs[event.id];
-                          if (form) {
-                            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-                            form.dispatchEvent(submitEvent);
-                          }
-                        }
-                      }} className="save-btn">
-                        <FaSave />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button onClick={() => handleEdit(event, 'events')} className="edit-btn">
-                        <FaEdit />
-                      </button>
-                      <button onClick={() => handleDelete(event.id, 'events')} className="delete-btn">
-                        <FaTrash />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-              <div className="card-content">
-                {editingItem && editingItem.id === event.id && editingItem.type === 'events' ? (
-                  <EditEventForm
-                    event={editingItem}
-                    onSave={handleSave}
-                    onCancel={() => setEditingItem(null)}
-                    formRef={(ref) => formRefs[event.id] = ref}
-                  />
-                ) : (
-                  <>
-                    <p><strong>Date:</strong> {event.date}</p>
-                    <p><strong>Time:</strong> {event.time}</p>
-                    <p><strong>Location:</strong> {event.location}</p>
-                    <p><strong>Category:</strong> {event.category}</p>
-                    <p><strong>Status:</strong> {event.status}</p>
-                    <p><strong>Participants:</strong> {event.currentParticipants || 0}/{event.maxParticipants}</p>
-                    <p><strong>Entry Fee:</strong> {event.entryFee}</p>
-                    <p><strong>Organizer:</strong> {event.organizer}</p>
-                    {event.image && (
-                      <div className="event-banner-preview">
-                        <img src={event.image} alt={event.title} />
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
+
+        {/* Events Sub-tabs */}
+        <div className="events-sub-tabs">
+          <button 
+            className={`sub-tab-btn ${eventsSubTab === 'and8' ? 'active' : ''}`}
+            onClick={() => setEventsSubTab('and8')}
+          >
+            <FaGlobe /> And8 International Events ({eventsData.filter(e => e.eventType === 'international' && !isDanishEvent(e)).length})
+          </button>
+          <button 
+            className={`sub-tab-btn ${eventsSubTab === 'danish' ? 'active' : ''}`}
+            onClick={() => setEventsSubTab('danish')}
+          >
+            <FaFlag /> Danish Events ({eventsData.filter(e => e.eventType === 'national' || (e.eventType === 'international' && isDanishEvent(e))).length})
+          </button>
         </div>
+
+        {/* And8 Events Section */}
+        {eventsSubTab === 'and8' && (
+          <div className="events-section">
+            <div className={`data-container ${viewMode === 'list' ? 'data-list' : 'data-grid'}`} data-container="events">
+              {filteredEvents.map((event) => (
+                <div key={event._id} className={`data-card international-event ${viewMode === 'list' ? 'data-list-item' : ''} ${editingItem && editingItem._id === event._id && editingItem.type === 'events' ? 'editing' : ''}`} data-card="event">
+                  <div className="card-header">
+                    <h3>{event.title}</h3>
+                    <div className="card-actions">
+                      {editingItem && editingItem._id === event._id && editingItem.type === 'events' ? (
+                        <>
+                          <button onClick={() => setEditingItem(null)} className="cancel-btn">
+                            <FaTimes />
+                          </button>
+                          <button onClick={(e) => {
+                            e.preventDefault();
+                            if (formRefs[event._id]) {
+                              const form = formRefs[event._id];
+                              if (form) {
+                                const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+                                form.dispatchEvent(submitEvent);
+                              }
+                            }
+                          }} className="save-btn">
+                            <FaSave />
+                          </button>
+                        </>
+                      ) : (
+                                <>
+          <button onClick={() => handleEdit(event, 'events')} className="edit-btn">
+            <FaEdit />
+          </button>
+          <button onClick={() => handleDelete(event._id, 'events')} className="delete-btn">
+            <FaTrash />
+          </button>
+        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="card-content">
+                    {editingItem && editingItem._id === event._id && editingItem.type === 'events' ? (
+                      <EditEventForm
+                        event={event}
+                        onSave={(updatedEvent) => {
+                          handleSave(updatedEvent);
+                          setEditingItem(null);
+                        }}
+                        onCancel={() => setEditingItem(null)}
+                        formRef={(ref) => {
+                          if (ref) {
+                            formRefs[event._id] = ref;
+                          }
+                        }}
+                      />
+                    ) : (
+                      <>
+                        <p><strong>Date:</strong> {event.date ? new Date(event.date).toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        }) : 'Date TBA'}</p>
+                        <p><strong>Location:</strong> {event.location}</p>
+                        <p><strong>Category:</strong> {event.category}</p>
+                        <p><strong>Organizer:</strong> {event.organizer}</p>
+                        <p><strong>Website:</strong> <a href={event.website} target="_blank" rel="noopener noreferrer">Visit Site</a></p>
+                        {event.endDate && (
+                          <p><strong>End Date:</strong> {new Date(event.endDate).toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}</p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Danish Events Section */}
+        {eventsSubTab === 'danish' && (
+          <div className="events-section">
+            <div className={`data-container ${viewMode === 'list' ? 'data-list' : 'data-grid'}`} data-container="events">
+              {filteredEvents.map((event) => (
+                <div key={event._id} className={`data-card national-event ${viewMode === 'list' ? 'data-list-item' : ''} ${editingItem && editingItem._id === event._id && editingItem.type === 'events' ? 'editing' : ''}`} data-card="event">
+                  <div className="card-header">
+                    <h3>{event.title}</h3>
+                    <div className="card-actions">
+                      {editingItem && editingItem._id === event._id && editingItem.type === 'events' ? (
+                        <>
+                          <button onClick={() => setEditingItem(null)} className="cancel-btn">
+                            <FaTimes />
+                          </button>
+                          <button onClick={(e) => {
+                            e.preventDefault();
+                            if (formRefs[event._id]) {
+                              const form = formRefs[event._id];
+                              if (form) {
+                                const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+                                form.dispatchEvent(submitEvent);
+                              }
+                            }
+                          }} className="save-btn">
+                            <FaSave />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button onClick={() => handleEdit(event, 'events')} className="edit-btn">
+                            <FaEdit />
+                          </button>
+                          <button onClick={() => handleDelete(event._id, 'events')} className="delete-btn">
+                            <FaTrash />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="card-content">
+                    {editingItem && editingItem._id === event._id && editingItem.type === 'events' ? (
+                      <EditEventForm
+                        event={event}
+                        onSave={(updatedEvent) => {
+                          handleSave(updatedEvent);
+                          setEditingItem(null);
+                        }}
+                        onCancel={() => setEditingItem(null)}
+                        formRef={(ref) => {
+                          if (ref) {
+                            formRefs[event._id] = ref;
+                          }
+                        }}
+                      />
+                    ) : (
+                      <>
+                        <p><strong>Date:</strong> {event.date ? new Date(event.date).toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        }) : 'Date TBA'}</p>
+                        <p><strong>Location:</strong> {event.location}</p>
+                        <p><strong>Category:</strong> {event.category}</p>
+                        <p><strong>Status:</strong> {event.status}</p>
+                        <p><strong>Organizer:</strong> {event.organizer}</p>
+                        {event.battleFormat && (
+                          <p><strong>Battle Format:</strong> {event.battleFormat}</p>
+                        )}
+                        {event.image && (
+                          <div className="event-banner-preview">
+                            <img src={event.image} alt={event.title} />
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
@@ -1619,8 +1777,8 @@ export default function Admin() {
     
     // Filter crews based on search term
     const filteredCrews = crewsData.filter(crew =>
-      crew.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      crew.description.toLowerCase().includes(searchTerm.toLowerCase())
+      crew.name.toLowerCase().includes(searchTerms.crews.toLowerCase()) ||
+      crew.description.toLowerCase().includes(searchTerms.crews.toLowerCase())
     );
 
     return (
@@ -1633,22 +1791,38 @@ export default function Admin() {
               <input
                 type="text"
                 placeholder="Search crews..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchTerms.crews}
+                onChange={(e) => setSearchTerms(prev => ({ ...prev, crews: e.target.value }))}
                 className="search-input"
               />
             </div>
-            <button className="add-btn" onClick={() => navigate(`/admin/add-crew?tab=${activeTab}`)}>
+            <div className="view-toggle">
+              <button 
+                className={`toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
+                onClick={() => setViewMode('card')}
+                title="Card View"
+              >
+                <FaTh />
+              </button>
+              <button 
+                className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title="List View"
+              >
+                <FaList />
+              </button>
+            </div>
+            <button className="header-action-btn add-btn" onClick={() => navigate(`/admin/add-crew?tab=${activeTab}`)}>
               <FaPlus /> Add Crew
             </button>
-            <button className="refresh-btn" onClick={() => refetchCrews()}>
+            <button className="header-action-btn refresh-btn" onClick={() => refetchCrews()}>
               <FaSync /> Refresh
             </button>
           </div>
         </div>
-        <div className="data-grid">
+        <div className={`data-container ${viewMode === 'list' ? 'data-list' : 'data-grid'}`} data-container="crews">
           {filteredCrews.map((crew) => (
-            <div key={crew._id} className={`data-card ${editingItem && editingItem._id === crew._id && editingItem.type === 'crews' ? 'editing' : ''}`}>
+            <div key={crew._id} className={`data-card ${viewMode === 'list' ? 'data-list-item' : ''} ${editingItem && editingItem._id === crew._id && editingItem.type === 'crews' ? 'editing' : ''}`} data-card="crew">
               <div className="card-header">
                 <h3>{crew.name}</h3>
                 <div className="card-actions">
@@ -1683,12 +1857,19 @@ export default function Admin() {
                 </div>
               </div>
               <div className="card-content">
-                {editingItem && editingItem.id === crew.id && editingItem.type === 'crews' ? (
+                {editingItem && editingItem._id === crew._id && editingItem.type === 'crews' ? (
                   <EditCrewForm
-                    crew={editingItem}
-                    onSave={handleSave}
+                    crew={crew}
+                    onSave={(updatedCrew) => {
+                      handleSave(updatedCrew);
+                      setEditingItem(null);
+                    }}
                     onCancel={() => setEditingItem(null)}
-                    formRef={(ref) => formRefs[crew._id] = ref}
+                    formRef={(ref) => {
+                      if (ref) {
+                        formRefs[crew._id] = ref;
+                      }
+                    }}
                   />
                 ) : (
                   <>
@@ -1736,10 +1917,10 @@ export default function Admin() {
     
     // Filter users based on search term
     const filteredUsers = users.filter(user =>
-      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      user.username.toLowerCase().includes(searchTerms.users.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerms.users.toLowerCase()) ||
+      user.status.toLowerCase().includes(searchTerms.users.toLowerCase()) ||
+      (user.name && user.name.toLowerCase().includes(searchTerms.users.toLowerCase()))
     );
 
     return (
@@ -1752,18 +1933,34 @@ export default function Admin() {
               <input
                 type="text"
                 placeholder="Search users..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchTerms.users}
+                onChange={(e) => setSearchTerms(prev => ({ ...prev, users: e.target.value }))}
                 className="search-input"
               />
             </div>
-            <button className="add-btn" onClick={() => navigate(`/admin/add-user?tab=${activeTab}`)}>
+            <div className="view-toggle">
+              <button 
+                className={`toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
+                onClick={() => setViewMode('card')}
+                title="Card View"
+              >
+                <FaTh />
+              </button>
+              <button 
+                className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title="List View"
+              >
+                <FaList />
+              </button>
+            </div>
+            <button className="header-action-btn add-btn" onClick={() => navigate(`/admin/add-user?tab=${activeTab}`)}>
               <FaPlus /> Add User
             </button>
-            <button className="refresh-btn" onClick={() => refetchUsers()}>
+            <button className="header-action-btn refresh-btn" onClick={() => refetchUsers()}>
               <FaSync /> Refresh
             </button>
-            <button className="add-btn" onClick={() => {
+            <button className="header-action-btn password-btn" onClick={() => {
               if (showPasswords) {
                 refetchUsers();
                 setShowPasswords(false);
@@ -1776,9 +1973,9 @@ export default function Admin() {
             </button>
           </div>
         </div>
-        <div className="data-grid">
+        <div className={`data-container ${viewMode === 'list' ? 'data-list' : 'data-grid'}`} data-container="users">
           {filteredUsers.map((user) => (
-            <div key={user._id} className={`data-card ${editingItem && editingItem._id === user._id && editingItem.type === 'users' ? 'editing' : ''}`}>
+            <div key={user._id} className={`data-card ${viewMode === 'list' ? 'data-list-item' : ''} ${editingItem && editingItem._id === user._id && editingItem.type === 'users' ? 'editing' : ''}`} data-card="user">
               <div className="card-header">
                 <h3>{user.username}</h3>
                 <div className="card-actions">
@@ -1815,11 +2012,18 @@ export default function Admin() {
               <div className="card-content">
                 {editingItem && editingItem._id === user._id && editingItem.type === 'users' ? (
                   <EditUserForm
-                    user={editingItem}
-                    onSave={handleSave}
+                    user={user}
+                    onSave={(updatedUser) => {
+                      handleSave(updatedUser);
+                      setEditingItem(null);
+                    }}
                     onCancel={() => setEditingItem(null)}
-                    formRef={(ref) => formRefs[user._id] = ref}
-                    moves={movesData}
+                    formRef={(ref) => {
+                      if (ref) {
+                        formRefs[user._id] = ref;
+                      }
+                    }}
+                    moves={apiMoves}
                   />
                 ) : (
                   <>
@@ -1869,9 +2073,9 @@ export default function Admin() {
     }
 
     const filteredApprovals = moveApprovals.filter(request =>
-      request.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.moveName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.moveCategory.toLowerCase().includes(searchTerm.toLowerCase())
+      request.userName.toLowerCase().includes(searchTerms.approvals.toLowerCase()) ||
+      request.moveName.toLowerCase().includes(searchTerms.approvals.toLowerCase()) ||
+      request.moveCategory.toLowerCase().includes(searchTerms.approvals.toLowerCase())
     );
     
     return (
@@ -1884,12 +2088,28 @@ export default function Admin() {
               <input
                 type="text"
                 placeholder="Search requests..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchTerms.approvals}
+                onChange={(e) => setSearchTerms(prev => ({ ...prev, approvals: e.target.value }))}
                 className="search-input"
               />
             </div>
-            <button className="refresh-btn" onClick={() => refetchPendingMoves()}>
+            <div className="view-toggle">
+              <button 
+                className={`toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
+                onClick={() => setViewMode('card')}
+                title="Card View"
+              >
+                <FaTh />
+              </button>
+              <button 
+                className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+                onClick={() => setViewMode('list')}
+                title="List View"
+              >
+                <FaList />
+              </button>
+            </div>
+            <button className="header-action-btn refresh-btn" onClick={() => refetchPendingMoves()}>
               <FaSync /> Refresh
             </button>
           </div>
@@ -1900,9 +2120,9 @@ export default function Admin() {
             <p>No pending move approval requests.</p>
           </div>
         ) : (
-          <div className="data-grid">
+          <div className={`data-grid ${viewMode === 'list' ? 'list-view' : ''}`} data-container="approvals">
             {filteredApprovals.map((request) => (
-              <div key={request.id} className="data-card">
+              <div key={request.id} className="data-card" data-card="approval">
                 <div className="card-header">
                   <h3>{request.moveName}</h3>
                   <div className="card-actions">
@@ -1954,12 +2174,12 @@ export default function Admin() {
               <input
                 type="text"
                 placeholder="Search mastered moves..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchTerms.moves}
+                onChange={(e) => setSearchTerms(prev => ({ ...prev, moves: e.target.value }))}
                 className="search-input"
               />
             </div>
-            <button className="refresh-btn" onClick={() => window.location.reload()}>
+            <button className="header-action-btn refresh-btn" onClick={() => window.location.reload()}>
               <FaSync /> Refresh
             </button>
           </div>
@@ -1973,8 +2193,8 @@ export default function Admin() {
           <div className="data-grid">
             {masteredMoves
               .filter(move => 
-                move.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                move.category.toLowerCase().includes(searchTerm.toLowerCase())
+                move.name.toLowerCase().includes(searchTerms.moves.toLowerCase()) ||
+                move.category.toLowerCase().includes(searchTerms.moves.toLowerCase())
               )
               .map((move) => (
                 <div key={move.name} className="data-card">
@@ -2004,14 +2224,13 @@ export default function Admin() {
     );
   };
 
+
+
   return (
-    <div className="admin-page">
+    <div className={`admin-page ${editingItem ? 'editing-mode' : ''}`}>
       {/* Sidebar */}
       <div className="admin-sidebar">
         <div className="sidebar-header">
-          <button onClick={() => navigate('/')} className="back-btn">
-            <FaArrowLeft /> Back
-          </button>
           <h1>Admin Panel</h1>
         </div>
         
@@ -2056,7 +2275,7 @@ export default function Admin() {
       </div>
 
       {/* Main Content */}
-      <div className="admin-main">
+      <div className={`admin-main ${editingItem ? 'editing-mode' : ''}`}>
         {activeTab === 'moves' && renderMovesTab()}
         {activeTab === 'badges' && renderBadgesTab()}
         {activeTab === 'events' && renderEventsTab()}
@@ -2064,7 +2283,8 @@ export default function Admin() {
         {activeTab === 'users' && renderUsersTab()}
         {activeTab === 'approvals' && renderApprovalsTab()}
       </div>
-      
+
+
       {/* Toast Notification */}
       {toast.show && (
         <Toast 
@@ -2074,4 +2294,4 @@ export default function Admin() {
       )}
     </div>
   );
-} 
+}

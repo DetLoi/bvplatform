@@ -5,7 +5,7 @@ import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import CrewCard from '../components/CrewCard';
 import CrewSelection from '../components/CrewSelection';
 import { FaUsers, FaTrophy, FaChartLine, FaArrowLeft } from 'react-icons/fa';
-import '../styles/pages/profile.css';
+import '../styles/pages/crews.css';
 
 // Helper function to convert numeric level to CSS class
 const getLevelClass = (level) => {
@@ -17,7 +17,7 @@ const getLevelClass = (level) => {
   return 'beginner';
 };
 
-export default function Profile() {
+export default function Crews() {
   const { xp, level, progress, masteredMoves } = useProfile();
   const [selectedCrew, setSelectedCrew] = useState(null);
   const [activeTab, setActiveTab] = useState('crew');
@@ -132,30 +132,30 @@ export default function Profile() {
                 <h2 className="section-title">Crew Members</h2>
                 <div className="crew-stats-overview">
                   <div className="crew-stat">
-                    <span className="crew-stat-number">{selectedCrew.memberCount}</span>
+                    <span className="crew-stat-number">{selectedCrew.members ? selectedCrew.members.length : 0}</span>
                     <span className="crew-stat-label">Members</span>
                   </div>
                   <div className="crew-stat">
-                    <span className="crew-stat-number">{selectedCrew.totalXP.toLocaleString()}</span>
-                    <span className="crew-stat-label">Total XP</span>
+                    <span className="crew-stat-number">{selectedCrew.location || 'N/A'}</span>
+                    <span className="crew-stat-label">Location</span>
                   </div>
                   <div className="crew-stat">
-                    <span className="crew-stat-number">{selectedCrew.level}</span>
-                    <span className="crew-stat-label">Crew Level</span>
+                    <span className="crew-stat-number">{selectedCrew.founded ? new Date(selectedCrew.founded).getFullYear() : 'N/A'}</span>
+                    <span className="crew-stat-label">Founded</span>
                   </div>
                 </div>
               </div>
               
               <div className="crew-container">
                 <div className="crew-grid">
-                  {selectedCrew.members.map((member) => (
-                    <div key={member.id} className="crew-member-card">
+                  {selectedCrew.members && selectedCrew.members.map((member) => (
+                    <div key={member._id || member.id} className="crew-member-card">
                       <div className="card-header">
                         <div className="crew-member-info">
                           <div className="avatar-container">
                             <img 
                               src={member.profileImage || '/placeholder.jpg'} 
-                              alt={member.name}
+                              alt={member.username || member.name}
                               className="member-avatar"
                             />
                             <div className={`status-indicator ${member.status === 'online' ? 'online' : 'offline'}`}>
@@ -164,12 +164,12 @@ export default function Profile() {
                           </div>
                           
                           <div className="crew-member-details">
-                            <h3 className="crew-member-name">{member.name}</h3>
+                            <h3 className="crew-member-name">{member.username || member.name}</h3>
                             <div className="crew-member-level">
                               <span className="level-icon">
                                 {member.level >= 15 ? '👑' : member.level >= 10 ? '⭐' : '🔰'}
                               </span>
-                              <span className="level-text">Level {member.level}</span>
+                              <span className="level-text">Level {member.level || 1}</span>
                             </div>
                           
                           </div>
@@ -177,7 +177,7 @@ export default function Profile() {
 
                         <div className="action-button">
                           <div className="xp-display">
-                            <span className="xp-value">{member.xp.toLocaleString()}</span>
+                            <span className="xp-value">{member.xp ? member.xp.toLocaleString() : 'N/A'}</span>
                             <span className="xp-label">XP</span>
                           </div>
                         </div>
@@ -199,22 +199,22 @@ export default function Profile() {
                     <div className="overview-item">
                       <div className="overview-icon">👥</div>
                       <div className="overview-content">
-                        <span className="overview-value">{selectedCrew.memberCount}</span>
+                        <span className="overview-value">{selectedCrew.members ? selectedCrew.members.length : 0}</span>
                         <span className="overview-label">Members</span>
                       </div>
                     </div>
                     <div className="overview-item">
-                      <div className="overview-icon">⭐</div>
+                      <div className="overview-icon">📍</div>
                       <div className="overview-content">
-                        <span className="overview-value">{selectedCrew.totalXP.toLocaleString()}</span>
-                        <span className="overview-label">Total XP</span>
+                        <span className="overview-value">{selectedCrew.location || 'N/A'}</span>
+                        <span className="overview-label">Location</span>
                       </div>
                     </div>
                     <div className="overview-item">
                       <div className="overview-icon">🏆</div>
                       <div className="overview-content">
-                        <span className="overview-value">{selectedCrew.level}</span>
-                        <span className="overview-label">Crew Level</span>
+                        <span className="overview-value">{selectedCrew.founded ? new Date(selectedCrew.founded).getFullYear() : 'N/A'}</span>
+                        <span className="overview-label">Founded</span>
                       </div>
                     </div>
                   </div>
@@ -223,16 +223,17 @@ export default function Profile() {
                 <div className="stat-card">
                   <h3>Top Members</h3>
                   <div className="top-members-list">
-                    {selectedCrew.members
-                      .sort((a, b) => b.xp - a.xp)
+                    {selectedCrew.members && selectedCrew.members
+                      .filter(member => member.xp) // Only include members with XP data
+                      .sort((a, b) => (b.xp || 0) - (a.xp || 0))
                       .slice(0, 5)
                       .map((member, index) => (
-                        <div key={member.id} className="top-member-item">
+                        <div key={member._id || member.id} className="top-member-item">
                           <div className="member-rank">#{index + 1}</div>
                           <div className="member-info">
-                            <span className="member-name">{member.name}</span>
+                            <span className="member-name">{member.username || member.name}</span>
                           </div>
-                          <div className="member-xp">{member.xp.toLocaleString()} XP</div>
+                          <div className="member-xp">{member.xp ? member.xp.toLocaleString() : 'N/A'} XP</div>
                         </div>
                       ))}
                   </div>

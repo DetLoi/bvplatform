@@ -14,8 +14,8 @@ const badgeSchema = new Schema(
     },
     category: { 
       type: String, 
-      enum: ['Toprock', 'Footwork', 'Freezes', 'Power', 'Tricks', 'GoDowns', 'Special'],
-      required: true 
+      required: true,
+      trim: true
     },
     level: { 
       type: String, 

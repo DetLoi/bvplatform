@@ -9,17 +9,20 @@ import Battle from '../models/battle.models.js';
 // Users data with simple passwords and dummy emails
 const usersData = [
   {
+    id: 1,
     username: 'admin',
     name: 'Admin User',
     email: 'admin@breakverse.com',
     password: 'admin123',
     level: 15,
     xp: 15000,
+    joinDate: '2024-01-01',
     status: 'admin',
     profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-    crew: null,
+    coverImage: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&h=400&fit=crop',
+    crew: 'Specific Kidz',
     specialty: 'Power Moves',
-    masteredMoves: [],
+    masteredMoves: ['Two step', 'Salsa step', 'CC', 'Windmill', 'Headspin', 'Flare', 'Back spin', 'Baby swipe', 'Turtles', 'Tapmill'],
     pendingMoves: [],
     achievements: 12,
     battleVideos: ['https://youtube.com/watch?v=xyz123', 'https://vimeo.com/uvw456'],
@@ -28,6 +31,56 @@ const usersData = [
     socialMedia: {
       instagram: '@admin_breaker',
       facebook: 'Admin Breaker'
+    }
+  },
+  {
+    id: 2,
+    username: 'dloi',
+    name: 'DLoi',
+    email: 'dloi@example.com',
+    password: 'password123',
+    level: 12,
+    xp: 8500,
+    joinDate: '2024-01-15',
+    status: 'active',
+    profileImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
+    coverImage: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&h=400&fit=crop',
+    crew: 'Specific Kidz',
+    specialty: 'Power Moves',
+    masteredMoves: ['Two step', 'Salsa step', 'CC', 'Windmill', 'Headspin'],
+    pendingMoves: ['Flare', 'Tapmill'],
+    achievements: 8,
+    battleVideos: ['https://youtube.com/watch?v=dloi_battle1'],
+    bio: 'Power move specialist from Specific Kidz crew',
+    location: 'Copenhagen, Denmark',
+    socialMedia: {
+      instagram: '@dloi_breaker',
+      facebook: 'DLoi Breaker'
+    }
+  },
+  {
+    id: 3,
+    username: 'benji',
+    name: 'Benji',
+    email: 'benji@example.com',
+    password: 'password123',
+    level: 10,
+    xp: 6500,
+    joinDate: '2024-02-01',
+    status: 'active',
+    profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    coverImage: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&h=400&fit=crop',
+    crew: 'Specific Kidz',
+    specialty: 'Footwork',
+    masteredMoves: ['Two step', 'Salsa step', 'CC', 'Coffee grinder', '2 step', '3 step'],
+    pendingMoves: ['6 step', 'Hooks'],
+    achievements: 6,
+    battleVideos: ['https://youtube.com/watch?v=benji_footwork'],
+    bio: 'Footwork master with smooth transitions',
+    location: 'Aarhus, Denmark',
+    socialMedia: {
+      instagram: '@benji_footwork',
+      facebook: 'Benji Footwork'
     }
   }
 ];
@@ -166,319 +219,46 @@ const moveRecommendations = {
   'Icey Ice': ['Ormen', 'Halo', 'Aerial']
 };
 
-// Badges data
-const badgesData = [
-  {
-    name: 'Toprock Master',
-    description: 'Complete all Toprock moves',
-    image: 'topbadge.png',
-    category: 'Toprock',
-    requirement: 'Complete all moves in Toprock category'
-  },
-  {
-    name: 'Footwork Master',
-    description: 'Complete all Footwork moves',
-    image: 'footwork.png',
-    category: 'Footwork',
-    requirement: 'Complete all moves in Footwork category'
-  },
-  {
-    name: 'Freezes Master',
-    description: 'Complete all Freezes moves',
-    image: 'freezes.png',
-    category: 'Freezes',
-    requirement: 'Complete all moves in Freezes category'
-  },
-  {
-    name: 'Power Master',
-    description: 'Complete all Power moves',
-    image: 'Powermoves.png',
-    category: 'Power',
-    requirement: 'Complete all moves in Power category'
-  },
-  {
-    name: 'Tricks Master',
-    description: 'Complete all Tricks moves',
-    image: 'Tricks.png',
-    category: 'Tricks',
-    requirement: 'Complete all moves in Tricks category'
-  },
-  {
-    name: 'GoDowns Master',
-    description: 'Complete all GoDowns moves',
-    image: 'Godown.png',
-    category: 'GoDowns',
-    requirement: 'Complete all moves in GoDowns category'
-  },
-  {
-    name: 'Ground Master',
-    description: 'Complete all ground power moves',
-    image: 'ground.png',
-    category: 'Power',
-    requirement: 'Complete all ground power moves'
-  },
-  {
-    name: 'Air Master',
-    description: 'Complete all air power moves',
-    image: 'air.png',
-    category: 'Power',
-    requirement: 'Complete all air power moves'
-  },
-  {
-    name: 'Beginner',
-    description: 'Complete beginner level moves',
-    image: 'beginner.png',
-    category: 'Level',
-    requirement: 'Complete all beginner moves'
-  },
-  {
-    name: 'Novice',
-    description: 'Complete novice level moves',
-    image: 'novice.png',
-    category: 'Level',
-    requirement: 'Complete all novice moves'
-  },
-  {
-    name: 'Intermediate',
-    description: 'Complete intermediate level moves',
-    image: 'intermediate.png',
-    category: 'Level',
-    requirement: 'Complete all intermediate moves'
-  },
-  {
-    name: 'Advanced',
-    description: 'Complete advanced level moves',
-    image: 'Advanced.png',
-    category: 'Level',
-    requirement: 'Complete all advanced moves'
-  },
-  {
-    name: 'Skilled',
-    description: 'Complete skilled level moves',
-    image: 'skilled.png',
-    category: 'Level',
-    requirement: 'Complete all skilled moves'
-  },
-  {
-    name: 'Master',
-    description: 'Complete master level moves',
-    image: 'master.png',
-    category: 'Level',
-    requirement: 'Complete all master moves'
-  },
-  {
-    name: 'Grandmaster',
-    description: 'Complete grandmaster level moves',
-    image: 'grandmaster.png',
-    category: 'Level',
-    requirement: 'Complete all grandmaster moves'
-  }
-];
+// Badges data - empty array (badges will be created by scraping logic)
+const badgesData = [];
 
-// Events data
-const eventsData = [
-  {
-    title: "Nordic Break League 2025",
-    date: "March 15, 2025",
-    time: "18:00 - 22:00",
-    location: "Copenhagen Breakdance Center",
-    battleFormat: "2v2 international + kids battle",
-    category: "Competition",
-    description: "The biggest breaking competition of the year! Show off your skills and compete against the best breakers in Denmark. Categories include: Toprock, Footwork, Freezes, Power Moves, and All-Style. Cash prizes and trophies for winners.",
-    image: "image00006.jpeg",
-    status: "upcoming",
-    featured: true,
-    registrationOpen: true,
-    maxParticipants: 32,
-    currentParticipants: 24,
-    entryFee: "Free",
-    prizes: "Cash prizes and trophies",
-    organizer: "Nordic Break League",
-    contactEmail: "info@nordicbreakleague.com",
-    website: "https://nordicbreak.dk",
-    socialMedia: {
-      instagram: "@nordicbreakleague",
-      facebook: "Nordic Break League"
-    }
-  },
-  {
-    title: "Workshop with DLoi - Power Moves Masterclass",
-    date: "February 28, 2024",
-    time: "14:00 - 17:00",
-    location: "Urban Dance Studio, Copenhagen",
-    participants: 18,
-    maxParticipants: 20,
-    category: "Workshop",
-    description: "Join DLoi from Specific Kidz for an intensive 3-hour workshop focusing on power moves and transitions. Perfect for intermediate to advanced breakers looking to level up their game. Learn proper technique, safety, and progression methods.",
-    image: "ws.png",
-    status: "upcoming",
-    featured: false,
-    registrationOpen: true,
-    entryFee: "150 DKK",
-    prizes: "Certificate of completion",
-    organizer: "Urban Dance Studio",
-    contactEmail: "workshops@urbandancestudio.dk",
-    website: "https://urbandancestudio.dk",
-    socialMedia: {
-      instagram: "@urbandancestudio",
-      facebook: "Urban Dance Studio"
-    }
-  },
-  {
-    title: "Cypher Night - Open Floor",
-    date: "February 10, 2024",
-    time: "20:00 - 02:00",
-    location: "Underground Club, Copenhagen",
-    participants: 45,
-    maxParticipants: 60,
-    category: "Cypher",
-    description: "A night of pure breaking culture! Open cypher with live DJ, no competition, just pure expression and community. All levels welcome. Bring your A-game and positive energy! Live DJ spinning classic breakbeats.",
-    image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop",
-    status: "upcoming",
-    featured: false,
-    registrationOpen: false,
-    entryFee: "50 DKK",
-    prizes: "None - pure cypher",
-    organizer: "Underground Club",
-    contactEmail: "events@undergroundclub.dk",
-    website: "https://undergroundclub.dk",
-    socialMedia: {
-      instagram: "@undergroundclub",
-      facebook: "Underground Club"
-    }
-  },
-  {
-    title: "Red Bull BC One Denmark Qualifier",
-    date: "April 20, 2024",
-    time: "16:00 - 23:00",
-    location: "Kødbyen, Copenhagen",
-    battleFormat: "1v1 battle",
-    category: "Competition",
-    description: "Qualify for the Red Bull BC One World Finals! The most prestigious breaking competition in the world. Only the best breakers from Denmark will compete for the chance to represent at the global stage.",
-    image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop",
-    status: "upcoming",
-    featured: true,
-    registrationOpen: true,
-    maxParticipants: 64,
-    currentParticipants: 48,
-    entryFee: "100 DKK",
-    prizes: "Trip to World Finals + cash prize",
-    organizer: "Red Bull",
-    contactEmail: "bcone@redbull.dk",
-    website: "https://www.redbull.com/bcone",
-    socialMedia: {
-      instagram: "@redbullbcone",
-      facebook: "Red Bull BC One"
-    }
-  }
-];
+// Events data - empty array (events will be created by scraping logic)
+const eventsData = [];
 
-// Battles data
+// Battles data - will be created after users are seeded
 const battlesData = [
   {
-    challenger: {
-      id: "user1",
-      name: "DLoi",
-      level: "Advanced",
-      crew: "Specific Kidz"
-    },
-    opponent: {
-      id: "user2", 
-      name: "Yung M",
-      level: "Skilled",
-      crew: "Famillia Loca"
-    },
-    status: "pending",
-    callOutDate: "2024-01-15T10:30:00Z",
-    responseDate: null,
-    acceptedBy: null,
-    acceptedDate: null,
-    roomId: null,
-    videos: {
-      challenger: null,
-      opponent: null
-    },
-    adminReview: {
-      isReady: false,
-      judgedBy: null,
-      winner: null,
-      score: null,
-      comments: null,
-      judgedDate: null
-    },
-    category: "All-Style",
+    title: "DLoi vs Yung M - All Style Battle",
     description: "Let's see who has the better footwork! Been watching your moves and I think we should battle it out.",
-    stakes: "Respect and bragging rights"
-  },
-  {
-    challenger: {
-      id: "user3",
-      name: "Benji",
-      level: "Advanced", 
-      crew: "Specific Kidz"
-    },
-    opponent: {
-      id: "user1",
-      name: "DLoi",
-      level: "Advanced",
-      crew: "Specific Kidz"
-    },
-    status: "accepted",
-    callOutDate: "2024-01-10T14:20:00Z",
-    responseDate: "2024-01-12T09:15:00Z",
-    acceptedBy: "opponent",
-    acceptedDate: "2024-01-12T09:15:00Z",
-    roomId: "battle_room_2",
+    category: "All Style",
+    status: "pending",
+    stakes: "Respect and bragging rights",
     videos: {
       challenger: null,
       opponent: null
-    },
-    adminReview: {
-      isReady: false,
-      judgedBy: null,
-      winner: null,
-      score: null,
-      comments: null,
-      judgedDate: null
-    },
-    category: "Power Moves",
-    description: "Power move battle - let's see who can throw down harder! Been practicing my flares and I want to test them against you.",
-    stakes: "Respect and bragging rights"
+    }
   },
   {
-    challenger: {
-      id: "user1",
-      name: "DLoi", 
-      level: "Advanced",
-      crew: "Specific Kidz"
-    },
-    opponent: {
-      id: "user4",
-      name: "Kien",
-      level: "Intermediate",
-      crew: "Specific Kidz"
-    },
+    title: "Benji vs DLoi - Power Moves Battle",
+    description: "Power move battle - let's see who can throw down harder! Been practicing my flares and I want to test them against you.",
+    category: "All Style",
+    status: "accepted",
+    stakes: "Respect and bragging rights",
+    videos: {
+      challenger: null,
+      opponent: null
+    }
+  },
+  {
+    title: "DLoi vs Kien - Footwork Battle",
+    description: "Footwork battle - let's see who has the smoother moves!",
+    category: "All Style",
     status: "in_progress",
-    callOutDate: "2024-01-08T16:45:00Z",
-    responseDate: "2024-01-09T11:30:00Z", 
-    acceptedBy: "opponent",
-    acceptedDate: "2024-01-09T11:30:00Z",
-    roomId: "battle_room_3",
+    stakes: "Respect and bragging rights",
     videos: {
       challenger: "https://example.com/video1.mp4",
       opponent: null
-    },
-    adminReview: {
-      isReady: false,
-      judgedBy: null,
-      winner: null,
-      score: null,
-      comments: null,
-      judgedDate: null
-    },
-    category: "Footwork",
-    description: "Footwork battle - let's see who has the smoother moves!",
-    stakes: "Respect and bragging rights"
+    }
   }
 ];
 
@@ -565,8 +345,6 @@ const seedDatabase = async () => {
       }
     }
 
-
-
     // Seed Badges
     console.log('Seeding badges...');
     const createdBadges = await Badge.insertMany(badgesData);
@@ -577,9 +355,21 @@ const seedDatabase = async () => {
     const createdEvents = await Event.insertMany(eventsData);
     console.log(`✅ Created ${createdEvents.length} events`);
 
-    // Seed Battles
+    // Seed Battles with proper user references
     console.log('Seeding battles...');
-    const createdBattles = await Battle.insertMany(battlesData);
+    const battlesWithUsers = battlesData.map((battle, index) => {
+      // Assign users to battles based on index
+      const userIndex1 = index % createdUsers.length;
+      const userIndex2 = (index + 1) % createdUsers.length;
+      
+      return {
+        ...battle,
+        challenger: createdUsers[userIndex1]._id,
+        opponent: createdUsers[userIndex2]._id
+      };
+    });
+    
+    const createdBattles = await Battle.insertMany(battlesWithUsers);
     console.log(`✅ Created ${createdBattles.length} battles`);
 
     console.log('🎉 Database seeding completed successfully!');
@@ -597,4 +387,15 @@ const seedDatabase = async () => {
   }
 };
 
-export { seedDatabase }; 
+export { seedDatabase };
+
+// Call the seeding function if this file is run directly
+seedDatabase()
+  .then(() => {
+    console.log('✅ Seeding completed successfully!');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('❌ Seeding failed:', error);
+    process.exit(1);
+  }); 

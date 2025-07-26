@@ -11,11 +11,15 @@ const apiRequest = async (endpoint, options = {}) => {
   
   const config = {
     headers: {
-      'Content-Type': 'application/json',
       ...options.headers,
     },
     ...options,
   };
+
+  // Only set Content-Type for JSON requests, not for FormData
+  if (!(options.body instanceof FormData)) {
+    config.headers['Content-Type'] = 'application/json';
+  }
 
   try {
     console.log('📡 Sending request...');
@@ -154,10 +158,23 @@ export const badgesAPI = {
   
   getById: (id) => apiRequest(`/badges/${id}`),
   
-  create: (badgeData) => apiRequest('/badges', {
-    method: 'POST',
-    body: JSON.stringify(badgeData),
-  }),
+  create: (badgeData) => {
+    // Check if badgeData is FormData (for file uploads) or regular object
+    if (badgeData instanceof FormData) {
+      return apiRequest('/badges', {
+        method: 'POST',
+        body: badgeData,
+        headers: {
+          // Don't set Content-Type for FormData, let the browser set it with boundary
+        },
+      });
+    } else {
+      return apiRequest('/badges', {
+        method: 'POST',
+        body: JSON.stringify(badgeData),
+      });
+    }
+  },
   
   update: (id, badgeData) => apiRequest(`/badges/${id}`, {
     method: 'PUT',

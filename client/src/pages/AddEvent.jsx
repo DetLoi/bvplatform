@@ -1,52 +1,62 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FaArrowLeft, FaSave, FaTimes } from 'react-icons/fa';
+import { useEvents } from '../hooks/useEvents';
 import '../styles/pages/add-form.css';
 
 export default function AddEvent() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const currentTab = searchParams.get('tab') || 'events';
+  const { createEvent } = useEvents();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     date: '',
-    time: '',
     location: '',
     category: 'Competition',
     status: 'upcoming',
-    maxParticipants: 50,
     battleFormat: '',
     website: '',
-    image: ''
+    image: null,
+    eventType: 'national', // Default to Danish events
+    organizer: 'Danish Organizer' // Default organizer for Danish events
   });
 
   const categories = ['Competition', 'Workshop', 'Cypher', 'Battle', 'Jam'];
   const statuses = ['upcoming', 'ongoing', 'completed'];
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, files } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: files ? files[0] : value
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Generate a unique ID (in a real app, this would come from the backend)
-    const newEvent = {
-      id: Date.now(),
-      ...formData,
-      participants: 0
-    };
+    try {
+      // Prepare event data for API (excluding the file object)
+      const { image, ...eventDataWithoutFile } = formData;
+      
+      const eventData = {
+        ...eventDataWithoutFile,
+        eventType: 'national', // Danish events
+        participants: []
+      };
 
-    // Here you would typically save to your data store
-    console.log('New event:', newEvent);
-    
-    // Navigate back to admin with success message
-    navigate(`/admin?tab=${currentTab}&message=Event added successfully!`);
+      // Create the event using the API
+      await createEvent(eventData);
+      
+      // Navigate back to admin with success message
+      navigate(`/admin?tab=${currentTab}&message=Event added successfully!`);
+    } catch (error) {
+      console.error('Error creating event:', error);
+      // You could add error handling here (show toast, etc.)
+      alert('Error creating event. Please try again.');
+    }
   };
 
   const handleCancel = () => {
@@ -60,7 +70,10 @@ export default function AddEvent() {
           <button onClick={handleCancel} className="back-btn">
             <FaArrowLeft /> Back
           </button>
-          <h1>Add New Event</h1>
+          <div>
+            <h1>Add New Danish Event</h1>
+            <p>Create a new local Danish breaking event</p>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="add-form">
@@ -92,32 +105,17 @@ export default function AddEvent() {
             />
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="date">Date *</label>
-              <input
-                type="date"
-                id="date"
-                name="date"
-                value={formData.date}
-                onChange={handleChange}
-                required
-                className="form-input"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="time">Time *</label>
-              <input
-                type="time"
-                id="time"
-                name="time"
-                value={formData.time}
-                onChange={handleChange}
-                required
-                className="form-input"
-              />
-            </div>
+          <div className="form-group">
+            <label htmlFor="date">Date *</label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+              required
+              className="form-input"
+            />
           </div>
 
           <div className="form-group">
@@ -130,6 +128,20 @@ export default function AddEvent() {
               onChange={handleChange}
               required
               placeholder="Enter event location"
+              className="form-input"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="organizer">Organizer *</label>
+            <input
+              type="text"
+              id="organizer"
+              name="organizer"
+              value={formData.organizer}
+              onChange={handleChange}
+              required
+              placeholder="Enter event organizer"
               className="form-input"
             />
           </div>
@@ -174,20 +186,6 @@ export default function AddEvent() {
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="maxParticipants">Max Participants</label>
-              <input
-                type="number"
-                id="maxParticipants"
-                name="maxParticipants"
-                value={formData.maxParticipants}
-                onChange={handleChange}
-                min="1"
-                max="1000"
-                className="form-input"
-              />
-            </div>
-
-            <div className="form-group">
               <label htmlFor="battleFormat">Battle Format</label>
               <input
                 type="text"
@@ -215,17 +213,21 @@ export default function AddEvent() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="image">Event Image URL</label>
+            <label htmlFor="image">Event Image</label>
             <input
-              type="url"
+              type="file"
               id="image"
               name="image"
-              value={formData.image}
               onChange={handleChange}
-              placeholder="https://example.com/image.jpg"
+              accept="image/*"
               className="form-input"
             />
-            <small className="form-help">Optional: Enter image URL for event banner</small>
+            <small className="form-help">Optional: Upload an image for the event banner (JPG, PNG, GIF)</small>
+            {formData.image && (
+              <div className="image-preview">
+                <p>Selected: {formData.image.name}</p>
+              </div>
+            )}
           </div>
 
           <div className="form-actions">
@@ -233,7 +235,7 @@ export default function AddEvent() {
               <FaTimes /> Cancel
             </button>
             <button type="submit" className="save-btn">
-              <FaSave /> Save Event
+              <FaSave /> Save Danish Event
             </button>
           </div>
         </form>
