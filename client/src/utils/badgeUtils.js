@@ -1,6 +1,6 @@
 // Utility functions for badge unlocking logic
 
-// Get moves for a specific category
+// Get moves for a specific category (fallback for legacy badges)
 const getCategoryMoves = (category) => {
   const categoryMovesMap = {
     'Toprock': ['Two step', 'Salsa step', 'Indian step', 'Charlie rock', 'Battle rock', 'Skater', 'Jerk rock'],
@@ -13,7 +13,7 @@ const getCategoryMoves = (category) => {
   return categoryMovesMap[category] || [];
 };
 
-// Get moves for a specific level
+// Get moves for a specific level (fallback for legacy badges)
 const getLevelMoves = (level) => {
   const levelMovesMap = {
     'beginner': ['Two step', 'Salsa step', 'CC', 'Kick outs', 'Yoga freeze', 'Turtle freeze', 'Butt spin', 'Cartwheel', 'Squat down', 'Corkspin drop'],
@@ -27,111 +27,78 @@ const getLevelMoves = (level) => {
   return levelMovesMap[level] || [];
 };
 
+// Get required moves for a badge (supports both new and legacy structure)
+export const getBadgeRequiredMoves = (badge, allMoves = []) => {
+  if (!badge) return [];
+
+  // If badge has requirements field with moves array (new structure)
+  if (badge.requirements && badge.requirements.moves && Array.isArray(badge.requirements.moves)) {
+    const requiredMoveIds = badge.requirements.moves;
+    const requiredMoves = [];
+    
+    for (const moveId of requiredMoveIds) {
+      const move = allMoves.find(m => m._id === moveId || m.id === moveId);
+      if (move) {
+        requiredMoves.push(move.name);
+      }
+    }
+    
+    return requiredMoves;
+  }
+
+  // Legacy fallback based on badge category and name
+  if (badge.category && badge.category !== 'Level' && badge.category !== 'Special') {
+    return getCategoryMoves(badge.category);
+  }
+
+  if (badge.category === 'Special' || badge.category === 'Level') {
+    const level = badge.name.toLowerCase();
+    return getLevelMoves(level);
+  }
+
+  // Handle power subcategory badges
+  if (badge.name === 'Ground Master') {
+    return ['Butt spin', 'Back spin', 'Baby swipe', 'Windmill', 'Swipe', 'Headspin', 'Turtles', 'Flare', 'Tapmill', 'Babymill', 'Bellymill', 'Head swipe', 'Headdrill', 'Halo', 'Freeze spin'];
+  }
+
+  if (badge.name === 'Air Master') {
+    return ['Elbow track', 'Barrel mill', 'Nutcracker', 'Airplanes', 'Superman', 'Tombstones', 'T-flare', '1990', '2000', 'Shoulder halo', 'Shoulder spin'];
+  }
+
+  return [];
+};
+
 // Check if a badge is unlocked based on mastered moves
-export const isBadgeUnlocked = (badge, masteredMoves) => {
+export const isBadgeUnlocked = (badge, masteredMoves, allMoves = []) => {
   if (!badge || !masteredMoves) return false;
 
   const masteredMoveNames = masteredMoves.map(move => move.name);
+  const requiredMoves = getBadgeRequiredMoves(badge, allMoves);
 
-  // Handle category badges
-  if (badge.category && badge.category !== 'Level' && badge.category !== 'Special') {
-    const requiredMoves = getCategoryMoves(badge.category);
-    const masteredInCategory = masteredMoveNames.filter(moveName => 
-      requiredMoves.includes(moveName)
-    );
-    return masteredInCategory.length === requiredMoves.length;
-  }
+  // If no required moves, badge cannot be unlocked
+  if (requiredMoves.length === 0) return false;
 
-  // Handle level badges
-  if (badge.category === 'Special' || badge.category === 'Level') {
-    // Use badge.name for level badges since they don't have an id field
-    const level = badge.name.toLowerCase();
-    const requiredMoves = getLevelMoves(level);
-    const masteredInLevel = masteredMoveNames.filter(moveName => 
-      requiredMoves.includes(moveName)
-    );
-    return masteredInLevel.length === requiredMoves.length;
-  }
+  // Check if all required moves are mastered
+  const masteredInCategory = masteredMoveNames.filter(moveName => 
+    requiredMoves.includes(moveName)
+  );
 
-  // Handle power subcategory badges
-  if (badge.name === 'Ground Master') {
-    const groundPowerMoves = ['Butt spin', 'Back spin', 'Baby swipe', 'Windmill', 'Swipe', 'Headspin', 'Turtles', 'Flare', 'Tapmill', 'Babymill', 'Bellymill', 'Head swipe', 'Headdrill', 'Halo', 'Freeze spin'];
-    const masteredGroundPower = masteredMoveNames.filter(moveName => 
-      groundPowerMoves.includes(moveName)
-    );
-    return masteredGroundPower.length === groundPowerMoves.length;
-  }
-
-  if (badge.name === 'Air Master') {
-    const airPowerMoves = ['Elbow track', 'Barrel mill', 'Nutcracker', 'Airplanes', 'Superman', 'Tombstones', 'T-flare', '1990', '2000', 'Shoulder halo', 'Shoulder spin'];
-    const masteredAirPower = masteredMoveNames.filter(moveName => 
-      airPowerMoves.includes(moveName)
-    );
-    return masteredAirPower.length === airPowerMoves.length;
-  }
-
-  // Handle grandmaster badge (requires all level badges)
-  if (badge.name === 'Grandmaster') {
-    // Check if all level badges are unlocked
-    const levelBadgeNames = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Skilled', 'Master'];
-    const allLevelMoves = levelBadgeNames.flatMap(level => getLevelMoves(level.toLowerCase()));
-    const masteredLevelMoves = masteredMoveNames.filter(moveName => allLevelMoves.includes(moveName));
-    return masteredLevelMoves.length === allLevelMoves.length;
-  }
-
-  return false;
+  return masteredInCategory.length === requiredMoves.length;
 };
 
 // Calculate progress for a badge
-export const getBadgeProgress = (badge, masteredMoves) => {
+export const getBadgeProgress = (badge, masteredMoves, allMoves = []) => {
   if (!badge || !masteredMoves) return 0;
 
   const masteredMoveNames = masteredMoves.map(move => move.name);
+  const requiredMoves = getBadgeRequiredMoves(badge, allMoves);
 
-  // Handle category badges
-  if (badge.category && badge.category !== 'Level' && badge.category !== 'Special') {
-    const requiredMoves = getCategoryMoves(badge.category);
-    const masteredInCategory = masteredMoveNames.filter(moveName => 
-      requiredMoves.includes(moveName)
-    );
-    return Math.round((masteredInCategory.length / requiredMoves.length) * 100);
-  }
+  // If no required moves, return 0
+  if (requiredMoves.length === 0) return 0;
 
-  // Handle level badges
-  if (badge.category === 'Special' || badge.category === 'Level') {
-    // Use badge.name for level badges since they don't have an id field
-    const level = badge.name.toLowerCase();
-    const requiredMoves = getLevelMoves(level);
-    const masteredInLevel = masteredMoveNames.filter(moveName => 
-      requiredMoves.includes(moveName)
-    );
-    return Math.round((masteredInLevel.length / requiredMoves.length) * 100);
-  }
+  const masteredInCategory = masteredMoveNames.filter(moveName => 
+    requiredMoves.includes(moveName)
+  );
 
-  // Handle power subcategory badges
-  if (badge.name === 'Ground Master') {
-    const groundPowerMoves = ['Butt spin', 'Back spin', 'Baby swipe', 'Windmill', 'Swipe', 'Headspin', 'Turtles', 'Flare', 'Tapmill', 'Babymill', 'Bellymill', 'Head swipe', 'Headdrill', 'Halo', 'Freeze spin'];
-    const masteredGroundPower = masteredMoveNames.filter(moveName => 
-      groundPowerMoves.includes(moveName)
-    );
-    return Math.round((masteredGroundPower.length / groundPowerMoves.length) * 100);
-  }
-
-  if (badge.name === 'Air Master') {
-    const airPowerMoves = ['Elbow track', 'Barrel mill', 'Nutcracker', 'Airplanes', 'Superman', 'Tombstones', 'T-flare', '1990', '2000', 'Shoulder halo', 'Shoulder spin'];
-    const masteredAirPower = masteredMoveNames.filter(moveName => 
-      airPowerMoves.includes(moveName)
-    );
-    return Math.round((masteredAirPower.length / airPowerMoves.length) * 100);
-  }
-
-  // Handle grandmaster badge progress
-  if (badge.name === 'Grandmaster') {
-    const levelBadgeNames = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Skilled', 'Master'];
-    const allLevelMoves = levelBadgeNames.flatMap(level => getLevelMoves(level.toLowerCase()));
-    const masteredLevelMoves = masteredMoveNames.filter(moveName => allLevelMoves.includes(moveName));
-    return Math.round((masteredLevelMoves.length / allLevelMoves.length) * 100);
-  }
-
-  return 0;
+  return Math.round((masteredInCategory.length / requiredMoves.length) * 100);
 }; 

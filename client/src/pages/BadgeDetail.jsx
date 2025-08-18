@@ -4,7 +4,7 @@ import { useBadges } from '../hooks/useBadges';
 import { useMoves } from '../hooks/useMoves';
 import { FaArrowLeft, FaTrophy, FaCheck, FaLock, FaLightbulb, FaStar, FaFire } from 'react-icons/fa';
 import { useEffect } from 'react';
-import { isBadgeUnlocked } from '../utils/badgeUtils';
+import { isBadgeUnlocked, getBadgeRequiredMoves, getBadgeProgress } from '../utils/badgeUtils';
 import '../styles/pages/badge-detail.css';
 
 export default function BadgeDetail() {
@@ -59,61 +59,14 @@ export default function BadgeDetail() {
     );
   }
 
-  const isEarned = isBadgeUnlocked(badge, masteredMoves);
+  const isEarned = isBadgeUnlocked(badge, masteredMoves, moves);
+  const requiredMoves = getBadgeRequiredMoves(badge, moves);
+  const progress = getBadgeProgress(badge, masteredMoves, moves);
   
-  // Get moves for this badge category
-  const getCategoryMoves = (category) => {
-    const categoryMovesMap = {
-      'Toprock': ['Two step', 'Salsa step', 'Indian step', 'Charlie rock', 'Battle rock', 'Skater', 'Jerk rock'],
-      'Footwork': ['CC', 'Kick outs', 'Coffee grinder', '2 step', '3 step', 'Hooks', 'Zulu spin', 'Baby love', 'Knee rock', 'Russian step', 'Over/under lap', '6 step', '4 step', '5 step', '7 step', '8 step', 'Peter pan', 'Permanent increase', 'Half sweeps', 'Monkey swing', 'Gorilla 6 step', 'Knock out', 'Pretzels'],
-      'Freezes': ['Yoga freeze', 'Turtle freeze', 'Baby freeze', 'Spider freeze', 'Headstand', 'Handstand', 'Shoulder freeze', 'Elbow freeze', 'Chairfreeze', '1-hand freeze', '1-hand elbow freeze', 'Scorpion', 'Airbaby', 'Flag-freeze', 'Airchair', 'Suicide', 'L-kick', 'V-kick'],
-      'Power': ['Butt spin', 'Back spin', 'Baby swipe', 'Windmill', 'Swipe', 'Headspin', 'Turtles', 'Flare', 'Tapmill', 'Babymill', 'Bellymill', 'Head swipe', 'Headdrill', 'Halo', 'Freeze spin', 'Elbow track', 'Barrel mill', 'Nutcracker', 'Airplanes', 'Superman', 'Tombstones', 'T-flare', '1990', '2000', 'Shoulder halo', 'Shoulder spin'],
-      'Tricks': ['Cartwheel', 'Ormen', 'Icey Ice', 'Macaco', 'Kick-up', 'Aerial', 'Butterfly'],
-      'GoDowns': ['Squat down', 'Corkspin drop', 'Knee drop', 'Knee rock', 'Hook', 'Power step back', 'Power front kick', 'Coindrop', 'Power back kick']
-    };
-    return categoryMovesMap[category] || [];
-  };
-
-  const getRequiredMoves = () => {
-    if (badge.category === 'Power') {
-      if (badge.name === 'Ground Master') {
-        return ['Windmill', 'Swipe', 'Headspin', 'Turtles', 'Flare', 'Tapmill', 'Babymill', 'Bellymill'];
-      } else if (badge.name === 'Air Master') {
-        return ['Head swipe', 'Headdrill', 'Halo', 'Freeze spin', 'Elbow track', 'Barrel mill', 'Nutcracker', 'Airplanes', 'Superman', 'Tombstones', 'T-flare', '1990', '2000', 'Shoulder halo', 'Shoulder spin'];
-      }
-    } else if (badge.category === 'Level') {
-      // Return the specific moves for each level badge
-      const levelMovesMap = {
-        'Beginner': ['Two step', 'Salsa step', 'CC', 'Kick outs', 'Yoga freeze', 'Turtle freeze', 'Butt spin', 'Cartwheel', 'Squat down', 'Corkspin drop'],
-        'Novice': ['Indian step', 'Charlie rock', 'Coffee grinder', '2 step', '3 step', 'Hooks', 'Zulu spin', 'Baby love', 'Knee rock', 'Russian step', 'Baby freeze', 'Spider freeze', 'Headstand', 'Back spin', 'Baby swipe', 'Ormen', 'Knee drop'],
-        'Intermediate': ['Battle rock', 'Over/under lap', '6 step', '4 step', '5 step', '7 step', '8 step', 'Peter pan', 'Permanent increase', 'Half sweeps', 'Monkey swing', 'Handstand', 'Shoulder freeze', 'Elbow freeze', 'Chairfreeze', 'Windmill', 'Swipe', 'Headspin', 'Turtles', 'Hook', 'Macaco', 'Icey Ice'],
-        'Advanced': ['Skater', 'Jerk rock', 'Gorilla 6 step', 'Knock out', 'Pretzels', '1-hand freeze', '1-hand elbow freeze', 'Scorpion', 'Airbaby', 'Flag-freeze', 'Flare', 'Tapmill', 'Babymill', 'Bellymill', 'Head swipe', 'Headdrill', 'Halo', 'Freeze spin', 'Power step back', 'Power front kick', 'Kick-up', 'Aerial', 'Butterfly'],
-        'Skilled': ['Airchair', 'Suicide', 'L-kick', 'V-kick', 'Elbow track', 'Barrel mill', 'Nutcracker', 'Airplanes', 'Superman', 'Tombstones', 'T-flare', '1990', '2000', 'Shoulder halo', 'Shoulder spin', 'Coindrop', 'Power back kick'],
-        'Master': ['Halo freeze', 'Sandwich', 'Hollowback', 'Airflare', 'Airtrack', 'Starstruck', 'Critical', 'Corkscrew'],
-        'Grandmaster': [] // Special case - will show level badges instead
-      };
-      return levelMovesMap[badge.name] || [];
-    }
-    return getCategoryMoves(badge.category);
-  };
-
-  const requiredMoves = getRequiredMoves();
-  
-  // Calculate progress differently for Grandmaster badge
-  let progress;
-  let masteredInCategory;
-  
-  if (badge.name === 'Grandmaster') {
-    const levelBadges = badges.filter(b => b.category === 'Level' && b.name !== 'Grandmaster');
-    const earnedLevelBadges = levelBadges.filter(b => isBadgeUnlocked(b, masteredMoves));
-    progress = Math.round((earnedLevelBadges.length / levelBadges.length) * 100);
-    masteredInCategory = earnedLevelBadges;
-  } else {
-    masteredInCategory = masteredMoves.filter(move => 
-      requiredMoves.includes(move.name)
-    );
-    progress = Math.round((masteredInCategory.length / requiredMoves.length) * 100);
-  }
+  // Get mastered moves for this badge
+  const masteredInCategory = masteredMoves.filter(move => 
+    requiredMoves.includes(move.name)
+  );
 
   // Get tips based on badge type
   const getBadgeTips = () => {
@@ -221,10 +174,6 @@ export default function BadgeDetail() {
             <div className="badge-info">
               <h1 className="badge-title">{badge.name}</h1>
               <p className="badge-description">{badge.description}</p>
-              <div className="badge-requirement">
-                <h3>Requirement:</h3>
-                <p>{badge.requirement}</p>
-              </div>
               {isEarned && (
                 <div className="badge-achievement">
                   <FaStar className="achievement-icon" />
@@ -244,47 +193,25 @@ export default function BadgeDetail() {
               <div className="progress-fill-large" style={{ width: `${progress}%` }}></div>
             </div>
             <div className="progress-stats">
-              {badge.name === 'Grandmaster' ? (
-                <span>{masteredInCategory.length} / {badges.filter(b => b.category === 'Level' && b.name !== 'Grandmaster').length} level badges earned</span>
-              ) : (
-                <span>{masteredInCategory.length} / {requiredMoves.length} moves mastered</span>
-              )}
+              <span>{masteredInCategory.length} / {requiredMoves.length} moves mastered</span>
             </div>
           </div>
 
-          {/* Required Moves or Level Badges */}
-          {badge.name === 'Grandmaster' ? (
-            <div className="required-moves-section">
-              <h3>Required Level Mastery Badges</h3>
-              <div className="moves-grid">
-                {badges.filter(b => b.category === 'Level' && b.name !== 'Grandmaster').map((levelBadge) => {
-                  const isEarned = isBadgeUnlocked(levelBadge, masteredMoves);
-                  
-                  return (
-                    <div key={levelBadge._id || levelBadge.name} className={`move-card ${isEarned ? 'mastered' : 'locked'}`}>
-                      <div className="move-status">
-                        {isEarned ? <FaCheck size={16} /> : <FaLock size={16} />}
-                      </div>
-                      <div className="move-info">
-                        <h4 className="move-name">{levelBadge.name}</h4>
-                        <p className="move-category">{levelBadge.description}</p>
-                        <p className="move-xp">Level Badge</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ) : (
-            <div className="required-moves-section">
-              <h3>Required Moves</h3>
+          {/* Required Moves */}
+          <div className="required-moves-section">
+            <h3>Required Moves</h3>
+            {requiredMoves.length > 0 ? (
               <div className="moves-grid">
                 {requiredMoves.map((moveName) => {
                   const move = moves.find(m => m.name === moveName);
                   const isMastered = masteredMoves.some(m => m.name === moveName);
                   
                   const handleMoveClick = () => {
-                    navigate(`/moves?move=${encodeURIComponent(moveName)}`);
+                    // Navigate to moves page with the specific move selected for video and its category
+                    const params = new URLSearchParams();
+                    if (move && move.category) params.set('category', move.category);
+                    params.set('move', moveName);
+                    navigate(`/moves?${params.toString()}`);
                   };
                   
                   return (
@@ -306,9 +233,13 @@ export default function BadgeDetail() {
                   );
                 })}
               </div>
-            </div>
-          )}
-
+            ) : (
+              <div className="no-requirements">
+                <p>No specific moves required for this badge.</p>
+                <p>This badge may be earned through other achievements.</p>
+              </div>
+            )}
+          </div>
 
         </div>
       </div>

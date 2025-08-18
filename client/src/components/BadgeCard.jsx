@@ -1,13 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { getBadgeProgress } from '../utils/badgeUtils';
 
-export default function BadgeCard({ badge, isEarned, masteredMoves = [] }) {
+export default function BadgeCard({ badge, isEarned, masteredMoves = [], allMoves = [] }) {
   const navigate = useNavigate();
   
-  // Calculate progress for category badges
+  // Calculate progress for category badges using new utilities
   const getProgress = () => {
     if (isEarned) return 100;
-    return getBadgeProgress(badge, masteredMoves);
+    return getBadgeProgress(badge, masteredMoves, allMoves);
   };
 
   const progress = getProgress();

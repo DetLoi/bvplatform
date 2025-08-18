@@ -24,7 +24,8 @@ const createProperAdmin = async () => {
       email: 'admin@breakverse.com',
       name: 'Admin User',
       password: 'admin123', // This will be hashed by the pre-save hook
-      status: 'admin',
+      status: 'active',
+      roles: ['admin'],
       // Remove manual level and XP - let the system calculate them
       profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
       coverImage: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&h=400&fit=crop',

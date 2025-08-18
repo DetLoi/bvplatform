@@ -20,7 +20,7 @@ router.get('/:id', getBadgeById);
 router.post('/', uploadBadgeImage, createBadge);
 
 // Update badge
-router.put('/:id', updateBadge);
+router.put('/:id', uploadBadgeImage, updateBadge);
 
 // Delete badge
 router.delete('/:id', deleteBadge);

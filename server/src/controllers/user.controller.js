@@ -1,6 +1,7 @@
 import User from '../models/user.models.js';
 import Move from '../models/move.models.js';
 import Badge from '../models/badge.models.js';
+import { createBattleNotification } from './notification.controller.js';
 import bcrypt from 'bcryptjs';
 
 // Get all users with filtering and pagination
@@ -39,13 +40,23 @@ export const getAllUsers = async (req, res) => {
       .skip((page - 1) * limit)
       .populate('masteredMoves', 'name category level xp')
       .populate('pendingMoves', 'name category level xp')
-      .populate('crew', 'name')
       .populate('badges', 'name image emoji');
+
+    // Ensure battle statistics fields are included in the response
+    const usersWithBattleStats = users.map(user => {
+      const userObj = user.toObject();
+      userObj.battleXP = user.battleXP || 0;
+      userObj.battleLevel = user.battleLevel || 1;
+      userObj.battleWins = user.battleWins || 0;
+      userObj.battleLosses = user.battleLosses || 0;
+      userObj.battlesParticipated = user.battlesParticipated || 0;
+      return userObj;
+    });
 
     const total = await User.countDocuments(filter);
 
     res.json({
-      users,
+      users: usersWithBattleStats,
       totalPages: Math.ceil(total / limit),
       currentPage: parseInt(page),
       total
@@ -90,13 +101,30 @@ export const getAllUsersWithPasswords = async (req, res) => {
       .skip((page - 1) * limit)
       .populate('masteredMoves', 'name category level xp')
       .populate('pendingMoves', 'name category level xp')
-      .populate('crew', 'name')
-      .populate('badges', 'name image emoji');
+      .populate('badges', 'name image emoji')
+      .populate('instructor', 'username name email');
+
+    // Ensure battle statistics fields are included in the response
+    const usersWithBattleStats = users.map(user => {
+      const userObj = user.toObject();
+      userObj.battleXP = user.battleXP || 0;
+      userObj.battleLevel = user.battleLevel || 1;
+      userObj.battleWins = user.battleWins || 0;
+      userObj.battleLosses = user.battleLosses || 0;
+      userObj.battlesParticipated = user.battlesParticipated || 0;
+      
+      // Add student count for instructors
+      if (user.hasRole('instructor')) {
+        userObj.students = []; // Will be populated if needed
+      }
+      
+      return userObj;
+    });
 
     const total = await User.countDocuments(filter);
 
     res.json({
-      users,
+      users: usersWithBattleStats,
       totalPages: Math.ceil(total / limit),
       currentPage: parseInt(page),
       total
@@ -113,14 +141,22 @@ export const getUserById = async (req, res) => {
       .select('-password')
       .populate('masteredMoves', 'name category level xp')
       .populate('pendingMoves', 'name category level xp')
-      .populate('crew', 'name logo color')
-      .populate('badges', 'name image emoji category level');
+      .populate('badges', 'name image emoji category level')
+      .populate('instructor', 'username name email');
     
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
     
-    res.json(user);
+    // Ensure battle statistics fields are included in the response
+    const userResponse = user.toObject();
+    userResponse.battleXP = user.battleXP || 0;
+    userResponse.battleLevel = user.battleLevel || 1;
+    userResponse.battleWins = user.battleWins || 0;
+    userResponse.battleLosses = user.battleLosses || 0;
+    userResponse.battlesParticipated = user.battlesParticipated || 0;
+    
+    res.json(userResponse);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -132,28 +168,39 @@ export const loginUser = async (req, res) => {
     const { username, password } = req.body;
     
     if (!username || !password) {
-      return res.status(400).json({ message: 'Brugernavn og adgangskode er påkrævet' });
+      return res.status(400).json({ message: 'Username and password are required' });
     }
     
     const user = await User.findOne({ username })
       .populate('masteredMoves', 'name category level xp')
       .populate('pendingMoves', 'name category level xp')
-      .populate('crew', 'name logo color')
-      .populate('badges', 'name image emoji category level');
+      .populate('badges', 'name image emoji category level')
+      .populate('instructor', 'username name email');
     
     if (!user) {
-      return res.status(401).json({ message: 'Ugyldigt brugernavn eller adgangskode' });
+      return res.status(401).json({ message: 'Invalid username or password' });
     }
     
     // Compare password using the model's method
     const isValidPassword = await user.comparePassword(password);
     
     if (!isValidPassword) {
-      return res.status(401).json({ message: 'Ugyldigt brugernavn eller adgangskode' });
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
+    // Prevent login for explicitly unverified accounts (legacy users without the flag won't be blocked)
+    if (user.isVerified === false) {
+      return res.status(403).json({ message: 'Please verify your email before logging in.' });
     }
     
     const userResponse = user.toObject();
     delete userResponse.password;
+    
+    // Ensure battle statistics fields are included in the response
+    userResponse.battleXP = user.battleXP || 0;
+    userResponse.battleLevel = user.battleLevel || 1;
+    userResponse.battleWins = user.battleWins || 0;
+    userResponse.battleLosses = user.battleLosses || 0;
+    userResponse.battlesParticipated = user.battlesParticipated || 0;
     
     res.json({
       success: true,
@@ -189,6 +236,16 @@ export const updateUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
     
+    // Protect battle statistics fields - these should only be updated by the system
+    const protectedFields = ['battleXP', 'battleLevel', 'battleWins', 'battleLosses', 'battlesParticipated'];
+    protectedFields.forEach(field => {
+      if (updateData.hasOwnProperty(field)) {
+        delete updateData[field];
+        console.warn(`Attempted to update protected field: ${field} for user ${id}`);
+      }
+    });
+    
+    const oldLevel = user.level;
     // If mastered moves are being updated, recalculate level and XP
     if (updateData.masteredMoves && Array.isArray(updateData.masteredMoves)) {
       // Get the moves to calculate total XP
@@ -211,17 +268,35 @@ export const updateUser = async (req, res) => {
     
     // Save the user - this will trigger the pre-save hooks for password hashing
     await user.save();
+    // Level-up notification if level changed upwards
+    if (typeof oldLevel === 'number' && user.level > oldLevel) {
+      try {
+        await createBattleNotification(user._id, null, 'level_up', null, `You reached level ${user.level}!`);
+      } catch (e) {
+        console.error('Error creating level up notification:', e);
+      }
+    }
     
     // Check for new badges
     const newBadges = await user.checkAndAssignBadges();
+    // Notify for badges earned via general user update
+    if (newBadges && newBadges.length > 0) {
+      try {
+        for (const b of newBadges) {
+          await createBattleNotification(user._id, null, 'badge_earned', null, `You earned the ${b.name} badge!`);
+        }
+      } catch (e) {
+        console.error('Error creating badge earned notification(s) in updateUser:', e);
+      }
+    }
     
     // Get updated user data with populated fields
     const updatedUser = await User.findById(id)
       .select('-password')
       .populate('masteredMoves', 'name category level xp')
       .populate('pendingMoves', 'name category level xp')
-      .populate('crew', 'name logo color')
-      .populate('badges', 'name image emoji category level');
+      .populate('badges', 'name image emoji category level')
+      .populate('instructor', 'username name email');
     
     res.json({
       ...updatedUser.toObject(),
@@ -268,6 +343,8 @@ export const addMasteredMove = async (req, res) => {
       return res.status(400).json({ message: 'Move already mastered' });
     }
     
+    // Track level before changes
+    const oldLevel = user.level;
     // Add move to mastered moves and add XP
     user.masteredMoves.push(moveId);
     user.xp += move.xp;
@@ -277,22 +354,36 @@ export const addMasteredMove = async (req, res) => {
     user.pendingMoves = user.pendingMoves.filter(id => id.toString() !== moveId);
     
     // Check and assign new badges
-    const newBadges = await user.checkAndAssignBadges();
+    const badgeResult = await user.checkAndAssignBadges();
     
     await user.save();
+    // Notifications: level up and newly earned badges
+    try {
+      if (typeof oldLevel === 'number' && user.level > oldLevel) {
+        await createBattleNotification(user._id, null, 'level_up', null, `You reached level ${user.level}!`);
+      }
+      if (badgeResult.newBadges && badgeResult.newBadges.length > 0) {
+        for (const b of badgeResult.newBadges) {
+          await createBattleNotification(user._id, null, 'badge_earned', null, `You earned the ${b.name} badge!`);
+        }
+      }
+    } catch (e) {
+      console.error('Error creating notifications for addMasteredMove:', e);
+    }
     
     // Populate the user data for response
     const updatedUser = await User.findById(userId)
       .select('-password')
       .populate('masteredMoves', 'name category level xp')
       .populate('pendingMoves', 'name category level xp')
-      .populate('crew', 'name logo color')
-      .populate('badges', 'name image emoji category level');
+      .populate('badges', 'name image emoji category level')
+      .populate('instructor', 'username name email');
     
     res.json({ 
       message: 'Move added to mastered moves',
       user: updatedUser,
-      newBadges: newBadges.length > 0 ? newBadges : null
+      newBadges: badgeResult.newBadges.length > 0 ? badgeResult.newBadges : null,
+      removedBadges: badgeResult.removedBadges.length > 0 ? badgeResult.removedBadges : null
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -326,7 +417,7 @@ export const removeMasteredMove = async (req, res) => {
     user.level = user.calculateLevel(); // Auto-calculate level based on moves
     
     // Check and assign new badges (in case some badges should be removed)
-    const newBadges = await user.checkAndAssignBadges();
+    const badgeResult = await user.checkAndAssignBadges();
     
     await user.save();
     
@@ -335,13 +426,14 @@ export const removeMasteredMove = async (req, res) => {
       .select('-password')
       .populate('masteredMoves', 'name category level xp')
       .populate('pendingMoves', 'name category level xp')
-      .populate('crew', 'name logo color')
-      .populate('badges', 'name image emoji category level');
+      .populate('badges', 'name image emoji category level')
+      .populate('instructor', 'username name email');
     
     res.json({ 
       message: 'Move removed from mastered moves',
       user: updatedUser,
-      newBadges: newBadges.length > 0 ? newBadges : null
+      newBadges: badgeResult.newBadges.length > 0 ? badgeResult.newBadges : null,
+      removedBadges: badgeResult.removedBadges.length > 0 ? badgeResult.removedBadges : null
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -379,7 +471,12 @@ export const addPendingMove = async (req, res) => {
     
     res.json({ 
       message: 'Move request added',
-      user: await User.findById(userId).select('-password')
+      user: await User.findById(userId)
+        .select('-password')
+        .populate('masteredMoves', 'name category level xp')
+        .populate('pendingMoves', 'name category level xp')
+        .populate('badges', 'name image emoji category level')
+        .populate('instructor', 'username name email')
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -407,6 +504,8 @@ export const approvePendingMove = async (req, res) => {
       return res.status(400).json({ message: 'Move not pending' });
     }
     
+    // Track level before changes
+    const oldLevel = user.level;
     // Move from pending to mastered
     user.pendingMoves = user.pendingMoves.filter(id => id.toString() !== moveId);
     user.masteredMoves.push(moveId);
@@ -414,22 +513,37 @@ export const approvePendingMove = async (req, res) => {
     user.level = user.calculateLevel(); // Auto-calculate level based on moves
     
     // Check and assign new badges
-    const newBadges = await user.checkAndAssignBadges();
+    const badgeResult = await user.checkAndAssignBadges();
     
     await user.save();
+    // Notifications: move approved, level up and badges
+    try {
+      await createBattleNotification(user._id, null, 'move_approved', null, `Your move "${move.name}" was approved!`);
+      if (typeof oldLevel === 'number' && user.level > oldLevel) {
+        await createBattleNotification(user._id, null, 'level_up', null, `You reached level ${user.level}!`);
+      }
+      if (badgeResult.newBadges && badgeResult.newBadges.length > 0) {
+        for (const b of badgeResult.newBadges) {
+          await createBattleNotification(user._id, null, 'badge_earned', null, `You earned the ${b.name} badge!`);
+        }
+      }
+    } catch (e) {
+      console.error('Error creating notifications for approvePendingMove:', e);
+    }
     
     // Populate the user data for response
     const updatedUser = await User.findById(userId)
       .select('-password')
       .populate('masteredMoves', 'name category level xp')
       .populate('pendingMoves', 'name category level xp')
-      .populate('crew', 'name logo color')
-      .populate('badges', 'name image emoji category level');
+      .populate('badges', 'name image emoji category level')
+      .populate('instructor', 'username name email');
     
     res.json({ 
       message: 'Move request approved',
       user: updatedUser,
-      newBadges: newBadges.length > 0 ? newBadges : null
+      newBadges: badgeResult.newBadges.length > 0 ? badgeResult.newBadges : null,
+      removedBadges: badgeResult.removedBadges.length > 0 ? badgeResult.removedBadges : null
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -442,6 +556,7 @@ export const rejectPendingMove = async (req, res) => {
     const { userId, moveId } = req.params;
     
     const user = await User.findById(userId);
+    const move = await Move.findById(moveId);
     
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -450,10 +565,22 @@ export const rejectPendingMove = async (req, res) => {
     // Remove move from pending moves
     user.pendingMoves = user.pendingMoves.filter(id => id.toString() !== moveId);
     await user.save();
+    // Notification: move rejected
+    try {
+      const moveName = move?.name || 'Your move';
+      await createBattleNotification(user._id, null, 'move_rejected', null, `${moveName} application was rejected.`);
+    } catch (e) {
+      console.error('Error creating notification for rejectPendingMove:', e);
+    }
     
     res.json({ 
       message: 'Move request rejected',
-      user: await User.findById(userId).select('-password')
+      user: await User.findById(userId)
+        .select('-password')
+        .populate('masteredMoves', 'name category level xp')
+        .populate('pendingMoves', 'name category level xp')
+        .populate('badges', 'name image emoji category level')
+        .populate('instructor', 'username name email')
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -582,6 +709,125 @@ export const getAllPendingMoveRequests = async (req, res) => {
     });
     
     res.json(pendingRequests);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}; 
+
+// Get all instructors
+export const getInstructors = async (req, res) => {
+  try {
+    const instructors = await User.getInstructors();
+    res.json(instructors);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Get students by instructor
+export const getStudentsByInstructor = async (req, res) => {
+  try {
+    const { instructorId } = req.params;
+    
+    // Verify the instructor exists and has instructor role
+    const instructor = await User.findById(instructorId);
+    if (!instructor) {
+      return res.status(404).json({ message: 'Instructor not found' });
+    }
+    
+    if (!instructor.hasRole('instructor')) {
+      return res.status(400).json({ message: 'User is not an instructor' });
+    }
+    
+    const students = await User.getStudentsByInstructor(instructorId);
+    res.json(students);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Assign instructor to student
+export const assignInstructor = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { instructorId } = req.body;
+    
+    // Verify the student exists
+    const student = await User.findById(userId);
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    
+    // Verify the student has student role
+    if (!student.hasRole('student')) {
+      return res.status(400).json({ message: 'Only students can have an instructor assigned' });
+    }
+    
+    // If instructorId is provided, verify the instructor exists and has instructor role
+    if (instructorId) {
+      const instructor = await User.findById(instructorId);
+      if (!instructor) {
+        return res.status(404).json({ message: 'Instructor not found' });
+      }
+      
+      if (!instructor.hasRole('instructor')) {
+        return res.status(400).json({ message: 'User is not an instructor' });
+      }
+      
+      student.instructor = instructorId;
+    } else {
+      // Remove instructor assignment
+      student.instructor = undefined;
+    }
+    
+    await student.save();
+    
+    // Populate all necessary fields for response
+    const updatedUser = await User.findById(userId)
+      .select('-password')
+      .populate('masteredMoves', 'name category level xp')
+      .populate('pendingMoves', 'name category level xp')
+      .populate('badges', 'name image emoji category level')
+      .populate('instructor', 'username name email');
+    
+    res.json({ 
+      message: instructorId ? 'Instructor assigned successfully' : 'Instructor removed successfully',
+      user: updatedUser
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Remove instructor from student
+export const removeInstructor = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const student = await User.findById(userId);
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    
+    if (!student.hasRole('student')) {
+      return res.status(400).json({ message: 'Only students can have an instructor assigned' });
+    }
+    
+    student.instructor = undefined;
+    await student.save();
+    
+    // Populate the user data for response
+    const updatedUser = await User.findById(userId)
+      .select('-password')
+      .populate('masteredMoves', 'name category level xp')
+      .populate('pendingMoves', 'name category level xp')
+      .populate('badges', 'name image emoji category level')
+      .populate('instructor', 'username name email');
+    
+    res.json({ 
+      message: 'Instructor removed successfully',
+      user: updatedUser
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

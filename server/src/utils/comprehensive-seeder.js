@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import User from '../models/user.models.js';
-import Crew from '../models/crew.models.js';
+
 import Move from '../models/move.models.js';
 import Badge from '../models/badge.models.js';
 import Event from '../models/event.models.js';
@@ -17,7 +17,8 @@ const usersData = [
     level: 15,
     xp: 15000,
     joinDate: '2024-01-01',
-    status: 'admin',
+    status: 'active',
+    roles: ['admin'],
     profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
     coverImage: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&h=400&fit=crop',
     crew: 'Specific Kidz',
@@ -85,31 +86,7 @@ const usersData = [
   }
 ];
 
-// Crews data
-const crewsData = [
-  {
-    name: 'Specific Kidz',
-    description: 'Breaking crew from Denmark',
-    color: '#e6c77b',
-    logo: 'specifickidz.png',
-    location: 'Copenhagen, Denmark',
-    socialMedia: {
-      instagram: '@specifickidz',
-      facebook: 'Specific Kidz'
-    }
-  },
-  {
-    name: 'Famillia Loca',
-    description: 'Breaking crew from Denmark',
-    color: '#ff6b6b',
-    logo: 'flc.png',
-    location: 'Copenhagen, Denmark',
-    socialMedia: {
-      instagram: '@famillialoca',
-      facebook: 'Famillia Loca'
-    }
-  }
-];
+
 
 // Moves data (first 50 moves) - without recommendations for initial insert
 const movesData = [
@@ -242,7 +219,7 @@ const battlesData = [
     title: "Benji vs DLoi - Power Moves Battle",
     description: "Power move battle - let's see who can throw down harder! Been practicing my flares and I want to test them against you.",
     category: "All Style",
-    status: "accepted",
+    status: "in progress",
     stakes: "Respect and bragging rights",
     videos: {
       challenger: null,
@@ -253,7 +230,7 @@ const battlesData = [
     title: "DLoi vs Kien - Footwork Battle",
     description: "Footwork battle - let's see who has the smoother moves!",
     category: "All Style",
-    status: "in_progress",
+          status: "in progress",
     stakes: "Respect and bragging rights",
     videos: {
       challenger: "https://example.com/video1.mp4",
@@ -316,34 +293,14 @@ const seedDatabase = async () => {
           password: hashedPassword,
           masteredMoves: masteredMoveIds,
           pendingMoves: pendingMoveIds,
-          crew: null // Will be set after crews are created
+
         };
       })
     );
     const createdUsers = await User.insertMany(hashedUsers);
     console.log(`✅ Created ${createdUsers.length} users`);
 
-    // Seed Crews with leaders
-    console.log('Seeding crews...');
-    const crewsWithLeaders = crewsData.map(crew => {
-      // Find a user from this crew to be the leader
-      const crewUser = createdUsers.find(user => user.crew === crew.name);
-      return {
-        ...crew,
-        leader: crewUser ? crewUser._id : createdUsers[0]._id // fallback to first user
-      };
-    });
-    const createdCrews = await Crew.insertMany(crewsWithLeaders);
-    console.log(`✅ Created ${createdCrews.length} crews`);
 
-    // Update users with crew references
-    console.log('Updating user crew references...');
-    for (const user of createdUsers) {
-      const crew = createdCrews.find(c => c.name === user.crew);
-      if (crew) {
-        await User.findByIdAndUpdate(user._id, { crew: crew._id });
-      }
-    }
 
     // Seed Badges
     console.log('Seeding badges...');
@@ -375,7 +332,7 @@ const seedDatabase = async () => {
     console.log('🎉 Database seeding completed successfully!');
     console.log('\n📊 Summary:');
     console.log(`- Users: ${createdUsers.length}`);
-    console.log(`- Crews: ${createdCrews.length}`);
+
     console.log(`- Moves: ${createdMoves.length}`);
     console.log(`- Badges: ${createdBadges.length}`);
     console.log(`- Events: ${createdEvents.length}`);

@@ -103,12 +103,21 @@ export const useUsers = (filters = {}) => {
   }, [fetchUsers]);
 
   const updateUser = useCallback(async (id, userData) => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      
+      // Perform the update first
       const response = await usersAPI.update(id, userData);
-      await fetchUsers(); // Refresh the list
+      
+      // Attempt to refresh users list, but don't fail the whole call if refresh fails
+      try {
+        await fetchUsers();
+      } catch (refreshError) {
+        console.error('User updated but failed to refresh users list:', refreshError);
+        // Keep operation successful; surface refresh error to state but do not throw
+        setError(refreshError.message || 'Failed to refresh users after update');
+      }
+      
       return response;
     } catch (err) {
       setError(err.message);
@@ -236,6 +245,72 @@ export const useUsers = (filters = {}) => {
     }
   }, []);
 
+  const getInstructors = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await usersAPI.getInstructors();
+      return response;
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching instructors:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const getStudentsByInstructor = useCallback(async (instructorId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await usersAPI.getStudentsByInstructor(instructorId);
+      return response;
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching students by instructor:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const assignInstructor = useCallback(async (studentId, instructorId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await usersAPI.assignInstructor(studentId, instructorId);
+      await fetchUsers(); // Refresh the list
+      return response;
+    } catch (err) {
+      setError(err.message);
+      console.error('Error assigning instructor:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchUsers]);
+
+  const removeInstructor = useCallback(async (studentId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await usersAPI.removeInstructor(studentId);
+      await fetchUsers(); // Refresh the list
+      return response;
+    } catch (err) {
+      setError(err.message);
+      console.error('Error removing instructor:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchUsers]);
+
   // Initial fetch - only run once on mount
   useEffect(() => {
     fetchUsers();
@@ -258,6 +333,10 @@ export const useUsers = (filters = {}) => {
     approvePendingMove,
     rejectPendingMove,
     getUserStats,
+    getInstructors,
+    getStudentsByInstructor,
+    assignInstructor,
+    removeInstructor,
     refetch: () => fetchUsers()
   };
 }; 

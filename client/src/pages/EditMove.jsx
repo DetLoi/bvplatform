@@ -27,7 +27,7 @@ export default function EditMove() {
   const [toast, setToast] = useState({ show: false, message: '' });
 
   const categories = ['Toprock', 'Footwork', 'Freezes', 'Power', 'Tricks', 'GoDowns'];
-  const levels = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Skilled'];
+  const levels = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Skilled', 'Master', 'Grandmaster'];
 
   useEffect(() => {
     const loadMove = async () => {

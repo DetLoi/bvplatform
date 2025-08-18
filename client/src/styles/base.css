@@ -1,13 +1,48 @@
 /* Base Reset */
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* CSS Variables */
+:root {
+  --bv-header-height: 64px;
+}
 body {
   font-family: 'Poppins', sans-serif;
-  background:#0d0d0d;
+  /* Default for all non-home pages: image with 90% black overlay */
+  background-color: #0a0a0a; /* fallback */
+  background-image: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.9) 100%), url('/src/assets/landingpageBg3.png');
+  background-size: 100% auto; /* fill width */
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-attachment: scroll; /* scroll with content for better performance */
   color: #f1f1f1;
   line-height: 1.5;
   min-height: 100vh;
   width: 100%;
 }
+
+/* Home/Dashboard only: apply the long landing image with 90% black overlay */
+body.home-page {
+  background-color: #0a0a0a; /* fallback */
+  background-image: linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.9) 100%), url('/src/assets/landingpageBg3.png');
+  background-size: 100% auto; /* fill width */
+  /* Offset background to start below the cover photo (300px) */
+  background-position: center 300px;
+  background-repeat: no-repeat;
+  background-attachment: scroll; /* scroll with content for better performance */
+}
+
+/* Ensure the app root container doesn't cover the body background */
+.min-h-screen.bg-stone-900 {
+  background: transparent !important;
+}
+
+/* Fullpage black background for non-battles loading states */
+.fullpage-loading {
+  min-height: calc(100vh - 63px);
+  background: #000 !important;
+}
+
+
 
 /* Layout Utilities */
 .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
@@ -65,4 +100,98 @@ body {
   10% { opacity: 1; transform: translateY(0); }
   90% { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(-20px); }
+}
+
+/* === Global Button Click Animation === */
+button,
+input[type="button"],
+input[type="submit"],
+.btn,
+[role="button"],
+.edit-profile-btn,
+.edit-icon-cover,
+.bve-btn {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+button:active,
+input[type="button"]:active,
+input[type="submit"]:active,
+.btn:active,
+[role="button"]:active,
+.edit-profile-btn:active,
+.edit-icon-cover:active,
+.bve-btn:active {
+  transform: scale(0.985);
+}
+
+button::after,
+input[type="button"]::after,
+input[type="submit"]::after,
+.btn::after,
+[role="button"]::after,
+.edit-profile-btn::after,
+.edit-icon-cover::after,
+.bve-btn::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,0.25);
+  border-radius: inherit;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+button:active::after,
+input[type="button"]:active::after,
+input[type="submit"]:active::after,
+.btn:active::after,
+[role="button"]:active::after,
+.edit-profile-btn:active::after,
+.edit-icon-cover:active::after,
+.bve-btn:active::after {
+  width: 160px;
+  height: 160px;
+  opacity: 0;
+  transition: width 260ms ease, height 260ms ease, opacity 260ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  input[type="button"],
+  input[type="submit"],
+  .btn,
+  [role="button"],
+  .edit-profile-btn,
+  .edit-icon-cover,
+  .bve-btn {
+    transition: none;
+  }
+  button:active,
+  input[type="button"]:active,
+  input[type="submit"]:active,
+  .btn:active,
+  [role="button"]:active,
+  .edit-profile-btn:active,
+  .edit-icon-cover:active,
+  .bve-btn:active {
+    transform: none;
+  }
+  button:active::after,
+  input[type="button"]:active::after,
+  input[type="submit"]:active::after,
+  .btn:active::after,
+  [role="button"]:active::after,
+  .edit-profile-btn:active::after,
+  .edit-icon-cover:active::after,
+  .bve-btn:active::after {
+    display: none;
+  }
 }

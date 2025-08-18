@@ -26,9 +26,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .back-btn {
@@ -457,6 +455,75 @@
   padding-right: 2.5rem;
 }
 
+/* Add Badge Search Input */
+.add-badge-search-input {
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  color: #ffffff;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.add-badge-search-input:focus {
+  outline: none;
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.add-badge-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Add Move Search Input */
+.add-move-search-input {
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  color: #ffffff;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.add-move-search-input:focus {
+  outline: none;
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.add-move-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Master Move Search Input */
+.master-move-search-input {
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  color: #ffffff;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.master-move-search-input:focus {
+  outline: none;
+  border-color: rgba(230, 199, 123, 0.5);
+  box-shadow: 0 0 0 2px rgba(230, 199, 123, 0.1);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.master-move-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
 .dropdown-toggle {
   position: absolute;
   right: 0.75rem;
@@ -704,4 +771,90 @@
   font-size: 0.7rem;
   font-weight: 600;
   margin-left: 0.25rem;
+}
+
+/* Logo upload styles */
+.logo-upload-section {
+  margin-bottom: 1rem;
+}
+
+.file-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.file-input::-webkit-file-upload-button {
+  background: rgba(255, 215, 0, 0.2);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  color: #ffd700;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 1rem;
+  transition: all 0.2s ease;
+}
+
+.file-input::-webkit-file-upload-button:hover {
+  background: rgba(255, 215, 0, 0.3);
+  border-color: rgba(255, 215, 0, 0.5);
+}
+
+.logo-preview {
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.preview-image {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 0.75rem;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  object-fit: cover;
+}
+
+.upload-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  color: #ffd700;
+  font-weight: 500;
+}
+
+.upload-loading svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fa-spin {
+  animation: spin 1s linear infinite;
+} 
+
+/* Fix roles checkboxes on Add User form by restoring native checkbox appearance */
+.add-form .roles-management .role-checkbox input[type="checkbox"] {
+  -webkit-appearance: checkbox !important;
+  -moz-appearance: checkbox !important;
+  appearance: checkbox !important;
+  width: 1.1rem !important;
+  height: 1.1rem !important;
+  border: none !important;
+  background: initial !important;
+  box-shadow: none !important;
 } 

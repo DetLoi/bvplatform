@@ -9,19 +9,29 @@ import { startLoop } from './scraper/cronjob.js';
 
 // Import all models to register them with Mongoose
 import './models/user.models.js';
-import './models/crew.models.js';
+
 import './models/move.models.js';
 import './models/badge.models.js';
 import './models/event.models.js';
 import './models/battle.models.js';
+import './models/bulkSubmission.models.js';
+
+import './models/notification.models.js';
+import './models/newsletter.models.js';
 
 import userRoutes from './routes/user.routes.js';
 import moveRoutes from './routes/move.routes.js';
 import badgeRoutes from './routes/badge.routes.js';
 import eventRoutes from './routes/event.routes.js';
 import battleRoutes from './routes/battle.routes.js';
-import crewRoutes from './routes/crew.routes.js';
+
 import uploadRoutes from './routes/upload.routes.js';
+import bulkSubmissionRoutes from './routes/bulkSubmission.routes.js';
+
+import notificationRoutes from './routes/notification.routes.js';
+import newsletterRoutes from './routes/newsletter.routes.js';
+import authRoutes from './routes/auth.routes.js';
+import { startAccountCleanup } from './cron/cleanup.js';
 
 dotenv.config();
 const app = express();
@@ -47,7 +57,7 @@ const corsOptions = {
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'user-id', 'user-roles'],
   optionsSuccessStatus: 200
 };
 
@@ -58,7 +68,7 @@ app.use(cors(corsOptions));
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, user-id, user-roles');
   
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
@@ -83,13 +93,18 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
+app.use('/api', authRoutes); // exposes /api/register and /api/verify
 app.use('/api/users', userRoutes);
 app.use('/api/moves', moveRoutes);
 app.use('/api/badges', badgeRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/battles', battleRoutes);
-app.use('/api/crews', crewRoutes);
+
 app.use('/api/upload', uploadRoutes);
+app.use('/api/bulk-submissions', bulkSubmissionRoutes);
+
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/newsletter', newsletterRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -158,3 +173,4 @@ const startServer = async () => {
 
 startServer();
 startLoop();
+startAccountCleanup();

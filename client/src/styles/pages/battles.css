@@ -1,15 +1,1220 @@
-/* === Battles Page === */
+/* === Battles Page - Epic Game Room Design === */
 
-.battles-page {
-  padding: 2rem;
+/* Video Intro Overlay Styles */
+.battles-video-intro-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  z-index: 90; /* stays below header (.nav z-index: 100) so it tucks neatly under */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.battles-video-intro {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Gradient overlay to blend video into header */
+.battles-video-intro-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30vh;
+  background: linear-gradient(to bottom, #0a0a0a 0%, rgba(10,10,10,0.85) 40%, rgba(10,10,10,0.4) 80%, rgba(10,10,10,0) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.battles-video-skip-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  z-index: 10000;
+}
+
+.battles-video-skip-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.battles-video-loading {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+  z-index: 10000;
+}
+
+.battles-video-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: battles-spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+.battles-video-loading p {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Animation Keyframes */
+@keyframes slideInFromLeft {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInWithDelay {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Main Wrapper - Account for header height */
+.battles-main-wrapper {
+  width: 100%;
+  height: calc(100vh - 63px); /* Subtract header height */
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  top: 0;
+}
+
+/* Game Room Layout */
+.battles-game-room {
+  display: flex;
+  height: 100%;
+  /* Page-specific background image */
+  background-image: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.7) 100%), url('/src/assets/blackbg.jpg');
+  background-size: 100% auto; /* fill width, reveal vertically */
+  background-repeat: no-repeat;
+  background-attachment: scroll;/* account for 280px sidebar */
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.battles-game-room::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    transparent;
+  pointer-events: none;
+}
+
+/* Left Sidebar Panel */
+.battles-sidebar {
+  width: 280px;
+  min-width: 280px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.9) 0%, rgba(26, 26, 46, 0.95) 100%);
+  border-right: 2px solid rgba(255, 215, 0, 0.3);
+  backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 10;
+  overflow-y: auto;
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+/* Trigger classes set by React once video ends */
+.battles-bg-visible .battles-game-room {
+  opacity: 1;
+}
+
+.battles-ui-visible .battles-sidebar {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.battles-ui-visible .battles-main-content {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.battles-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.05) 50%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Sidebar Tabs */
+.battles-sidebar-tabs {
+  flex: 1;
+  padding: 0.75rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  overflow: hidden;
+}
+
+.battles-sidebar-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  position: relative;
+  text-align: left;
+  width: 100%;
+  font-size: 0.875rem;
+}
+
+.battles-sidebar-tab::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #ffd700, #ffb347);
+  transform: scaleY(0);
+}
+
+.battles-sidebar-tab.battles-active {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.15) 0%, transparent 100%);
+  color: #ffd700;
+  border-right: 2px solid #ffd700;
+}
+
+.battles-sidebar-tab.battles-active::before {
+  transform: scaleY(1);
+}
+
+.battles-sidebar-tab:hover {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.1) 0%, transparent 100%);
+  color: rgba(255, 215, 0, 0.9);
+}
+
+.battles-sidebar-tab svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.battles-tab-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.battles-tab-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+.battles-tab-count {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.125rem;
+}
+
+.battles-sidebar-tab.battles-active .battles-tab-count {
+  color: rgba(255, 215, 0, 0.7);
+}
+
+/* Sidebar Footer */
+.battles-sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.battles-new-battle-btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.battles-new-battle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+}
+
+.battles-new-battle-btn:active {
+  transform: translateY(0);
+}
+
+/* Main Content Area */
+.battles-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: transform 0.6s ease, opacity 0.6s ease;
+}
+
+.battles-header {
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(26, 26, 46, 0.9) 100%);
+  border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+  backdrop-filter: blur(20px);
+}
+
+.battles-header-content {
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.battles-header {
-  text-align: center;
-  margin-bottom: 3rem;
+.battles-page-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffd700;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  line-height: 1.2;
+}
+
+.battles-title-icon {
+  width: 3rem;
+  height: 3rem;
+  filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.6));
+}
+
+.battles-page-subtitle {
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Content Area */
+.battles-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  background: transparent;
+  /* Align body background to the right of the fixed sidebar */
+  background-position: 280px top;
+}
+
+.battles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
+  gap: 1.5rem;
+  margin: 0;
+}
+
+/* Staggered animation for battle cards */
+.battles-game-card:nth-child(1) { animation-delay: 0.1s; }
+.battles-game-card:nth-child(2) { animation-delay: 0.2s; }
+.battles-game-card:nth-child(3) { animation-delay: 0.3s; }
+.battles-game-card:nth-child(4) { animation-delay: 0.4s; }
+.battles-game-card:nth-child(5) { animation-delay: 0.5s; }
+.battles-game-card:nth-child(6) { animation-delay: 0.6s; }
+.battles-game-card:nth-child(7) { animation-delay: 0.7s; }
+.battles-game-card:nth-child(8) { animation-delay: 0.8s; }
+.battles-game-card:nth-child(9) { animation-delay: 0.9s; }
+.battles-game-card:nth-child(10) { animation-delay: 1.0s; }
+
+/* Battle Cards */
+.battles-game-card {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(26, 26, 46, 0.9) 100%);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 16px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(20px);
   position: relative;
+  overflow: hidden;
+  animation: fadeInWithDelay 0.6s ease-out both;
+}
+
+.battles-game-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.05) 50%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.battles-game-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 215, 0, 0.6);
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
+}
+
+.battles-game-card:hover::before {
+  opacity: 1;
+}
+
+.battles-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.battles-users {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.battles-user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.battles-user-name {
+  font-weight: 600;
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.battles-user-level {
+  font-size: 0.75rem;
+  color: rgba(255, 215, 0, 0.8);
+  font-weight: 500;
+}
+
+.battles-vs-divider {
+  font-weight: 800;
+  color: #ffd700;
+  font-size: 1.25rem;
+  text-shadow: 0 2px 8px rgba(255, 215, 0, 0.6);
+  margin: 0 0.5rem;
+}
+
+.battles-status {
+  display: flex;
+  align-items: center;
+}
+
+.battles-status-badge {
+  padding: 0.375rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.battles-card-details {
+  margin-bottom: 1rem;
+}
+
+.battles-card-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Judged Battle Results */
+.battles-card-results {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 179, 71, 0.05) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.battles-winner-info,
+.battles-draw-info {
+  margin-bottom: 1rem;
+}
+
+.battles-winner-badge,
+.battles-draw-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.battles-winner-badge {
+  background: transparent;
+  color: #ffd700;
+  border: none;
+}
+
+.battles-draw-badge {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.battles-winner-badge svg,
+.battles-draw-badge svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.battles-vote-summary {
+  display: none;
+}
+
+/* Callout message styles */
+.battles-callout-message {
+  margin-bottom: 1rem;
+}
+
+.battles-callout-text {
+  color: #ffffff;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+.battles-callout-text strong {
+  color: #ffd700;
+  font-weight: 600;
+}
+
+.battles-callout-time {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+/* Spectator message styles */
+.battles-spectator-message {
+  margin-bottom: 1rem;
+}
+
+.battles-spectator-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+.battles-spectator-text strong {
+  color: #2196f3;
+  font-weight: 600;
+}
+
+.battles-spectator-time {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+/* Judge-specific styles */
+.battles-judge-message {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  color: white;
+}
+
+.battles-judge-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.battles-judge-text strong {
+  color: #fff3e0;
+  font-weight: 600;
+}
+
+.battles-judge-time {
+  font-size: 0.8rem;
+  color: #fff3e0;
+  margin-top: 0.5rem;
+  opacity: 0.9;
+}
+
+.battles-btn-judge {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.battles-btn-judge:hover {
+  background: linear-gradient(135deg, #f57c00, #e65100);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+.battles-btn-judge:active {
+  transform: translateY(0);
+}
+
+/* Accept/Decline button styles */
+.battles-btn-accept {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  flex: 1;
+  justify-content: center;
+}
+
+.battles-btn-accept:disabled {
+  background: rgba(76, 175, 80, 0.5);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.battles-btn-decline {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  flex: 1;
+  justify-content: center;
+}
+
+.battles-btn-decline:disabled {
+  background: rgba(255, 107, 107, 0.5);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.battles-btn-primary {
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  color: #000;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.battles-btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.battles-video-uploaded {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #4caf50;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.battles-result {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.battles-winner-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ffd700;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.battles-score {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Empty State */
+.battles-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  text-align: center;
+  padding: 3rem 2rem;
+  color: rgba(255, 255, 255, 0.6);
+  min-height: 400px;
+  width: 100%;
+  animation: fadeInWithDelay 0.8s ease-out 0.4s both;
+}
+
+.battles-empty-icon {
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
+  opacity: 0.3;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+}
+
+.battles-empty-state h3 {
+  font-size: 1.25rem;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.battles-empty-state p {
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Loading and Error States */
+.battles-loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  color: rgba(255, 255, 255, 0.7);
+  animation: fadeInWithDelay 0.6s ease-out both;
+}
+
+.battles-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 215, 0, 0.3);
+  border-top: 3px solid #ffd700;
+  border-radius: 50%;
+  animation: battles-spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes battles-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.battles-error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  animation: fadeInWithDelay 0.6s ease-out both;
+}
+
+.battles-error-container button {
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  color: #000;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+/* Modal */
+.battles-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+}
+
+.battles-modal-content {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 2rem;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  backdrop-filter: blur(20px);
+}
+
+.battles-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.battles-modal-header h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+.battles-close-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.battles-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* Call Out Form */
+.callout-form h3 {
+  margin-bottom: 1.5rem;
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.form-group select,
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+.form-group select:focus,
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #ffd700;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Battle Detail Modal */
+.battles-detail {
+  max-width: 600px;
+}
+
+.battles-detail-content {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.battles-participants {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0.75rem;
+}
+
+.battles-participant {
+  text-align: center;
+  flex: 1;
+}
+
+.battles-participant h4 {
+  margin: 0 0 0.25rem 0;
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+.battles-participant p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+}
+
+.battles-vs {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #ffd700;
+  margin: 0 1rem;
+}
+
+.battles-info {
+  margin-bottom: 2rem;
+}
+
+.battles-info p {
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.battles-info strong {
+  color: #ffd700;
+}
+
+.battles-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.battles-video-upload-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1rem;
+}
+
+.battles-video-upload-section h4 {
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.battles-video-upload-section p {
+  color: #4caf50;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Mobile Call Out Button - Hidden by default on desktop */
+.battles-mobile-callout-btn {
+  display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .battles-sidebar {
+    width: 260px;
+    min-width: 260px;
+  }
+  
+  .battles-header {
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .battles-content {
+    padding: 1.25rem 1.5rem;
+    background-position: 260px top;
+  }
+  
+  .battles-page-title {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .battles-main-wrapper {
+    position: fixed;
+    top: 56px; /* mobile header height */
+    left: 0;
+    right: 0;
+    bottom: 80px; /* mobile bottom panel height */
+    height: auto;
+    padding: 0;
+  }
+  
+  .battles-game-room {
+    flex-direction: column;
+    height: auto;
+    min-height: 100%;
+    background-position: top center; /* sidebar moves to bottom on mobile */
+    background-size: cover; /* ensure full height coverage on mobile */
+  }
+  
+  .battles-sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 80px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, rgba(26, 26, 46, 0.98) 100%);
+    border-top: 2px solid rgba(255, 215, 0, 0.3);
+    border-right: none;
+    z-index: 1000;
+    backdrop-filter: blur(20px);
+  }
+  
+  .battles-sidebar-tabs {
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0.5rem;
+    gap: 0;
+    height: 100%;
+  }
+  
+  .battles-sidebar-tab {
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem;
+    min-width: auto;
+    border-radius: 0.5rem;
+    position: relative;
+  }
+  
+  .battles-sidebar-tab::before {
+    display: none;
+  }
+  
+  .battles-sidebar-tab.battles-active {
+    background: rgba(255, 215, 0, 0.15);
+    border-right: none;
+    border-radius: 0.5rem;
+  }
+  
+  .battles-sidebar-tab svg {
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .battles-tab-content {
+    align-items: center;
+    text-align: center;
+  }
+  
+  .battles-tab-title {
+    font-size: 0.625rem;
+    font-weight: 500;
+  }
+  
+  .battles-tab-count {
+    display: none; /* Hide count on mobile to prevent scrolling */
+  }
+  
+  /* Mobile New Call Out Button */
+  .battles-mobile-callout-btn {
+    position: fixed;
+    bottom: 90px;
+    right: 1rem;
+    min-width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #ffd700, #ffb347);
+    border: none;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    z-index: 1001;
+    font-size: 1.25rem;
+    animation: slideInFromRight 0.8s ease-out 0.5s both;
+    gap: 0.5rem;
+    padding: 0 16px;
+  }
+
+  .battles-mobile-callout-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  
+  /* Hide sidebar footer on mobile */
+  .battles-sidebar-footer {
+    display: none;
+  }
+  
+  .battles-header {
+    padding: 1rem;
+  }
+  
+  .battles-content {
+    padding: 1rem; /* remove gaps so content is full-height */
+    height: 100%;
+    overflow-y: auto;
+    background-position: top center; /* reset on mobile since sidebar is bottom */
+  }
+  
+  .battles-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .battles-page-title {
+    font-size: 1.5rem;
+  }
+
+  /* Mobile styles for Accept/Decline buttons */
+  .battles-card-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .battles-btn-accept,
+  .battles-btn-decline {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .battles-callout-text {
+    font-size: 0.9rem;
+  }
+
+  .battles-callout-time {
+    font-size: 0.75rem;
+  }
+}
+
+/* Keep all existing battle-specific classes intact for backward compatibility */
+.battles-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .battles-header .page-title {
@@ -88,12 +1293,6 @@
 }
 
 /* Battle Cards */
-.battles-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 1.5rem;
-}
-
 .battle-card {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -115,56 +1314,6 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1rem;
-}
-
-.battle-users {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex: 1;
-}
-
-.user-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.user-name {
-  font-weight: 600;
-  font-size: 1rem;
-  color: #fff;
-}
-
-.user-level {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-  text-transform: uppercase;
-}
-
-.vs-divider {
-  font-weight: 700;
-  font-size: 1.25rem;
-  color: #ffd700;
-  margin: 0 1rem;
-}
-
-.battle-status {
-  display: flex;
-  align-items: center;
-}
-
-.status-badge {
-  padding: 0.5rem 1rem;
-  border-radius: 1rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .battle-details {
@@ -415,18 +1564,7 @@
   margin: 0 1rem;
 }
 
-.battle-info {
-  margin-bottom: 2rem;
-}
 
-.battle-info p {
-  margin-bottom: 0.5rem;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.battle-info strong {
-  color: #ffd700;
-}
 
 .video-upload-section {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -520,5 +1658,364 @@
   
   .user-level {
     font-size: 0.625rem;
+  }
+} 
+
+/* Battle Detail Modal */
+.battles-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.battles-modal {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 1rem;
+  padding: 2rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.battles-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.battles-modal-title {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.battles-modal-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.battles-modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.battles-modal-content {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.battles-modal-battle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.battles-modal-participants {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.battles-modal-participant {
+  text-align: center;
+  flex: 1;
+}
+
+.battles-modal-participant h3 {
+  margin: 0 0 0.5rem 0;
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.battles-modal-participant p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+.battles-modal-vs {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #ffd700;
+  margin: 0 1rem;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.battles-modal-status {
+  text-align: center;
+}
+
+.battles-modal-status-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  color: #000;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.battles-modal-description {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border-left: 3px solid #ffd700;
+  margin: 0;
+  font-style: italic;
+}
+
+.battles-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.battles-actions .battles-btn-primary {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.battles-actions .battles-btn-primary,
+.battles-actions .battles-btn-secondary {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: #fff;
+}
+
+.battles-actions .battles-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.battles-actions .battles-btn-secondary {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: 2px solid rgba(255, 107, 107, 0.3);
+}
+
+.battles-actions .battles-btn-secondary:hover {
+  background: rgba(255, 107, 107, 0.3);
+  border-color: rgba(255, 107, 107, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Responsive design for modal */
+@media (max-width: 768px) {
+  .battles-modal {
+    width: 95%;
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+  
+  .battles-modal-participants {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .battles-modal-vs {
+    margin: 0.5rem 0;
+  }
+  
+  .battles-actions {
+    flex-direction: column;
+  }
+  
+  .battles-actions .battles-btn-primary,
+  .battles-actions .battles-btn-secondary {
+    width: 100%;
+  }
+}
+
+/* Judged Battle Results Modal Styles */
+.battles-modal-judged-results {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.battles-modal-winner-section,
+.battles-modal-draw-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.battles-modal-winner-badge,
+.battles-modal-draw-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffd700;
+}
+
+.battles-modal-winner-badge svg,
+.battles-modal-draw-badge svg {
+  font-size: 1.5rem;
+  color: #ffd700;
+}
+
+.battles-modal-voting-summary {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.battles-modal-voting-summary h4 {
+  color: #ffd700;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.battles-modal-vote-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.battles-modal-vote-category {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.battles-modal-category-name {
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.battles-modal-vote-scores {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.battles-modal-vote-score {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.battles-modal-total-votes {
+  text-align: center;
+  padding: 0.75rem;
+  background: rgba(255, 215, 0, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.battles-modal-total-votes span {
+  color: #ffd700;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Mobile responsive styles for judged results */
+@media (max-width: 768px) {
+  .battles-modal-judged-results {
+    gap: 1rem;
+    padding: 0.5rem 0;
+  }
+  
+  .battles-modal-winner-badge,
+  .battles-modal-draw-badge {
+    font-size: 1.1rem;
+  }
+  
+  .battles-modal-winner-badge svg,
+  .battles-modal-draw-badge svg {
+    font-size: 1.25rem;
+  }
+  
+  .battles-modal-voting-summary {
+    padding: 1rem;
+  }
+  
+  .battles-modal-vote-category {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .battles-modal-vote-scores {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* Mobile Video Intro Adjustments */
+@media (max-width: 480px) {
+  .battles-video-skip-btn {
+    top: 15px;
+    right: 15px;
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+  
+  .battles-video-loading {
+    bottom: 30px;
+  }
+  
+  .battles-video-loading-spinner {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 10px;
+  }
+  
+  .battles-video-loading p {
+    font-size: 16px;
   }
 } 

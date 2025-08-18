@@ -123,10 +123,10 @@ export const users = [
     level: 15,
     xp: 15000,
     joinDate: '2024-01-01',
-    status: 'admin',
+    status: 'active',
+    roles: ['admin'],
     profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
     coverImage: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&h=400&fit=crop',
-    crew: 'Specific Kidz',
     specialty: 'Power Moves',
     masteredMoves: ['Two step', 'Salsa step', 'CC', 'Windmill', 'Headspin', 'Flare', 'Back spin', 'Baby swipe', 'Turtles', 'Tapmill'],
     pendingMoves: [],
@@ -151,7 +151,6 @@ export const users = [
     status: 'active',
     profileImage: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
     coverImage: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&h=400&fit=crop',
-    crew: 'Specific Kidz',
     specialty: 'Power Moves',
     masteredMoves: ['Two step', 'Salsa step', 'CC', 'Windmill', 'Headspin'],
     pendingMoves: ['Flare', 'Tapmill'],
@@ -176,7 +175,6 @@ export const users = [
     status: 'active',
     profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
     coverImage: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200&h=400&fit=crop',
-    crew: 'Specific Kidz',
     specialty: 'Footwork',
     masteredMoves: ['Two step', 'Salsa step', 'CC', 'Coffee grinder', '2 step', '3 step'],
     pendingMoves: ['6 step', 'Hooks'],
@@ -191,30 +189,7 @@ export const users = [
   }
 ];
 
-export const crews = [
-  {
-    id: 'specific-kidz',
-    name: 'Specific Kidz',
-    logo: null,
-    description: 'Breaking crew from Denmark',
-    memberCount: 12,
-    totalXP: 32500,
-    level: 14,
-    color: '#e6c77b',
-    members: []
-  },
-  {
-    id: 'familia-loca',
-    name: 'Famillia Loca',
-    logo: null,
-    description: 'Breaking crew from Denmark',
-    memberCount: 6,
-    totalXP: 14500,
-    level: 9,
-    color: '#ff6b6b',
-    members: []
-  }
-];
+
 
 export const badges = [
   {
@@ -442,7 +417,7 @@ export const battles = [
       level: "Advanced",
       crew: "Specific Kidz"
     },
-    status: "accepted",
+    status: "in progress",
     callOutDate: "2024-01-10T14:20:00Z",
     responseDate: "2024-01-12T09:15:00Z",
     acceptedBy: "opponent",

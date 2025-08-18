@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
+import useIntersectionReveal from '../hooks/useIntersectionReveal';
 import { FaCalendar, FaMapMarkerAlt, FaUsers, FaClock, FaTh, FaList, FaFilter, FaGlobe, FaFlag } from 'react-icons/fa';
 import { useEvents } from '../hooks/useEvents';
 import { getCountryFlag } from '../utils/countryFlags';
@@ -292,40 +293,44 @@ const InternationalEventCard = ({ event, viewMode, isSelected, onClick }) => {
 export default function Events() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const selectedEventRef = useRef(null);
-  const [viewMode, setViewMode] = useState('card');
+  const [viewMode, setViewMode] = useState('list');
   const [filterType, setFilterType] = useState('all'); // 'all', 'national', 'international'
   const [filterCategory, setFilterCategory] = useState('all');
   
   const { events, loading, error } = useEvents();
+  // Ensure this hook runs every render before early returns
+  const observe = useIntersectionReveal({ threshold: 0.15 });
 
   // Ensure events is always an array
   const eventsArray = Array.isArray(events) ? events : [];
 
-  // Filter events based on selected filters
-  const filteredEvents = useMemo(() => {
-    return eventsArray.filter(event => {
-      const typeMatch = filterType === 'all' || event.eventType === filterType;
-      const organizerMatch = filterCategory === 'all' || event.organizer === filterCategory;
-      return typeMatch && organizerMatch;
-    });
+  // Danish events should always be visible regardless of selected country filter
+  const danishEvents = useMemo(() => eventsArray.filter(event => isDanishEvent(event)), [eventsArray]);
+
+  // International events are filtered by selected country (but countries list should not shrink)
+  const internationalEvents = useMemo(() => {
+    const internationals = eventsArray.filter(event => !isDanishEvent(event));
+    return internationals.filter(event => (
+      (filterType === 'all' || event.eventType === filterType) &&
+      (filterCategory === 'all' || event.organizer === filterCategory)
+    ));
   }, [eventsArray, filterType, filterCategory]);
 
-  // Get Danish events (based on country/organizer, not just eventType)
-  const danishEvents = filteredEvents.filter(event => isDanishEvent(event));
-  
-  // Get international events (exclude Danish events)
-  const internationalEvents = filteredEvents.filter(event => !isDanishEvent(event));
+  // Determine if any events are visible under current settings
+  const hasAnyVisibleEvents = (danishEvents.length > 0) || (internationalEvents.length > 0);
   
   // Get unique countries from international events
   const availableCountries = useMemo(() => {
     const countries = new Set();
-    internationalEvents.forEach(event => {
-      if (event.organizer) {
-        countries.add(event.organizer);
+    const danishRegex = /(denmark|danmark|danish|dansk)/i;
+    eventsArray.forEach(event => {
+      const org = event.organizer || '';
+      if (org && !danishRegex.test(org)) {
+        countries.add(org);
       }
     });
     return Array.from(countries).sort();
-  }, [internationalEvents]);
+  }, [eventsArray]);
 
   // Scroll to selected event when it changes
   useEffect(() => {
@@ -340,7 +345,7 @@ export default function Events() {
   // Show loading state
   if (loading) {
     return (
-      <div className="main-content">
+      <div className="main-content fullpage-loading">
         <section className="events-page">
           <div className="loading-container">
             <div className="loading-spinner"></div>
@@ -354,7 +359,7 @@ export default function Events() {
   // Show error state
   if (error) {
     return (
-      <div className="main-content">
+      <div className="main-content fullpage-loading">
         <section className="events-page">
           <div className="error-container">
             <p>Error loading events: {error}</p>
@@ -376,37 +381,21 @@ export default function Events() {
              <div className="section-header">
                <div>
                  <h2 className="section-title">
-                   <FaFlag /> Danish Events ({danishEvents.length})
+                   Danish Events
                  </h2>
                </div>
-               <div className="header-actions">
-                 <div className="view-toggle">
-                   <button 
-                     className={`toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
-                     onClick={() => setViewMode('card')}
-                     title="Card View"
-                   >
-                     <FaTh />
-                   </button>
-                   <button 
-                     className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
-                     onClick={() => setViewMode('list')}
-                     title="List View"
-                   >
-                     <FaList />
-                   </button>
-                 </div>
-               </div>
+               <div className="header-actions" />
              </div>
-             <div className={`events-container ${viewMode === 'list' ? 'events-list' : 'events-grid'}`}>
+             <div className={`events-container events-list`}>
                {danishEvents.map((event) => (
-                 <DanishEventCard
-                   key={event.id}
-                   event={event}
-                   viewMode={viewMode}
-                   isSelected={selectedEvent?.id === event.id}
-                   onClick={() => setSelectedEvent(selectedEvent?.id === event.id ? null : event)}
-                 />
+                 <div key={event.id} className="reveal-on-scroll" ref={observe}>
+                   <DanishEventCard
+                     event={event}
+                     viewMode={viewMode}
+                     isSelected={selectedEvent?.id === event.id}
+                     onClick={() => setSelectedEvent(selectedEvent?.id === event.id ? null : event)}
+                   />
+                 </div>
                ))}
              </div>
            </div>
@@ -422,56 +411,53 @@ export default function Events() {
                  </h2>
                </div>
                <div className="header-actions">
-                                  <div className="filter-controls">
-                    <div className="filter-group">
-                                            <select 
-                         value={filterCategory} 
-                         onChange={(e) => setFilterCategory(e.target.value)}
-                         className="filter-select"
-                       >
-                         <option value="all">All Countries</option>
-                         {availableCountries.map(country => (
-                           <option key={country} value={country}>
-                             {country}
-                           </option>
-                         ))}
-                       </select>
+                 <div className="filter-controls">
+                    <div className="filter-group events-select-wrap">
+                      <select 
+                        value={filterCategory} 
+                        onChange={(e) => setFilterCategory(e.target.value)}
+                        className="events-filter-select"
+                      >
+                        <option value="all">All Countries</option>
+                        {availableCountries.map(country => (
+                          <option key={country} value={country}>
+                            {country}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="events-select-arrow" aria-hidden="true"></span>
                     </div>
+                    {filterCategory !== 'all' && (
+                      <button
+                        type="button"
+                        className="events-filter-reset"
+                        onClick={() => setFilterCategory('all')}
+                        aria-label="Reset to All Countries"
+                      >
+                        Reset
+                      </button>
+                    )}
                   </div>
-                 <div className="view-toggle">
-                   <button 
-                     className={`toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
-                     onClick={() => setViewMode('card')}
-                     title="Card View"
-                   >
-                     <FaTh />
-                   </button>
-                   <button 
-                     className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
-                     onClick={() => setViewMode('list')}
-                     title="List View"
-                   >
-                     <FaList />
-                   </button>
-                 </div>
-               </div>
-             </div>
-             <div className={`events-container ${viewMode === 'list' ? 'events-list' : 'events-grid'}`}>
-               {internationalEvents.map((event) => (
-                 <InternationalEventCard
-                   key={event.id}
-                   event={event}
-                   viewMode={viewMode}
-                   isSelected={selectedEvent?.id === event.id}
-                   onClick={() => setSelectedEvent(selectedEvent?.id === event.id ? null : event)}
-                 />
-               ))}
-             </div>
-           </div>
-         )}
+                  
+                </div>
+              </div>
+              <div className={`events-container events-list`}>
+                {internationalEvents.map((event) => (
+                  <div key={event.id} className="reveal-on-scroll" ref={observe}>
+                    <InternationalEventCard
+                      event={event}
+                      viewMode={viewMode}
+                      isSelected={selectedEvent?.id === event.id}
+                      onClick={() => setSelectedEvent(selectedEvent?.id === event.id ? null : event)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
         {/* No Events Message */}
-        {filteredEvents.length === 0 && (
+        {!hasAnyVisibleEvents && (
           <div className="no-events">
             <p>No events found matching your filters.</p>
             <button 

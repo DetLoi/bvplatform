@@ -61,13 +61,29 @@ const getProgress = (xp, masteredMovesCount) => {
   return progress;
 };
 
-export function ProfileProvider({ children }) {
+// Wrapper component to handle AuthContext dependency
+function ProfileProviderWrapper({ children }) {
   const { currentUser } = useAuth();
+  
+  return (
+    <ProfileProviderInner currentUser={currentUser}>
+      {children}
+    </ProfileProviderInner>
+  );
+}
+
+// Inner provider that doesn't depend on AuthContext
+function ProfileProviderInner({ children, currentUser }) {
   const [masteredMoves, setMasteredMoves] = useState([]);
   const [pendingMoves, setPendingMoves] = useState([]);
   const [xp, setXP] = useState(0);
   const [loading, setLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(Date.now()); // Track last update time
+  
+  // Add missing state variables
+  const [profileImage, setProfileImage] = useState('');
+  const [coverPhoto, setCoverPhoto] = useState('');
+  const [battleVideo, setBattleVideo] = useState('');
   
   // Fetch fresh user data from backend
   const fetchUserData = async (userId) => {
@@ -98,43 +114,6 @@ export function ProfileProvider({ children }) {
     }
   };
 
-  // Sync with current user data from API
-  useEffect(() => {
-    if (currentUser && currentUser._id) {
-      fetchUserData(currentUser._id);
-    } else {
-      // Reset when user logs out
-      setMasteredMoves([]);
-      setPendingMoves([]);
-      setXP(0);
-      setProfileImage(null);
-      setCoverPhoto(null);
-      localStorage.removeItem('breakverse_profile_image');
-      localStorage.removeItem('breakverse_cover_photo');
-    }
-  }, [currentUser]);
-
-  // Function to refresh user data (can be called after updates)
-  const refreshUserData = async () => {
-    if (currentUser && currentUser._id) {
-      await fetchUserData(currentUser._id);
-      setLastUpdate(Date.now()); // Trigger global update
-    }
-  };
-
-  // Function to trigger global update across all components
-  const triggerGlobalUpdate = () => {
-    setLastUpdate(Date.now());
-  };
-  const [profileImage, setProfileImage] = useState(() => {
-    const saved = localStorage.getItem('breakverse_profile_image');
-    return saved || null;
-  });
-  const [coverPhoto, setCoverPhoto] = useState(() => {
-    const saved = localStorage.getItem('breakverse_cover_photo');
-    return saved || null;
-  });
-  
   // Initialize images from current user if available
   useEffect(() => {
     if (currentUser) {
@@ -148,124 +127,113 @@ export function ProfileProvider({ children }) {
       }
     }
   }, [currentUser, profileImage, coverPhoto]);
-  const [battleVideo, setBattleVideo] = useState(null);
-
-  const addMasteredMove = async (move) => {
-    if (!masteredMoves.some((m) => m.name === move.name)) {
-      try {
-        await usersAPI.addMasteredMove(currentUser._id, move._id);
-        await fetchUserData(currentUser._id);
-        triggerGlobalUpdate(); // Trigger global update
-      } catch (error) {
-        console.error('Error adding mastered move:', error);
-        throw error;
-      }
+  
+  // Fetch user data when currentUser changes
+  useEffect(() => {
+    if (currentUser?._id) {
+      fetchUserData(currentUser._id);
     }
-  };
-
-  const removeMasteredMove = async (moveName) => {
-    const moveToRemove = masteredMoves.find((m) => m.name === moveName);
-    if (moveToRemove) {
-      try {
-        await usersAPI.removeMasteredMove(currentUser._id, moveToRemove._id);
-        await fetchUserData(currentUser._id);
-        triggerGlobalUpdate(); // Trigger global update
-      } catch (error) {
-        console.error('Error removing mastered move:', error);
-        throw error;
-      }
-    }
-  };
-
-  const requestMoveApproval = async (move) => {
-    if (!pendingMoves.some((m) => m.name === move.name) && 
-        !masteredMoves.some((m) => m.name === move.name)) {
-      try {
-        // Call the backend API to add the pending move
-        await usersAPI.addPendingMove(currentUser._id, move._id);
-        
-        // Refresh user data from backend to ensure consistency
-        await fetchUserData(currentUser._id);
-        triggerGlobalUpdate(); // Trigger global update
-      } catch (error) {
-        console.error('Error requesting move approval:', error);
-        throw error;
-      }
-    }
-  };
-
-  const approveMoveRequest = async (moveName) => {
-    const moveToApprove = pendingMoves.find((m) => m.name === moveName);
-    if (moveToApprove) {
-      try {
-        await usersAPI.approvePendingMove(currentUser._id, moveToApprove._id);
-        await fetchUserData(currentUser._id);
-        triggerGlobalUpdate(); // Trigger global update
-      } catch (error) {
-        console.error('Error approving move request:', error);
-        throw error;
-      }
-    }
-  };
-
-  const rejectMoveRequest = async (moveName) => {
-    const moveToReject = pendingMoves.find((m) => m.name === moveName);
-    if (moveToReject) {
-      try {
-        await usersAPI.rejectPendingMove(currentUser._id, moveToReject._id);
-        await fetchUserData(currentUser._id);
-        triggerGlobalUpdate(); // Trigger global update
-      } catch (error) {
-        console.error('Error rejecting move request:', error);
-        throw error;
-      }
-    }
-  };
-
+  }, [currentUser]);
+  
+  // Add missing computed values and functions
   const level = calculateLevel(xp, masteredMoves.length);
   const nextXP = getNextLevelXP(xp);
-  const currentThreshold = xpThresholds[level - 1] || 0;
   const progress = getProgress(xp, masteredMoves.length);
-
-  // Save photos to localStorage and database when they change
-  const saveProfileImage = async (imageUrl) => {
+  
+  // Save functions for profile and cover images
+  const saveProfileImage = (imageUrl) => {
     setProfileImage(imageUrl);
-    if (imageUrl) {
-      localStorage.setItem('breakverse_profile_image', imageUrl);
-    } else {
-      localStorage.removeItem('breakverse_profile_image');
-    }
-    
-    // Save to database if user is logged in
-    if (currentUser && currentUser._id) {
-      try {
-        await usersAPI.update(currentUser._id, { profileImage: imageUrl });
-      } catch (error) {
-        console.error('Error saving profile image to database:', error);
-      }
-    }
+    localStorage.setItem('breakverse_profile_image', imageUrl);
   };
-
-  const saveCoverPhoto = async (imageUrl) => {
+  
+  const saveCoverPhoto = (imageUrl) => {
     setCoverPhoto(imageUrl);
-    if (imageUrl) {
-      localStorage.setItem('breakverse_cover_photo', imageUrl);
-    } else {
-      localStorage.removeItem('breakverse_cover_photo');
-    }
+    localStorage.setItem('breakverse_cover_photo', imageUrl);
+  };
+  
+  // Add missing functions
+  const addMasteredMove = async (move) => {
+    if (!currentUser?._id) return;
     
-    // Save to database if user is logged in
-    if (currentUser && currentUser._id) {
-      try {
-        await usersAPI.update(currentUser._id, { coverImage: imageUrl });
-      } catch (error) {
-        console.error('Error saving cover image to database:', error);
+    try {
+      const response = await usersAPI.addMasteredMove(currentUser._id, move._id);
+      if (response.success) {
+        await fetchUserData(currentUser._id);
+        triggerGlobalUpdate();
       }
+    } catch (error) {
+      console.error('Error adding mastered move:', error);
     }
   };
-
+  
+  const removeMasteredMove = async (move) => {
+    if (!currentUser?._id) return;
+    
+    try {
+      const response = await usersAPI.removeMasteredMove(currentUser._id, move._id);
+      if (response.success) {
+        await fetchUserData(currentUser._id);
+        triggerGlobalUpdate();
+      }
+    } catch (error) {
+      console.error('Error removing mastered move:', error);
+    }
+  };
+  
+  const requestMoveApproval = async (move) => {
+    if (!currentUser?._id) return;
+    
+    try {
+      const response = await usersAPI.addPendingMove(currentUser._id, move._id);
+      if (response.success) {
+        await fetchUserData(currentUser._id);
+        triggerGlobalUpdate();
+      }
+    } catch (error) {
+      console.error('Error requesting move approval:', error);
+    }
+  };
+  
+  const approveMoveRequest = async (move) => {
+    if (!currentUser?._id) return;
+    
+    try {
+      const response = await usersAPI.approvePendingMove(currentUser._id, move._id);
+      if (response.success) {
+        await fetchUserData(currentUser._id);
+        triggerGlobalUpdate();
+      }
+    } catch (error) {
+      console.error('Error approving move request:', error);
+    }
+  };
+  
+  const rejectMoveRequest = async (move) => {
+    if (!currentUser?._id) return;
+    
+    try {
+      const response = await usersAPI.rejectPendingMove(currentUser._id, move._id);
+      if (response.success) {
+        await fetchUserData(currentUser._id);
+        triggerGlobalUpdate();
+      }
+    } catch (error) {
+      console.error('Error rejecting move request:', error);
+    }
+  };
+  
+  const refreshUserData = async () => {
+    if (currentUser?._id) {
+      await fetchUserData(currentUser._id);
+    }
+  };
+  
+  const triggerGlobalUpdate = () => {
+    setLastUpdate(Date.now());
+  };
+  
   // Upload profile image to server
-  const uploadProfileImage = async (file) => {
+  const uploadProfileImage = async (file, previousUrl = '') => {
     if (!currentUser || !currentUser._id) {
       throw new Error('User not logged in');
     }
@@ -273,6 +241,9 @@ export function ProfileProvider({ children }) {
     const formData = new FormData();
     formData.append('profileImage', file);
     formData.append('userId', currentUser._id);
+    if (previousUrl) {
+      formData.append('previousUrl', previousUrl);
+    }
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/profile-image`, {
@@ -302,7 +273,7 @@ export function ProfileProvider({ children }) {
   };
 
   // Upload cover image to server
-  const uploadCoverImage = async (file) => {
+  const uploadCoverImage = async (file, previousUrl = '') => {
     if (!currentUser || !currentUser._id) {
       throw new Error('User not logged in');
     }
@@ -310,6 +281,9 @@ export function ProfileProvider({ children }) {
     const formData = new FormData();
     formData.append('coverImage', file);
     formData.append('userId', currentUser._id);
+    if (previousUrl) {
+      formData.append('previousUrl', previousUrl);
+    }
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/cover-image`, {
@@ -370,5 +344,8 @@ export function ProfileProvider({ children }) {
     </ProfileContext.Provider>
   );
 }
+
+// Export the wrapper component as the main ProfileProvider
+export { ProfileProviderWrapper as ProfileProvider };
 
 export const useProfile = () => useContext(ProfileContext);

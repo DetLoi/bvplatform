@@ -1,0 +1,602 @@
+/* === Judge Voting - Professional Judging Interface === */
+
+/* Main Container */
+.judge-voting-container {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.judge-voting-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(33, 150, 243, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.judge-voting-main {
+  position: relative;
+  z-index: 1;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Loading States */
+.judge-voting-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.judge-voting-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 215, 0, 0.3);
+  border-top: 4px solid #ffd700;
+  border-radius: 50%;
+  animation: judge-voting-spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes judge-voting-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.judge-voting-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
+
+.judge-voting-error button {
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  color: #000;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.3s ease;
+}
+
+.judge-voting-error button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+/* Back Button */
+.judge-voting-back-btn {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 160px;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.judge-voting-back-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.1));
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateX(-5px);
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+}
+
+/* Header Section */
+.judge-voting-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding: 2rem 2.5rem;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(26, 26, 46, 0.95) 100%);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 1.5rem;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  min-height: 120px;
+}
+
+.judge-voting-header-content {
+  text-align: center;
+  flex: 1;
+  margin: 0 2rem;
+}
+
+.judge-voting-title {
+  font-size: 3.5rem;
+  font-weight: 900;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #ffd700, #ffb347, #ff8c42);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+  letter-spacing: -0.02em;
+}
+
+.judge-voting-title-icon {
+  font-size: 3rem;
+  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.6));
+  animation: judge-voting-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes judge-voting-glow {
+  from { filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.6)); }
+  to { filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.8)); }
+}
+
+.judge-voting-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.judge-voting-category {
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  color: #000;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+  border: 2px solid rgba(255, 215, 0, 0.5);
+}
+
+.judge-voting-status {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+}
+
+/* Category Selector */
+.judge-voting-category-selector {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(26, 26, 46, 0.9) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.judge-voting-category-selector label {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.judge-voting-category-selector select {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.judge-voting-category-selector select:focus {
+  outline: none;
+  border-color: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.judge-voting-category-selector select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Videos Section */
+.judge-voting-videos-container {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 2rem;
+  margin-bottom: 3rem;
+  align-items: start;
+}
+
+.judge-voting-video-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.judge-voting-video-container {
+  aspect-ratio: 16/9;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  position: relative;
+}
+
+.judge-voting-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.judge-voting-video-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(26, 26, 46, 0.8) 100%);
+}
+
+.judge-voting-placeholder-content {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.judge-voting-placeholder-content svg {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: rgba(255, 215, 0, 0.5);
+}
+
+.judge-voting-placeholder-content p {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+/* Breaker Info */
+.judge-voting-breaker-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.judge-voting-breaker-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.judge-voting-breaker-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+}
+
+.judge-voting-breaker-level {
+  font-weight: 600;
+}
+
+.judge-voting-breaker-crew {
+  color: #ffd700;
+  font-weight: 600;
+}
+
+/* VS Divider */
+.judge-voting-vs-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.judge-voting-vs-content {
+  text-align: center;
+}
+
+.judge-voting-vs-text {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.judge-voting-vs-line {
+  width: 4px;
+  height: 100px;
+  background: linear-gradient(180deg, #ffd700, transparent);
+  margin: 0 auto;
+  border-radius: 2px;
+}
+
+/* Voting Section */
+.judge-voting-section {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(26, 26, 46, 0.9) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 1rem;
+  padding: 2rem;
+  backdrop-filter: blur(20px);
+}
+
+.judge-voting-section-title {
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 2rem;
+}
+
+.judge-voting-scores {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.judge-voting-score-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.judge-voting-score-card h3 {
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.judge-voting-score-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.judge-voting-score-number {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.judge-voting-score-label {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+}
+
+/* Star Rating */
+.judge-stars {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.judge-star {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0.25rem;
+}
+
+.judge-star:hover {
+  color: #ffd700;
+  transform: scale(1.1);
+}
+
+.judge-star.filled {
+  color: #ffd700;
+  filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+}
+
+.judge-star:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Submit Button */
+.judge-voting-submit-btn {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: block;
+  margin: 0 auto;
+  min-width: 200px;
+}
+
+.judge-voting-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #45a049, #388e3c);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+.judge-voting-submit-btn:disabled {
+  background: rgba(76, 175, 80, 0.5);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Submitted State */
+.judge-voting-submitted {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #4caf50;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 1rem;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: 0.75rem;
+}
+
+.judge-voting-submitted svg {
+  font-size: 1.5rem;
+  filter: drop-shadow(0 0 10px rgba(76, 175, 80, 0.5));
+}
+
+/* Error Message */
+.judge-voting-error-message {
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.1), rgba(244, 67, 54, 0.05));
+  border: 2px solid rgba(244, 67, 54, 0.3);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: #f44336;
+  font-weight: 600;
+  text-align: center;
+  backdrop-filter: blur(20px);
+}
+
+.judge-voting-error-message svg {
+  font-size: 1.5rem;
+  filter: drop-shadow(0 0 10px rgba(244, 67, 54, 0.5));
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .judge-voting-videos-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .judge-voting-vs-divider {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .judge-voting-main {
+    padding: 1rem;
+  }
+  
+  .judge-voting-header {
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+    padding: 1.5rem;
+    min-height: auto;
+  }
+  
+  .judge-voting-back-btn {
+    min-width: auto;
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+  }
+  
+  .judge-voting-header-content {
+    margin: 0;
+  }
+  
+  .judge-voting-title {
+    font-size: 2.5rem;
+    gap: 1rem;
+  }
+  
+  .judge-voting-title-icon {
+    font-size: 2.25rem;
+  }
+  
+  .judge-voting-info {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .judge-voting-category,
+  .judge-voting-status {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  
+  .judge-voting-scores {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .judge-voting-category-selector {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .judge-voting-category-selector label {
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .judge-voting-title {
+    font-size: 1.75rem;
+  }
+  
+  .judge-voting-score-number {
+    font-size: 2rem;
+  }
+  
+  .judge-star {
+    font-size: 1.25rem;
+  }
+} 

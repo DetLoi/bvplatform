@@ -16,26 +16,31 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in from localStorage
-    const savedUser = localStorage.getItem('breakverse_user');
+    // Check if user is logged in from localStorage or sessionStorage
+    const savedUser = localStorage.getItem('breakverse_user') || sessionStorage.getItem('breakverse_user');
     if (savedUser) {
       try {
         setCurrentUser(JSON.parse(savedUser));
       } catch (error) {
         console.error('Error parsing saved user:', error);
         localStorage.removeItem('breakverse_user');
+        sessionStorage.removeItem('breakverse_user');
       }
     }
     setLoading(false);
   }, []);
 
-  const login = async (username, password) => {
+  const login = async (username, password, stayLoggedIn = false) => {
     try {
       const response = await usersAPI.login(username, password);
       
       if (response.success && response.user) {
         setCurrentUser(response.user);
-        localStorage.setItem('breakverse_user', JSON.stringify(response.user));
+        
+        // Store user data based on stayLoggedIn preference
+        const storage = stayLoggedIn ? localStorage : sessionStorage;
+        storage.setItem('breakverse_user', JSON.stringify(response.user));
+        
         return { success: true, user: response.user };
       } else {
         return { success: false, error: response.message || 'Ugyldigt brugernavn eller adgangskode' };
@@ -49,16 +54,37 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setCurrentUser(null);
     localStorage.removeItem('breakverse_user');
+    sessionStorage.removeItem('breakverse_user');
   };
 
   const updateUser = (updatedUser) => {
     const newUser = { ...currentUser, ...updatedUser };
     setCurrentUser(newUser);
-    localStorage.setItem('breakverse_user', JSON.stringify(newUser));
+    
+    // Update in the same storage where user was originally stored
+    const storage = localStorage.getItem('breakverse_user') ? localStorage : sessionStorage;
+    storage.setItem('breakverse_user', JSON.stringify(newUser));
+  };
+
+  const refreshUser = async () => {
+    if (currentUser?._id) {
+      try {
+        const userData = await usersAPI.getById(currentUser._id);
+        if (userData) {
+          setCurrentUser(userData);
+          
+          // Update in the same storage where user was originally stored
+          const storage = localStorage.getItem('breakverse_user') ? localStorage : sessionStorage;
+          storage.setItem('breakverse_user', JSON.stringify(userData));
+        }
+      } catch (error) {
+        console.error('Error refreshing user data:', error);
+      }
+    }
   };
 
   const isAdmin = () => {
-    return currentUser && currentUser.status === 'admin';
+    return currentUser && currentUser.roles && currentUser.roles.includes('admin');
   };
 
   const value = {
@@ -66,6 +92,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     updateUser,
+    refreshUser,
     isAdmin,
     loading
   };

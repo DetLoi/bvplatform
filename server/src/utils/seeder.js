@@ -3,11 +3,11 @@ import Badge from '../models/badge.models.js';
 import User from '../models/user.models.js';
 import Event from '../models/event.models.js';
 import Battle from '../models/battle.models.js';
-import Crew from '../models/crew.models.js';
+
 import mongoose from 'mongoose';
 
 // Import data from seeder data file (without image imports)
-import { moves, users, crews, badges, events, battles } from './seeder-data.js';
+import { moves, users, badges, events, battles } from './seeder-data.js';
 
 export const seedDatabase = async () => {
   try {
@@ -101,61 +101,7 @@ export const seedDatabase = async () => {
     const insertedUsers = await User.insertMany(usersToInsert);
     console.log(`✅ Seeded ${insertedUsers.length} users`);
 
-    // Seed crews with leaders
-    console.log('👥 Seeding crews...');
-    const crewsToInsert = crews.map(crew => {
-      // Find the first user from this crew to be the leader
-      const crewUsers = insertedUsers.filter(user => user.crew === crew.name);
-      const leader = crewUsers.length > 0 ? crewUsers[0] : insertedUsers[0]; // Fallback to first user
 
-      return {
-        name: crew.name,
-        description: crew.description,
-        logo: crew.logo || null,
-        color: crew.color || '#ffd700',
-        location: 'Denmark', // Default location
-        leader: leader._id, // Set the leader
-        isActive: true,
-        isPublic: true
-      };
-    });
-
-    const insertedCrews = await Crew.insertMany(crewsToInsert);
-    console.log(`✅ Seeded ${insertedCrews.length} crews`);
-
-    // Create a map of crew names to ObjectIds
-    const crewNameToId = {};
-    insertedCrews.forEach(crew => {
-      crewNameToId[crew.name] = crew._id;
-    });
-
-    // Update users with crew references
-    console.log('🔄 Updating users with crew references...');
-    for (const user of insertedUsers) {
-      const crewId = crewNameToId[user.crew];
-      if (crewId) {
-        await User.findByIdAndUpdate(user._id, { crew: crewId });
-      }
-    }
-
-    // Update crews with members
-    console.log('👑 Updating crews with members...');
-    for (const crew of insertedCrews) {
-      const crewUsers = insertedUsers.filter(user => 
-        user.crew === crew.name
-      );
-      
-      if (crewUsers.length > 0) {
-        const leader = crewUsers[0]; // First user is leader
-        await Crew.findByIdAndUpdate(crew._id, {
-          members: crewUsers.map(user => ({
-            user: user._id,
-            role: user._id.toString() === leader._id.toString() ? 'Leader' : 'Member',
-            joinedAt: new Date()
-          }))
-        });
-      }
-    }
 
     // Seed badges
     console.log('🏆 Seeding badges...');
@@ -232,7 +178,7 @@ export const seedDatabase = async () => {
       badges: insertedBadges.length,
       events: insertedEvents.length,
       users: insertedUsers.length,
-      crews: insertedCrews.length,
+  
       battles: insertedBattles.length
     };
   } catch (error) {

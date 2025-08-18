@@ -1,4 +1,5 @@
 /* --- Moves Page Layout --- */
+
 .moves-page {
   display: flex;
   flex-direction: column;
@@ -6,6 +7,9 @@
   padding: 2rem 1.25rem;
   max-width: 1200px;
   margin: 0 auto;
+  overflow: visible;
+  height: auto;
+  min-height: auto;
 }
 
 /* Tabs area */
@@ -19,12 +23,6 @@
 
 .moves-tabs::-webkit-scrollbar {
   display: none;
-}
-.moves-tabs::after {
-  content: "";
-  flex: 0 0 1.5rem;
-  background: linear-gradient(to left, #0d0d0d, transparent);
-  pointer-events: none;
 }
 
 /* Tab buttons */
@@ -40,11 +38,13 @@
   scroll-snap-align: start;
   transition: all 0.2s ease;
 }
+
 .tab:hover {
   background: rgba(255, 215, 0, 0.1);
   border-color: rgba(255, 215, 0, 0.3);
   color: #ffd700;
 }
+
 .tab.active {
   background: linear-gradient(135deg, #ffd700, #ffb347);
   color: #000;
@@ -57,11 +57,17 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1.5rem;
+  overflow: visible;
+  max-height: none;
+  height: auto;
 }
 
 /* Level Sections for All Moves */
 .level-section {
   margin-bottom: 3rem;
+  overflow: visible;
+  height: auto;
+  max-height: none;
 }
 
 .level-title {
@@ -79,6 +85,9 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1.5rem;
+  overflow: visible;
+  max-height: none;
+  height: auto;
 }
 
 /* Level-specific colors for titles */
@@ -89,8 +98,12 @@
 .level-section:nth-child(5) .level-title { color: #ff9c33; } /* Skilled */
 .level-section:nth-child(6) .level-title { color: #ff5555; } /* Master */
 
+
+
 /* Responsive adjustments for level sections */
 @media (max-width: 768px) {
+  /* Reduce vertical spacing between sections on mobile */
+  .moves-page { gap: 1rem; }
   .level-section {
     margin-bottom: 2rem;
   }
@@ -99,6 +112,8 @@
     font-size: 1.25rem;
     margin-bottom: 1rem;
   }
+  
+
 }
 
 /* Move Card */
@@ -167,7 +182,36 @@
 .level-master{color:#ff5555;}
 .level-grandmaster{color:#ff00ff;}
 
-.move-name{font-size:1rem;font-weight:700;margin-bottom:0.25rem;} /* color inherits from level class */
+.moves-page-move-name{
+  font-size:1rem;
+  font-weight:700;
+  margin-bottom:0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+} /* color inherits from level class */
+
+.mastered-check {
+  color: #00ff00 !important;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.mastered-check:hover {
+  background: rgba(0, 255, 0, 0.2);
+  border-color: #00ff00;
+  transform: scale(1.05);
+}
+
 .move-cat{font-size:0.75rem;text-transform:uppercase;color:#999;}
 .move-xp{font-size:0.85rem;color:#ffffff;font-weight:600;}
 
@@ -381,7 +425,7 @@
 }
 
 .video-section.has-recommendations .recommendations-panel {
-  margin-top: 0;
+  margin-top: 2rem;
   grid-area: recommendations;
 }
 
@@ -417,6 +461,38 @@
   min-height: 400px;
 }
 
+/* YouTube iframe styles */
+.youtube-iframe {
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+  min-height: 400px;
+  background: #000;
+  border: none;
+}
+
+/* Video player component styles */
+.video-player {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 1rem;
+  min-height: 400px;
+}
+
+.video-placeholder {
+  width: 100%;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1d1d1d;
+  border-radius: 1rem;
+  color: #999;
+  font-size: 1rem;
+}
+
 .video-info {
   text-align: left;
   max-width: 800px;
@@ -427,11 +503,11 @@
 .video-section:not(.has-recommendations) .video-info {
   text-align: left;
   margin: 0;
-  padding-top: 32px;
+  padding-top: 16px;
   right: 0;
   top: 0;
-  width: 300px;
-  max-width: 300px;
+  width: auto;
+  max-width: 800px;
 }
 
 .video-title {
@@ -450,10 +526,19 @@
 }
 
 @media (max-width: 768px) {
+  /* Make the video button double size on mobile */
+  .video-btn { padding: 1rem; }
+  .video-btn svg { transform: scale(1.4); }
   .video-section {
-    padding: 1.5rem;
+    padding: 0;
     margin: 1.5rem 0;
   }
+  /* Remove extra space below the video/info block when no recommendations are shown */
+  .video-section:not(.has-recommendations) {
+    margin-bottom: 0; /* minimize gap below the video section */
+  }
+  /* Remove only the top margin on mobile */
+  .video-section { margin-top: 0; }
   
   .video-title {
     font-size: 1.25rem;
@@ -462,6 +547,76 @@
   .video-description {
     font-size: 0.9rem;
   }
+
+  /* Stack video, info, and recommendations for mobile */
+  .video-section.has-recommendations {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "video"
+      "info"
+      "recommendations";
+    gap: 1rem;
+  }
+
+  /* Center the info text under video when recommendations are present */
+  .video-section.has-recommendations .video-info {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1rem;
+  }
+
+  /* Responsive 16:9 video container */
+  .video-container {
+    height: auto;
+    max-width: 100%;
+    aspect-ratio: 16 / 9;
+    margin: 0 0 1rem 0;
+  }
+
+  /* Ensure embedded players adapt to container */
+  .moves-video,
+  .youtube-iframe,
+  .video-player {
+    height: 100%;
+    min-height: 0;
+  }
+
+  /* Default (no recommendations) view stacks as well */
+  .video-flex-container {
+    flex-direction: column;
+    gap: 0;
+    align-items: center; /* center children horizontally */
+  }
+
+  .video-flex-container .video-info {
+    flex: 0 1 auto; /* override any fixed basis */
+    max-width: 100%;
+    width: 100%;
+    padding-top: 0;
+    height: auto; /* prevent any fixed height constraints */
+    align-self: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Override fixed width info panel on mobile */
+  .video-section:not(.has-recommendations) .video-info {
+    width: 100%;
+    max-width: 100%;
+    padding-top: 0;
+    margin-bottom: 0; /* tighten space below the info block */
+    text-align: center; /* center text for default video on mobile */
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Ensure inner elements also align centered */
+  .video-section:not(.has-recommendations) .video-info .video-title,
+  .video-section:not(.has-recommendations) .video-info .video-description { text-align: center; }
+
+  /* Reduce spacing below the video when no recommendations are present */
+  .video-section:not(.has-recommendations) .video-container { margin-bottom: 0; }
 }
 
 /* ============ RECOMMENDATIONS PANEL ============ */
@@ -553,29 +708,12 @@
 }
 
 /* Level colors for recommendation names */
-.recommendation-name.level-beginner {
-  color: #4ade80;
-}
-
-.recommendation-name.level-novice {
-  color: #60a5fa;
-}
-
-.recommendation-name.level-intermediate {
-  color: #f59e0b;
-}
-
-.recommendation-name.level-advanced {
-  color: #f97316;
-}
-
-.recommendation-name.level-skilled {
-  color: #a855f7;
-}
-
-.recommendation-name.level-master {
-  color: #ef4444;
-}
+.recommendation-name.level-beginner { color: #00fbff; }
+.recommendation-name.level-novice { color: #00b7ff; }
+.recommendation-name.level-intermediate { color: #a875ff; }
+.recommendation-name.level-advanced { color: #ffd54f; }
+.recommendation-name.level-skilled { color: #ff9c33; }
+.recommendation-name.level-master { color: #ff5555; }
 
 /* ============ RECOMMENDATIONS TOGGLE ============ */
 .recommendations-toggle {
@@ -663,6 +801,7 @@
     max-width: 800px;
     width: 100%;
     text-align: left;
+    margin-left: 1rem;
   }
 }
 
@@ -681,7 +820,6 @@
 }
 
 .video-flex-container .video-info {
-  flex: 0 0 300px;
   margin: 0;
   max-width: 300px;
 }

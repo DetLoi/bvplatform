@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
@@ -10,8 +10,10 @@ export default function Login() {
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [stayLoggedIn, setStayLoggedIn] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -19,6 +21,15 @@ export default function Login() {
 
   // Get the intended destination from the redirect state
   const from = location.state?.from?.pathname || '/dashboard';
+  
+  // Check for success message from password reset
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      // Clear the message from location state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,7 +47,7 @@ export default function Login() {
     setError('');
 
     try {
-      const result = await login(formData.username, formData.password);
+      const result = await login(formData.username, formData.password, stayLoggedIn);
       
       if (result.success) {
         // Redirect to the intended destination or based on user status
@@ -49,7 +60,7 @@ export default function Login() {
         setError(result.error);
       }
     } catch (err) {
-      setError('Der opstod en fejl under login. Prøv venligst igen.');
+      setError('An error occurred during login. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -61,14 +72,13 @@ export default function Login() {
 
   return (
     <div className="login-page">
+      <Link to="/" className="back-link">
+        <FaArrowLeft />
+        Back to Home
+      </Link>
       <div className="login-container">
         <div className="login-header">
-          <Link to="/" className="back-link">
-            <FaArrowLeft />
-            Tilbage til Hjem
-          </Link>
-          <h1>Velkommen</h1>
-          <p>Log ind for at fortsætte din breaking rejse</p>
+          <img src="/src/assets/logo-white.png" alt="Breakverse" className="login-logo" />
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
@@ -77,9 +87,14 @@ export default function Login() {
               {error}
             </div>
           )}
+          {successMessage && (
+            <div className="success-message">
+              {successMessage}
+            </div>
+          )}
 
           <div className="form-group">
-            <label htmlFor="username">Brugernavn</label>
+            <label htmlFor="username">Username</label>
             <div className="input-wrapper">
               <div className="input-icon-container">
                 <FaUser />
@@ -90,7 +105,7 @@ export default function Login() {
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                placeholder="Indtast dit brugernavn"
+                placeholder="Enter your username"
                 required
                 className="form-input"
               />
@@ -98,7 +113,7 @@ export default function Login() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Adgangskode</label>
+            <label htmlFor="password">Password</label>
             <div className="input-wrapper">
               <div className="input-icon-container">
                 <FaLock />
@@ -109,7 +124,7 @@ export default function Login() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Indtast din adgangskode"
+                placeholder="Enter your password"
                 required
                 className="form-input"
               />
@@ -117,6 +132,7 @@ export default function Login() {
                 type="button"
                 onClick={togglePasswordVisibility}
                 className="password-toggle"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </button>
@@ -128,13 +144,25 @@ export default function Login() {
             disabled={loading}
             className="login-button"
           >
-            {loading ? 'Logger Ind...' : 'Log Ind'}
+            {loading ? 'Logging in...' : 'Log In'}
           </button>
+
+          <div className="remember-me-container">
+            <label className="remember-me-label">
+              <input
+                type="checkbox"
+                checked={stayLoggedIn}
+                onChange={(e) => setStayLoggedIn(e.target.checked)}
+                className="remember-me-checkbox"
+              />
+              <span className="remember-me-text">Stay logged in</span>
+            </label>
+          </div>
         </form>
 
         <div className="login-footer">
-          <p>Har du ikke en konto? <Link to="/register">Tilmeld dig</Link></p>
-          <p><Link to="/forgot-password">Glemt adgangskode?</Link></p>
+          <p>Don’t have an account? <Link to="/register">Sign up</Link></p>
+          <p><Link to="/forgot-password">Forgot password?</Link></p>
         </div>
       </div>
 

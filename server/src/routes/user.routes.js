@@ -15,7 +15,11 @@ import {
   loginUser,
   recalculateAllUserLevels,
   recalculateAllUserBadges,
-  getAllPendingMoveRequests
+  getAllPendingMoveRequests,
+  getInstructors,
+  getStudentsByInstructor,
+  assignInstructor,
+  removeInstructor
 } from '../controllers/user.controller.js';
 
 const router = Router();
@@ -31,6 +35,12 @@ router.get('/admin/with-passwords', getAllUsersWithPasswords);
 
 // Get all pending move requests (admin only)
 router.get('/pending-moves', getAllPendingMoveRequests);
+
+// Instructor management routes
+router.get('/instructors', getInstructors);
+router.get('/instructor/:instructorId/students', getStudentsByInstructor);
+router.put('/:userId/instructor', assignInstructor);
+router.delete('/:userId/instructor', removeInstructor);
 
 // Get user by ID
 router.get('/:id', getUserById);

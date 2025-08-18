@@ -16,11 +16,14 @@ export default function AddUser() {
     password: '',
     name: '',
     status: 'active',
+    roles: ['student'],
     bio: '',
-    profileImage: ''
+    profileImage: '',
+    coverImage: ''
   });
 
-  const statuses = ['active', 'inactive', 'admin'];
+  const statuses = ['active', 'inactive'];
+  const availableRoles = ['student', 'instructor', 'judge', 'admin'];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,8 +46,10 @@ export default function AddUser() {
         password: formData.password,
         name: formData.name,
         status: formData.status,
+        roles: formData.roles,
         bio: formData.bio || '',
-        profileImage: formData.profileImage || ''
+        profileImage: formData.profileImage || '',
+        coverImage: formData.coverImage || ''
       };
 
       // Create user via API
@@ -163,6 +168,34 @@ export default function AddUser() {
             </select>
           </div>
 
+          <div className="form-group">
+            <label>Roles</label>
+            <div className="roles-management">
+              {availableRoles.map(role => (
+                <label key={role} className="role-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={formData.roles.includes(role)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setFormData(prev => ({
+                          ...prev,
+                          roles: [...prev.roles, role]
+                        }));
+                      } else {
+                        setFormData(prev => ({
+                          ...prev,
+                          roles: prev.roles.filter(r => r !== role)
+                        }));
+                      }
+                    }}
+                  />
+                  <span className="role-label">{role.charAt(0).toUpperCase() + role.slice(1)}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
 
 
           <div className="form-group">
@@ -191,7 +224,32 @@ export default function AddUser() {
               className="form-input"
               disabled={loading}
             />
+            {formData.profileImage && (
+              <div className="image-preview">
+                <img src={formData.profileImage} alt="Profile preview" className="preview-image" />
+              </div>
+            )}
             <small className="form-help">Optional: Enter image URL for profile picture</small>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="coverImage">Cover Image URL</label>
+            <input
+              type="url"
+              id="coverImage"
+              name="coverImage"
+              value={formData.coverImage}
+              onChange={handleChange}
+              placeholder="https://example.com/cover.jpg"
+              className="form-input"
+              disabled={loading}
+            />
+            {formData.coverImage && (
+              <div className="image-preview">
+                <img src={formData.coverImage} alt="Cover preview" className="preview-image" />
+              </div>
+            )}
+            <small className="form-help">Optional: Enter image URL for cover photo</small>
           </div>
 
           <div className="form-actions">

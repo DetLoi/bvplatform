@@ -22,7 +22,8 @@ const recreateAdmin = async () => {
       email: 'admin@breakverse.com',
       name: 'Admin User',
       password: hashedPassword,
-      status: 'admin',
+      status: 'active',
+      roles: ['admin'],
       level: 1,
       xp: 0
     });

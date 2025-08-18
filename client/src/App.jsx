@@ -4,14 +4,13 @@ import Home from './pages/Home';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import { Moves } from './pages/Moves';
+
 import Badges from './pages/Badges';
 import BadgeDetail from './pages/BadgeDetail';
-import Crews from './pages/Crews';
 import Admin from './pages/Admin';
 import AddMove from './pages/AddMove';
 import AddBadge from './pages/AddBadge';
 import AddEvent from './pages/AddEvent';
-import AddCrew from './pages/AddCrew';
 import AddUser from './pages/AddUser';
 import EditMove from './pages/EditMove';
 import EditBadge from './pages/EditBadge';
@@ -22,6 +21,17 @@ import BreakerProfile from './pages/BreakerProfile';
 import Events from './pages/Events';
 import Battles from './pages/Battles';
 import BattleRoom from './pages/BattleRoom';
+import JudgeVoting from './pages/JudgeVoting';
+import MasterMove from './pages/MasterMove';
+import Policy from './pages/Policy';
+import TermsOfService from './pages/TermsOfService';
+import ForgotPassword from './pages/ForgotPassword';
+import VerifyPassword from './pages/VerifyPassword';
+import Register from './pages/Register';
+import LearnMore from './pages/LearnMore';
+import Verify from './pages/Verify';
+import VerifySuccess from './pages/VerifySuccess';
+
 import { Toaster } from 'react-hot-toast';
 import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -29,6 +39,30 @@ import PublicRoute from './components/PublicRoute';
 import AdminRoute from './components/AdminRoute';
 import { AuthProvider } from './context/AuthContext';
 import { ProfileProvider } from './context/ProfileContext';
+import CookieConsent from './components/CookieConsent';
+
+// Import styles
+import './styles/base.css';
+import './styles/fonts.css';
+import './styles/components.css';
+import './styles/pages/home.css';
+import './styles/pages/moves.css';
+import './styles/pages/badges.css';
+import './styles/pages/events.css';
+import './styles/pages/battles.css';
+import './styles/pages/battle-room.css';
+import './styles/pages/breaker-profile.css';
+import './styles/pages/breakers.css';
+import './styles/pages/landing.css';
+import './styles/pages/login.css';
+import './styles/pages/admin.css';
+import './styles/pages/add-form.css';
+import './styles/pages/badge-detail.css';
+import './styles/pages/judge-voting.css';
+import './styles/pages/master-move.css';
+import './styles/pages/policy.css';
+import './styles/pages/register.css';
+
 
 function Page({ children }) {
   return <div className="page-container">{children}</div>;
@@ -40,7 +74,7 @@ export default function App() {
   return (
     <AuthProvider>
       <ProfileProvider>
-        <div className="min-h-screen bg-stone-900 text-stone-100 font-sans">
+        <div className="min-h-screen bg-stone-900 text-stone-100 font-sans" style={{ ['--header-h']: '64px' }}>
           <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
 
           <Routes>
@@ -55,6 +89,46 @@ export default function App() {
                 <Login />
               </PublicRoute>
             } />
+            <Route path="/policy" element={
+              <PublicRoute>
+                <Page><Policy /></Page>
+              </PublicRoute>
+            } />
+            <Route path="/terms" element={
+              <PublicRoute>
+                <Page><TermsOfService /></Page>
+              </PublicRoute>
+            } />
+            <Route path="/forgot-password" element={
+              <PublicRoute>
+                <Page><ForgotPassword /></Page>
+              </PublicRoute>
+            } />
+            <Route path="/verify-password" element={
+              <PublicRoute>
+                <Page><VerifyPassword /></Page>
+              </PublicRoute>
+            } />
+            <Route path="/register" element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            } />
+            <Route path="/learnmore" element={
+              <PublicRoute>
+                <LearnMore />
+              </PublicRoute>
+            } />
+            <Route path="/verify" element={
+              <PublicRoute>
+                <Verify />
+              </PublicRoute>
+            } />
+            <Route path="/verify-success" element={
+              <PublicRoute>
+                <VerifySuccess />
+              </PublicRoute>
+            } />
 
             {/* Protected routes - only accessible when logged in */}
             <Route path="/dashboard" element={
@@ -67,6 +141,12 @@ export default function App() {
                 <Page><Moves /></Page>
               </ProtectedRoute>
             } />
+            <Route path="/master-move" element={
+              <ProtectedRoute>
+                <Page><MasterMove /></Page>
+              </ProtectedRoute>
+            } />
+
             <Route path="/badges" element={
               <ProtectedRoute>
                 <Page><Badges /></Page>
@@ -77,11 +157,7 @@ export default function App() {
                 <Page><BadgeDetail /></Page>
               </ProtectedRoute>
             } />
-            <Route path="/crews" element={
-              <ProtectedRoute>
-                <Page><Crews /></Page>
-              </ProtectedRoute>
-            } />
+
             <Route path="/breakers" element={
               <ProtectedRoute>
                 <Page><Breakers /></Page>
@@ -107,6 +183,16 @@ export default function App() {
                 <Page><BattleRoom /></Page>
               </ProtectedRoute>
             } />
+            <Route path="/judge/:battleId" element={
+              <ProtectedRoute>
+                <Page><JudgeVoting /></Page>
+              </ProtectedRoute>
+            } />
+            <Route path="/battles/:battleId/judge/:category" element={
+              <ProtectedRoute>
+                <Page><JudgeVoting /></Page>
+              </ProtectedRoute>
+            } />
 
             {/* Admin routes - require admin status */}
             <Route path="/admin" element={
@@ -129,11 +215,7 @@ export default function App() {
                 <AddEvent />
               </AdminRoute>
             } />
-            <Route path="/admin/add-crew" element={
-              <AdminRoute>
-                <AddCrew />
-              </AdminRoute>
-            } />
+
             <Route path="/admin/add-user" element={
               <AdminRoute>
                 <AddUser />
@@ -159,6 +241,7 @@ export default function App() {
                 <EditUser />
               </AdminRoute>
             } />
+
           </Routes>
 
         <Toaster
@@ -178,6 +261,7 @@ export default function App() {
             },
           }}
         />
+        <CookieConsent />
       </div>
       </ProfileProvider>
     </AuthProvider>

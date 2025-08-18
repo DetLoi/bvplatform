@@ -88,16 +88,55 @@ export const createBadge = async (req, res) => {
 // Update badge
 export const updateBadge = async (req, res) => {
   try {
-    const badge = await Badge.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    
-    if (!badge) {
+    const { id } = req.params;
+    const existing = await Badge.findById(id);
+    if (!existing) {
       return res.status(404).json({ message: 'Badge not found' });
     }
-    
+
+    const updateData = { ...req.body };
+
+    // If file uploaded, update image path
+    if (req.file) {
+      updateData.image = `/uploads/${req.file.filename}`;
+    }
+
+    // Normalize requirements similar to createBadge
+    if (req.body.requirements) {
+      let requirements;
+      try {
+        requirements = JSON.parse(req.body.requirements);
+      } catch (e) {
+        requirements = req.body.requirements;
+      }
+
+      // If provided as array of move names/objects, map to ObjectIds
+      if (Array.isArray(requirements)) {
+        const requirementIds = [];
+        for (const entry of requirements) {
+          if (typeof entry === 'string') {
+            const moveDoc = await Move.findOne({ name: entry.trim() });
+            if (moveDoc) requirementIds.push(moveDoc._id);
+          } else if (entry && typeof entry === 'object' && entry._id) {
+            requirementIds.push(entry._id);
+          }
+        }
+
+        updateData.requirements = {
+          ...(existing.requirements || {}),
+          moves: requirementIds,
+          xpRequired: Number(existing.requirements?.xpRequired || 0),
+          levelRequired: Number(existing.requirements?.levelRequired || 1),
+        };
+      }
+    }
+
+    const badge = await Badge.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
     res.json(badge);
   } catch (error) {
     res.status(400).json({ error: error.message });

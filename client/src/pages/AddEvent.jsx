@@ -193,7 +193,7 @@ export default function AddEvent() {
                 name="battleFormat"
                 value={formData.battleFormat}
                 onChange={handleChange}
-                placeholder="e.g., 1v1, 2v2, Crew Battle"
+                placeholder="e.g., 1v1, 2v2, Team Battle"
                 className="form-input"
               />
             </div>

@@ -4,9 +4,38 @@
 .cover-photo-wrapper {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 300px; /* match dashboard cover height */
   overflow: hidden;
-  border-bottom: 4px solid #111;
+}
+.cover-photo-wrapper.editable {
+  cursor: pointer;
+}
+
+/* Click animation */
+.cover-photo-wrapper.editable:active .cover-photo {
+  transform: scale(0.995);
+  transition: transform 80ms ease;
+}
+
+/* Ripple effect */
+.cover-photo-wrapper.editable::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,0.25);
+  border-radius: 9999px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.cover-photo-wrapper.editable:active::after {
+  width: 120px;
+  height: 120px;
+  opacity: 0;
+  transition: width 260ms ease, height 260ms ease, opacity 260ms ease;
 }
 
 .cover-photo {
@@ -14,6 +43,27 @@
   height: 100%;
   object-fit: cover;
   filter: brightness(0.9);
+}
+
+/* Hover overlay for editing cover */
+.cover-hover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.0);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  opacity: 0;
+  transition: background 0.2s ease, opacity 0.2s ease;
+  pointer-events: none; /* allow clicks to pass through to wrapper */
+}
+
+.cover-photo-wrapper:hover .cover-hover {
+  background: rgba(0,0,0,0.35);
+  opacity: 1;
 }
 
 /* === Profile Header === */
@@ -83,6 +133,8 @@
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
   outline: none;
   margin-left: auto;
+  position: relative;
+  z-index: 10;
 }
 
 .back-button:hover, .back-button:focus {
@@ -167,7 +219,7 @@
   height: 60px;
   background: transparent;
   margin-bottom: 12px;
-  border-radius: 50%;
+  border-radius: 6px;
   box-shadow: 0 2px 10px rgba(230, 199, 123, 0.3);
   transition: all 0.3s ease;
 }
@@ -253,6 +305,7 @@
   display: grid; 
   grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); 
   gap: 1rem; 
+  margin-top: 1rem;
 }
 
 .mastered-card { 
@@ -304,7 +357,6 @@
 
 /* === Main Content === */
 .main-content {
-  max-width: 1280px;
   margin: 0 auto;
   padding: 0;
 }

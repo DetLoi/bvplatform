@@ -1,0 +1,448 @@
+.pageRoot {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: calc(100vh - var(--header-h, 0px));
+  background:
+    linear-gradient(0deg, rgba(11,11,12,0.85), rgba(11,11,12,0.85)),
+    url('../assets/zen.jpg') center / cover no-repeat fixed;
+  color: #f5f7fb;
+  overflow-x: hidden; /* prevent accidental horizontal scroll */
+}
+
+@media (max-width: 900px) {
+  .pageRoot {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 24px 16px;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    display: none;
+  }
+}
+
+.brand {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  margin-top: 2rem;
+  margin-bottom: 16px;
+}
+
+.backLink {
+  display: inline-block;
+  color: #cfd6e4;
+  text-decoration: none;
+  font-weight: 600;
+  position: fixed; /* float above content, centered */
+  top: calc(var(--header-h, 0px) + 1rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(0,0,0,0.3);
+  padding: 6px 10px;
+  border-radius: 10px;
+  pointer-events: auto;
+}
+.backLink:hover { color: #ffffff; }
+
+.progressBarWrapper {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.progressBar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ffd700, #ffb347);
+  transition: width 300ms ease;
+}
+
+.navList {
+  list-style: none;
+  margin: 8px 0 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: #cfd6e4;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease;
+  white-space: nowrap; /* keep titles on one line in side panel */
+}
+
+.navItem:hover {
+  background: rgba(255,255,255,0.06);
+  color: #ffffff;
+}
+
+.navItemActive {
+  background: rgba(255,215,0,0.18);
+  color: #ffffff;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6b7280;
+}
+
+.dotActive {
+  background: #ffd700;
+}
+
+.content {
+  height: calc(100vh - var(--header-h, 0px));
+  overflow-y: auto;
+  overflow-x: hidden; /* prevent horizontal scroll from 3D transforms */
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  /* Hide scrollbars but keep scrolling */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+.content::-webkit-scrollbar { display: none; }
+
+.section {
+  min-height: 100vh;
+  scroll-snap-align: start;
+  padding: 56px 6vw 120px; /* extra bottom space so sticky footerNav doesn't overlap form */
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 40px;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  position: relative;
+  z-index: 1; /* ensure backLink with high z-index stays above */
+}
+
+@media (max-width: 1000px) {
+  .section {
+    grid-template-columns: 1fr;
+    padding: 40px 20px;
+  }
+}
+
+.title {
+  font-size: 42px;
+  line-height: 1.1;
+  font-weight: 800;
+  margin: 0 0 10px 0;
+}
+
+.noWrap { white-space: nowrap; }
+
+.subtitle {
+  font-size: 16px;
+  color: #cfd6e4;
+  margin: 0 0 22px 0;
+}
+
+.bullets {
+  display: grid;
+  gap: 10px;
+  padding-left: 18px;
+}
+
+.bullet {
+  list-style: disc;
+}
+
+.bulletLink {
+  color: #ffd700;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.bulletLink:hover {
+  color: #ffdf70;
+  text-decoration: underline;
+}
+
+.visual {
+  width: 100%;
+  height: 100vh;
+  border-radius: 16px;
+  background: transparent;
+  border: none;
+  display: grid;
+  place-items: center;
+  color: #f1d27a;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateX(24px);
+  will-change: transform, opacity;
+  overflow: visible; /* clip 3D carousel to avoid horizontal overflow */
+}
+
+.sectionEnter {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.sectionVisible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+
+/* Slide-in animations with staggered delays */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-26px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(26px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.line {
+  opacity: 0;
+  transform: translateX(-24px);
+  will-change: transform, opacity;
+}
+
+.sectionVisible .line {
+  animation: slideInLeft 600ms var(--delay, 0ms) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.sectionVisible .visual {
+  animation: slideInRight 700ms var(--vdelay, 120ms) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Scroll indicator removed */
+
+.footerNav {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 6vw;
+  background: linear-gradient(0deg, rgba(11,11,12,0.92), rgba(11,11,12,0.2));
+  border-top: 1px solid rgba(255,255,255,0.06);
+  z-index: 5;
+}
+
+.btn {
+  appearance: none;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.08);
+  color: #e7ecf5;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btnPrimary {
+  background: linear-gradient(90deg, #ffd700, #ffb347);
+  color: #0b0b0c;
+}
+
+.mobileProgress {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mobileProgress {
+    display: block;
+    padding: 12px 16px 0;
+  }
+}
+
+/* Simple 3-up gallery for Battles section, 9:16 images */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 900px;
+}
+.galleryItem {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+.galleryItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+@media (max-width: 1000px) {
+  .gallery { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 700px) {
+  .gallery { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+}
+
+/* Single-image gallery with arrows and dots */
+.gallerySingle {
+  position: relative;
+  width: min(420px, 100%);
+  aspect-ratio: 9 / 16;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+}
+.gallerySingle img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: transparent;
+  display: block;
+}
+.galleryArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  border: none;
+  width: 36px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  z-index: 2;
+}
+.galleryArrow:hover { background: rgba(0,0,0,0.6); }
+.galleryArrowLeft { left: 8px; }
+.galleryArrowRight { right: 8px; }
+.galleryDots {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+.galleryDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  border: none;
+  cursor: pointer;
+}
+.galleryDotActive { background: #ffd700; }
+
+/* Treadmill-style autoplay gallery */
+.galleryTreadmill {
+  position: relative;
+  width: min(900px, 100%);
+  height: 100%;
+  overflow: hidden;
+}
+@media (min-width: 1024px) {
+  .galleryTreadmill {
+    width: min(1600px, 100%); /* bigger on desktop */
+    height: 100%;
+  }
+}
+
+/* Mini events widget (Danish only) */
+.eventsMini { width: 100%; max-width: 580px; }
+.eventsMiniHeader {
+  width: 100%;
+  text-align: center;
+  font-weight: 700;
+  color: #e8ecf5;
+  margin-bottom: 10px;
+}
+.eventsMiniList { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.eventMiniRow {
+  display: block;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  color: #e8ecf5;
+  text-decoration: none;
+}
+.eventMiniRow:hover { background: rgba(255,255,255,0.08); }
+.eventMiniTitle { font-weight: 700; margin-bottom: 4px; }
+.eventMiniMeta { display: flex; gap: 10px; font-size: 0.9rem; color: #cfd6e4; align-items: center; }
+.eventMiniItem { display: inline-flex; align-items: center; gap: 6px; }
+.eventMiniPlaceholder { opacity: 0.7; text-align: center; }
+
+/* Newsletter form in Notifications section */
+.newsletter { width: 100%; max-width: 520px; }
+.newsletterHeader { text-align: center; font-weight: 700; margin-bottom: 10px; color: #e8ecf5; }
+.newsletterForm { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+.newsletterInput {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #fff;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.newsletterInput::placeholder { color: rgba(255,255,255,0.6); }
+.newsletterMsg { margin-top: 8px; color: #a7f3d0; font-weight: 600; text-align: center; }
+.newsletterMsgError { margin-top: 8px; color: #fca5a5; font-weight: 600; text-align: center; }
+/* Make the visual container taller when hosting the treadmill */
+.visual:has(.galleryTreadmill) {
+  height: 100vh;
+}
+@media (min-width: 1024px) {
+  .visual:has(.galleryTreadmill) {
+    height: 100vh;
+  }
+}
+.treadmillTrack {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  height: 100%;
+  animation: treadmill 18s linear infinite;
+}
+.treadmillSlide {
+  flex: 0 0 80%;
+  height: 80%;
+  margin-right: 2rem;
+}
+.treadmillSlide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: transparent;
+  display: block;
+}
+@keyframes treadmill {
+  0%   { transform: translateX(0%); }
+  100% { transform: translateX(-360%); /* 4 slides × 90% each + gaps for infinite loop */
+}
+}
+

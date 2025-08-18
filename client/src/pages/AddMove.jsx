@@ -30,7 +30,7 @@ export default function AddMove() {
   const dropdownRef = useRef(null);
 
   const categories = ['Toprock', 'Footwork', 'Freezes', 'Power', 'Tricks', 'GoDowns'];
-  const levels = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Skilled'];
+  const levels = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Skilled', 'Master', 'Grandmaster'];
 
   // Filter existing moves for recommendations dropdown
   const filteredMoves = existingMoves.filter(move => 
@@ -189,7 +189,6 @@ export default function AddMove() {
               onChange={handleChange}
               required
               min="10"
-              max="100"
               className="form-input"
             />
           </div>

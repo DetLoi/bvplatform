@@ -5,7 +5,9 @@ import ProgressBar from '../components/ProgressBar';
 import { BattleStatistics } from '../components/BattleStatistics';
 import { LevelSummary } from '../components/LevelSummary';
 import CoverPhotoSection from '../components/CoverPhotoSection';
+import { UserBattles } from '../components/UserBattles';
 import { useMoves } from '../hooks/useMoves';
+import DashboardBadges from '../components/DashboardBadges';
 import { useBadges } from '../hooks/useBadges';
 import { useAutoRefresh } from '../hooks/useAutoRefresh';
 import { useState, useEffect } from 'react';
@@ -13,10 +15,18 @@ import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaTrophy, FaDumbbell, FaCalendar, FaUsers, FaPlay } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { isBadgeUnlocked } from '../utils/badgeUtils';
+import MasteredMoveCard from '../components/MasteredMoveCard';
 
 export default function Home() {
+  // Add body class for dashboard background
+  useEffect(() => {
+    document.body.classList.add('home-page');
+    return () => {
+      document.body.classList.remove('home-page');
+    };
+  }, []);
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, refreshUser } = useAuth();
   const {
     masteredMoves,
     profileImage,
@@ -50,10 +60,26 @@ export default function Home() {
     }
   }, [currentUser, navigate]);
 
+  // Refresh user data only once when component mounts
+  useEffect(() => {
+    if (currentUser?._id) {
+      // Only refresh if we don't have battle statistics
+      if (!currentUser.battleXP && !currentUser.battleWins && !currentUser.battleLosses) {
+        refreshUser();
+      }
+    }
+  }, []); // Empty dependency array - only run once on mount
+
+  // Debug logging to track data updates
+  useEffect(() => {
+    // console.log('🏠 Home component - allMoves updated:', allMoves.length);
+    // console.log('🏠 Home component - masteredMoves updated:', masteredMoves.length);
+  }, [allMoves.length, masteredMoves.length]);
+
   // Show loading state while data is being fetched
   if (movesLoading || badgesLoading) {
     return (
-      <div className="main-content">
+      <div className="main-content home-loading">
         <section className="moves-page">
           <div className="loading-container">
             <div className="loading-spinner"></div>
@@ -66,9 +92,12 @@ export default function Home() {
 
 
 
+  // Function to handle navigation with data refresh
   const handleNavigate = (path) => {
     navigate(path);
   };
+
+
   
   // Add some test moves for badge testing (remove this later)
   // const testMoves = [
@@ -98,6 +127,10 @@ export default function Home() {
     return acc;
   }, {});
 
+  // Debug logging for moves data
+  // console.log('🏠 Total moves available:', allMoves.length);
+  // console.log('🏠 Total moves by category:', totalByCategory);
+  // console.log('🏠 Mastered moves by category:', masteredByCategory);
 
 
   return (
@@ -160,16 +193,38 @@ export default function Home() {
                 )}
               </div>
               <div>
-                  <h1 className="dashboard-title">{currentUser?.name || 'Breaker'}</h1>
+                <h1 className="dashboard-title">{currentUser?.name || 'Breaker'}</h1>
+                {currentUser?.bio && (
+                  <p className="dashboard-bio text-muted" style={{ marginTop: '0.25rem' }}>{currentUser.bio}</p>
+                )}
+                <div className="header-levels">
                   <div className="header-progress-container">
-                      <p className="xp-text">Level {level}</p>
-                      <ProgressBar 
-                        progress={progress} 
-                        currentXP={xp}
-                        nextLevelXP={nextXP}
-                        currentLevel={level}
-                      />
+                    <p className="xp-text">Level {level}</p>
+                    <ProgressBar 
+                      progress={progress} 
+                      currentXP={xp}
+                      nextLevelXP={nextXP}
+                      currentLevel={level}
+                    />
                   </div>
+                  <div className="battle-progress-container">
+                    <p className="xp-text">Battle Level {currentUser?.battleLevel || 1}</p>
+                    <ProgressBar 
+                      progress={(() => {
+                        const battleLevel = currentUser?.battleLevel || 1;
+                        const battleXP = currentUser?.battleXP || 0;
+                        const currentLevelXP = (battleLevel - 1) * 100;
+                        const nextLevelXP = battleLevel * 100;
+                        const xpProgress = battleXP - currentLevelXP;
+                        const totalXPNeeded = nextLevelXP - currentLevelXP;
+                        return totalXPNeeded > 0 ? Math.min(100, Math.round((xpProgress / totalXPNeeded) * 100)) : 100;
+                      })()}
+                      currentXP={currentUser?.battleXP || 0}
+                      nextLevelXP={(currentUser?.battleLevel || 1) * 100}
+                      currentLevel={currentUser?.battleLevel || 1}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
             <div className="profile-buttons">
@@ -180,102 +235,68 @@ export default function Home() {
                     // Clear temp states since images are already saved
                     setTempProfileImage(null);
                     setTempCoverPhoto(null);
-                    toast.success('Profil gemt!');
+                    toast.success('Profile saved!');
                     setIsEditing(false);
                   } else {
                     setIsEditing(true);
                   }
                 }}
               >
-                {isEditing ? 'Gem' : 'Rediger Profil'}
+                {isEditing ? 'Save' : 'Edit Profile'}
               </button>
             </div>
           </div>
 
   
-        {/* Badges */}
-        <div className="dashboard-grid mt-6">
-          <div className="section-card">
-            <h2 className="section-heading">Badges</h2>
-            <div className="badges-wrapper">
-              {badges.filter(badge => isBadgeUnlocked(badge, masteredMoves)).length > 0 ? (
-                <div className="badges-row">
-                  {badges
-                    .filter(badge => isBadgeUnlocked(badge, masteredMoves))
-                    .filter(badge => badge.name !== 'Grandmaster')
-                    .map((badge) => (
-                      <div key={badge._id || badge.name} className="game-badge-minimal">
-                        <div className="badge-icon">
-                          {badge.image.startsWith('/src/assets/badges/') ? (
-                            <img src={badge.image} alt={badge.name} className="badge-image" />
-                          ) : badge.image.startsWith('/uploads/') ? (
-                            <img src={`http://localhost:5000${badge.image}`} alt={badge.name} className="badge-image" />
-                          ) : (
-                            <span className="badge-emoji">{badge.image}</span>
-                          )}
-                        </div>
-                        <div className="badge-title">{badge.name}</div>
-                      </div>
-                    ))}
-                </div>
-              ) : (
-                <div className="no-badges-cta">
-                  <div className="cta-icon">🏆</div>
-                  <h3>Fuldfør en mission for at tjene en badge</h3>
-                  <p>Mester moves i hver kategori for at låse op for prestigefyldte badges</p>
-                  <button 
-                    className="cta-button"
-                    onClick={() => window.location.href = '/badges'}
-                  >
-                    Se Alle Badges
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+        {/* Badges - UB-styled widget */}
+        <div className="mt-6">
+          <DashboardBadges allMoves={allMoves} masteredMoves={masteredMoves} />
+        </div>
+
+        {/* User Battles */}
+        <div className="mt-6">
+          <UserBattles />
         </div>
      
         {/* Battle Statistics Section */}
-        <div className="section-card mt-6">
+        <div className="mt-6">
           <BattleStatistics 
             battleStats={{
-              battlesWon: 0, // TODO: Connect to actual battle data
-              battlesLost: 0,
-              battlesTied: 0,
-              winStreak: 0,
-              bestWinStreak: 0,
-              totalBattles: 0
+              battlesWon: currentUser?.battleWins || 0,
+              battlesLost: currentUser?.battleLosses || 0,
+              battlesTied: 0, // TODO: Add battle ties to user model
+              winStreak: 0, // TODO: Add win streak tracking
+              bestWinStreak: 0, // TODO: Add best win streak tracking
+              totalBattles: currentUser?.battlesParticipated || 0,
+              battleLevel: currentUser?.battleLevel || 1,
+              battleXP: currentUser?.battleXP || 0
             }}
           />
         </div>
-                 {/* Level Summary Section */}
-                 <div className="section-card mt-6">
-          <div className="section-header">
-            <h2 className="section-heading">Foundation Progress</h2>
-            <p className="section-subtitle">Track your progress by category</p>
-          </div>
-          <LevelSummary 
-            masteredByCategory={masteredByCategory}
-            totalByCategory={totalByCategory}
-          />
-        </div>
+         {/* Level Summary Section */}
+         <div className="mt-6">
+           <LevelSummary 
+             masteredByCategory={masteredByCategory}
+             totalByCategory={totalByCategory}
+           />
+         </div>
 
         {/* Mastered Moves */}
-        <div className="section-card mt-8">
-          <h2 className="section-heading">Mesterede Moves</h2>
-          {masteredMoves.length ? (
-            <div className="mastered-grid">
-              {masteredMoves.map((move) => (
-                <div key={move.name} className="mastered-card">
-                  <h3 className={`move-name level-${move.level?.toLowerCase()}`}>{move.name}</h3>
-                  <p className="move-cat">{move.category}</p>
-                  <p className="move-xp">+{move.xp} XP</p>
-                </div>
-              ))}
+        <div className="mt-6">
+          <div className="section-card section-card--centered-header">
+            <div className="section-header">
+              <h2 className="section-heading">Mastered Moves</h2>
             </div>
-          ) : (
-            <p className="text-muted">Ingen moves mesteret endnu. Gå til Moves siden!</p>
-          )}
+            {masteredMoves.length ? (
+              <div className="mastered-grid">
+                {masteredMoves.map((move) => (
+                  <MasteredMoveCard key={move.name} move={move} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted">No moves mastered yet. Go to the Moves page!</p>
+            )}
+          </div>
         </div>
   
 

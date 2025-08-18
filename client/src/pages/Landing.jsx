@@ -1,97 +1,148 @@
-import { useNavigate } from 'react-router-dom';
-import { FaPlay, FaUsers, FaTrophy, FaDumbbell, FaArrowRight } from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { FaPlay, FaUsers, FaTrophy, FaDumbbell, FaArrowRight, FaCalendar, FaMapMarkerAlt, FaTwitch, FaInstagram, FaFacebookF, FaYoutube } from 'react-icons/fa';
+import UsersCarousel3D from '../components/UsersCarousel3D';
+import ctaBadge from '../assets/badge white.png';
+import { useEvents } from '../hooks/useEvents';
 import '../styles/pages/landing.css';
 
 export default function Landing() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { events } = useEvents();
+
+  // Scroll to top when landing page loads
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   const handleGetStarted = () => {
-    navigate('/login');
+    navigate('/register');
   };
 
   const handleLearnMore = () => {
-    navigate('/about');
+    navigate('/learnmore');
   };
+
+  const isDanishEvent = (event) => {
+    const danishKeywords = ['denmark', 'danmark', 'danish', 'dansk', 'copenhagen', 'aarhus', 'odense', 'aalborg'];
+    const organizer = (event?.organizer || '').toLowerCase();
+    const location = (event?.location || '').toLowerCase();
+    return danishKeywords.some(k => organizer.includes(k) || location.includes(k));
+  };
+
+  const upcomingDanishEvents = useMemo(() => {
+    const list = (Array.isArray(events) ? events : []).filter(isDanishEvent);
+    return list
+      .slice()
+      .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0))
+      .slice(0, 6);
+  }, [events]);
+
+  
 
   return (
     <div className="landing-page">
       {/* Hero Section */}
       <section className="hero-section">
+        {/* Background 3D carousel */}
+        <div className="hero-bg-carousel" aria-hidden="true">
+          <UsersCarousel3D images={[
+            '/src/assets/badges/beginner.png',
+            '/src/assets/badges/novice.png',
+            '/src/assets/badges/intermediate.png',
+            '/src/assets/badges/Advanced.png',
+            '/src/assets/badges/skilled.png',
+            '/src/assets/badges/master.png',
+            '/src/assets/badges/grandmaster.png',
+          ]} />
+        </div>
         <div className="hero-content">
-          <div className="hero-text">
-            <h1 className="hero-title">Velkommen til <span className="highlight">Breakverse</span></h1>
-            <p className="hero-subtitle">
-              Den ultimative platform for danske breakdancere til at lære, konkurrere og vokse sammen. 
-              Mester moves, tjen badges og bliv en del af den danske breaking scene.
-            </p>
-            <div className="hero-buttons">
-              <button className="btn-primary" onClick={handleGetStarted}>
-                <FaPlay className="btn-icon" />
-                Kom i Gang
-              </button>
-              <button className="btn-secondary" onClick={handleLearnMore}>
-                Lær Mere
-                <FaArrowRight className="btn-icon" />
-              </button>
+          <div className="hero-intro">
+            <div className="welcome-block">
+              <img
+                src="/src/assets/Logo.png"
+                alt="Breakverse"
+                className="hero-logo-lg"
+              />
+              <div className="hero-buttons">
+                <button className="btn-primary hero-btn hero-btn-primary" onClick={handleGetStarted}>
+                  <FaPlay className="btn-icon" />
+                  SIGN UP | Get Started Free
+                </button>
+                <button className="btn-secondary hero-btn hero-btn-secondary" onClick={handleLearnMore}>
+                  Learn More
+                  <FaArrowRight className="btn-icon" />
+                </button>
+                
+              </div>
+              
             </div>
-          </div>
-          <div className="hero-image">
-            <div className="hero-visual">
-              <div className="breaker-silhouette"></div>
-              <div className="floating-elements">
-                <div className="floating-badge badge-1">
-                  <img src="/src/assets/badges/Advanced.png" alt="Advanced Badge" />
-                </div>
-                <div className="floating-badge badge-2">
-                  <img src="/src/assets/badges/Powermoves.png" alt="Power Moves Badge" />
-                </div>
-                <div className="floating-badge badge-3">
-                  <img src="/src/assets/badges/Tricks.png" alt="Tricks Badge" />
-                </div>
-                <div className="floating-badge badge-4">
-                  <img src="/src/assets/badges/footwork.png" alt="Footwork Badge" />
-                </div>
-                <div className="floating-badge badge-5">
-                  <img src="/src/assets/badges/freezes.png" alt="Freezes Badge" />
-                </div>
-                <div className="floating-badge badge-6">
-                  <img src="/src/assets/badges/ground.png" alt="Ground Badge" />
-                </div>
+
+            <div className="events-stack">
+              <div className="events-stack-header">
+                Upcoming events in Denmark
+              </div>
+              <div className="events-stack-list">
+                {upcomingDanishEvents.map((ev) => (
+                  <a
+                    key={ev.id}
+                    className="event-row"
+                    href={ev.website || '#'}
+                    target={ev.website ? '_blank' : undefined}
+                    rel={ev.website ? 'noreferrer' : undefined}
+                  >
+                    <div className="event-row-title">{ev.title}</div>
+                    <div className="event-row-meta">
+                      <span className="event-row-item"><FaCalendar /> {ev.date ? new Date(ev.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'TBA'}</span>
+                      <span className="event-row-item"><FaMapMarkerAlt /> {ev.location || 'Denmark'}</span>
+                    </div>
+                  </a>
+                ))}
+                {upcomingDanishEvents.length === 0 && (
+                  <div className="event-row placeholder">
+                    <div className="event-row-title">No Danish events yet</div>
+                    <div className="event-row-meta"><span className="event-row-item">Check back soon</span></div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      
+
       {/* Features Section */}
       <section className="features-section">
         <div className="container">
-          <h2 className="section-title">Hvorfor Vælge Breakverse?</h2>
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon">
                 <FaDumbbell />
               </div>
-              <h3>Lær Moves</h3>
-              <p>Mester over 100 autentiske breakdance moves med trin-for-trin tutorials og progress tracking.</p>
+              <h3>Learn Moves</h3>
+              <p>Master 100+ authentic breakdance moves with step-by-step tutorials and progress tracking.</p>
             </div>
             <div className="feature-card">
               <div className="feature-icon">
                 <FaTrophy />
               </div>
-              <h3>Tjen Badges</h3>
-              <p>Lås op for achievements og badges mens du udvikler dig gennem forskellige skill levels og kategorier.</p>
+              <h3>Earn Badges</h3>
+              <p>Unlock achievements and badges as you progress through skill levels and categories.</p>
             </div>
             <div className="feature-card">
               <div className="feature-icon">
                 <FaUsers />
               </div>
-              <h3>Bliv Del af Fællesskabet</h3>
-              <p>Forbind med danske breakers, tilslut dig crews og deltag i battles og events.</p>
+              <h3>Join the Community</h3>
+              <p>Connect with breakers and join battles and events.</p>
             </div>
           </div>
         </div>
       </section>
+
+      
 
       {/* Stats Section */}
       <section className="stats-section">
@@ -99,19 +150,19 @@ export default function Landing() {
           <div className="stats-grid">
             <div className="stat-item">
               <div className="stat-number">100+</div>
-              <div className="stat-label">Moves at Mestre</div>
+              <div className="stat-label">Moves to Master</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">50+</div>
-              <div className="stat-label">Badges at Tjene</div>
+              <div className="stat-number">10+</div>
+              <div className="stat-label">Badges to Earn</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">500+</div>
-              <div className="stat-label">Danske Breakers</div>
+              <div className="stat-number">80+</div>
+              <div className="stat-label">Breaking Events</div>
             </div>
             <div className="stat-item">
               <div className="stat-number">24/7</div>
-              <div className="stat-label">Dansk Support</div>
+              <div className="stat-label">Support</div>
             </div>
           </div>
         </div>
@@ -121,11 +172,12 @@ export default function Landing() {
       <section className="cta-section">
         <div className="container">
           <div className="cta-content">
-            <h2>Klar til at Starte Din Breaking Rejse?</h2>
-            <p>Tilslut dig hundredvis af danske breakers der allerede udvikler deres game på Breakverse.</p>
+            <img src={ctaBadge} alt="Badge" className="cta-badge" />
+            <h2>Ready to Start Your Breaking Journey?</h2>
+            <p>Join hundreds of breakers already leveling up on Breakverse.</p>
             <button className="btn-primary btn-large" onClick={handleGetStarted}>
               <FaPlay className="btn-icon" />
-              Start Breaking Nu
+              Start Breaking Now
             </button>
           </div>
         </div>
@@ -134,20 +186,54 @@ export default function Landing() {
       {/* Footer */}
       <footer className="landing-footer">
         <div className="container">
-          <div className="footer-content">
-            <div className="footer-section">
-              <h4>Breakverse</h4>
-              <p>Den ultimative platform for danske breakdancere til at lære, konkurrere og vokse sammen.</p>
+          <div className="footer-top">
+            <div className="footer-brand">
+              <img src="/src/assets/logo-white.png" alt="Breakverse" className="footer-logo" />
+              <p className="footer-tagline">Learn. Battle. Grow. Together.</p>
+              <div className="footer-contact">
+                <a href="mailto:support@breakverse.app" className="footer-mail">support@breakverse.app</a>
+              </div>
             </div>
-            <div className="footer-section">
-            
-            </div>
-            <div className="footer-section">
-             
+            <div className="footer-columns">
+              <div className="footer-col">
+                <h5>Platform</h5>
+                <ul className="footer-links">
+                  <li><a href="/moves">Moves</a></li>
+                  <li><a href="/badges">Badges</a></li>
+                  <li><a href="/events">Events</a></li>
+                  <li><a href="/battles">Battles</a></li>
+                </ul>
+              </div>
+              <div className="footer-col">
+                <h5>Community</h5>
+                <ul className="footer-links">
+                  <li><a href="/breakers">Breakers</a></li>
+                  <li><a href="#">Challenges</a></li>
+                  <li><a href="#">News</a></li>
+                </ul>
+              </div>
+              <div className="footer-col">
+                <h5>Legal</h5>
+                <ul className="footer-links">
+                  <li><a href="/policy">Privacy Policy</a></li>
+                  <li><a href="/terms">Terms of Service</a></li>
+                  <li><a href="#">Cookies</a></li>
+                </ul>
+              </div>
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2025 Breakverse. Alle rettigheder forbeholdes.</p>
+            <div className="footer-bottom-left">
+              <span>&copy; 2025 Breakverse</span>
+            </div>
+            <div className="footer-bottom-right">
+              <div className="social-links">
+                <a href="https://www.instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram"><FaInstagram /></a>
+                <a href="https://www.facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook"><FaFacebookF /></a>
+                <a href="https://www.youtube.com" target="_blank" rel="noreferrer" aria-label="YouTube"><FaYoutube /></a>
+                <a href="https://www.twitch.tv" target="_blank" rel="noreferrer" aria-label="Twitch"><FaTwitch /></a>
+              </div>
+            </div>
           </div>
         </div>
       </footer>

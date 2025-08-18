@@ -1,67 +1,42 @@
+import { FaPlay } from 'react-icons/fa';
+import { FaCheck } from 'react-icons/fa';
 import { useProfile } from '../context/ProfileContext';
-import { FaPlay, FaPlus, FaMinus, FaClock, FaCheck } from 'react-icons/fa';
 
-export default function MoveCard({ move, onAdd = () => {}, onVideoSelect = () => {} }) {
-  const { 
-    addMasteredMove, 
-    removeMasteredMove, 
-    requestMoveApproval,
-    masteredMoves, 
-    pendingMoves 
-  } = useProfile();
-  
-  const isMastered = masteredMoves.some((m) => m.name === move.name);
-  const isPending = pendingMoves.some((m) => m.name === move.name);
+export default function MoveCard({ move, onVideoSelect = () => {} }) {
+  const { masteredMoves } = useProfile();
   const levelClass = `level-${move.level?.toLowerCase() || 'beginner'}`;
-
-  async function handleClick() {
-    if (!isMastered && !isPending) {
-      try {
-        await requestMoveApproval(move);
-        onAdd(move); // trigger toast in parent
-      } catch (error) {
-        console.error('Error requesting move approval:', error);
-        // You could show an error toast here if needed
-      }
-    }
-    // Removed the ability for users to remove mastered moves
-    // Only admins can remove mastered moves through the admin panel
-  }
+  
+  // Check if the current user has mastered this move (use ProfileContext which stays in sync)
+  const isMastered = masteredMoves?.some((m) => {
+    const masteredMoveId = String(m?._id || m);
+    const currentMoveId = String(move?._id || '');
+    if (masteredMoveId && currentMoveId) return masteredMoveId === currentMoveId;
+    // Fallback by name if ids are unavailable
+    return m?.name && move?.name && m.name === move.name;
+  });
 
   return (
     <div className="move-card">
       <div className="move-info">
-        <h3 className={`move-name ${levelClass}`}>{move.name}</h3>
+        <h3 className={`moves-page-move-name ${levelClass}`}>
+          {move.name}
+        </h3>
         <div className="move-cat">{move.category}</div>
         <div className="move-xp">+{move.xp} XP</div>
       </div>
 
       <div className="move-actions">
+        {isMastered && (
+          <div className="mastered-check" title="Move mastered">
+            <FaCheck size={14} />
+          </div>
+        )}
         <button
           className="video-btn"
           aria-label={`Watch ${move.name} tutorial`}
           onClick={() => onVideoSelect(move)}
         >
           <FaPlay size={14} />
-        </button>
-
-        <button
-          className={`add-master-btn ${isMastered ? 'mastered' : ''} ${isPending ? 'pending' : ''}`}
-          aria-label={
-            isMastered ? 'Move mastered (contact admin to remove)' : 
-            isPending ? 'Request pending' : 
-            'Request move approval'
-          }
-          onClick={handleClick}
-          disabled={isMastered}
-        >
-          {isMastered ? (
-            <FaCheck size={12} />
-          ) : isPending ? (
-            <FaClock size={12} />
-          ) : (
-            <FaPlus size={12} />
-          )}
         </button>
       </div>
     </div>

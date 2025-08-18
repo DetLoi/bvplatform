@@ -1,23 +1,28 @@
 import { useProfile } from '../context/ProfileContext';
 import { useBadges } from '../hooks/useBadges';
+import { useMoves } from '../hooks/useMoves';
 import BadgeCard from '../components/BadgeCard';
-import { FaTrophy, FaLock, FaStar, FaCrown, FaLayerGroup, FaFire, FaUsers, FaTag } from 'react-icons/fa';
+import { FaTrophy, FaLayerGroup, FaFire, FaUsers, FaTag } from 'react-icons/fa';
 import { useState, useMemo } from 'react';
 import { isBadgeUnlocked } from '../utils/badgeUtils';
 import '../styles/pages/badges.css';
+import useIntersectionReveal from '../hooks/useIntersectionReveal';
 
 export default function Badges() {
   const { masteredMoves } = useProfile();
   const [activeCategory, setActiveCategory] = useState('all');
   
-  // Use the API hook
+  // Use the API hooks
   const { badges, loading, error } = useBadges();
+  const { moves, loading: movesLoading } = useMoves();
+  // Ensure this hook is called on every render (before any early returns)
+  const observe = useIntersectionReveal({ threshold: 0.15 });
 
   // Ensure badges is always an array
   const badgesArray = Array.isArray(badges) ? badges : [];
 
-  // Calculate badge statistics
-  const earnedBadges = badgesArray.filter(badge => isBadgeUnlocked(badge, masteredMoves));
+  // Calculate badge statistics using new badge utilities
+  const earnedBadges = badgesArray.filter(badge => isBadgeUnlocked(badge, masteredMoves, moves));
   const totalBadges = badgesArray.length;
   const earnedPercentage = Math.round((earnedBadges.length / totalBadges) * 100);
 
@@ -44,6 +49,12 @@ export default function Badges() {
     return grouped;
   }, [badgesArray, uniqueCategories]);
 
+  // Ensure Level category appears first when listing categories together
+  const orderedCategories = useMemo(() => {
+    const others = uniqueCategories.filter(cat => cat !== 'Level');
+    return uniqueCategories.includes('Level') ? ['Level', ...others] : uniqueCategories;
+  }, [uniqueCategories]);
+
   // Navigation categories - dynamic based on actual badge categories
   const navCategories = useMemo(() => {
     const categories = [
@@ -53,7 +64,7 @@ export default function Badges() {
     // Add category-specific tabs
     uniqueCategories.forEach(category => {
       const categoryBadges = badgesByCategory[category];
-      const earnedCount = categoryBadges.filter(b => isBadgeUnlocked(b, masteredMoves)).length;
+      const earnedCount = categoryBadges.filter(b => isBadgeUnlocked(b, masteredMoves, moves)).length;
       const icon = categoryIconMap[category] || FaTag; // Use FaTag as fallback for custom categories
       
       categories.push({
@@ -66,7 +77,7 @@ export default function Badges() {
     });
 
     return categories;
-  }, [badgesArray, uniqueCategories, badgesByCategory, masteredMoves, totalBadges, earnedBadges.length]);
+  }, [badgesArray, uniqueCategories, badgesByCategory, masteredMoves, moves, totalBadges, earnedBadges.length]);
 
   // Get badges for active category
   const getActiveBadges = () => {
@@ -79,13 +90,30 @@ export default function Badges() {
       category.toLowerCase() === activeCategory
     );
     
-    return matchingCategory ? badgesByCategory[matchingCategory] : badgesArray;
+    if (!matchingCategory) return badgesArray;
+
+    const categoryBadges = badgesByCategory[matchingCategory] || [];
+
+    // If we're on the Level tab, sort badges by the defined level order
+    if (matchingCategory === 'Level') {
+      const levelOrder = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Skilled', 'Master', 'Grandmaster'];
+      const orderMap = new Map(levelOrder.map((level, index) => [level.toLowerCase(), index]));
+      return [...categoryBadges].sort((a, b) => {
+        const aIndex = orderMap.get((a.name || '').toLowerCase());
+        const bIndex = orderMap.get((b.name || '').toLowerCase());
+        const aVal = aIndex !== undefined ? aIndex : Number.MAX_SAFE_INTEGER;
+        const bVal = bIndex !== undefined ? bIndex : Number.MAX_SAFE_INTEGER;
+        return aVal - bVal;
+      });
+    }
+
+    return categoryBadges;
   };
 
   // Show loading state
-  if (loading) {
+  if (loading || movesLoading) {
     return (
-      <div className="badges-page">
+      <div className="badges-page main-content fullpage-loading">
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p>Loading badges...</p>
@@ -97,7 +125,7 @@ export default function Badges() {
   // Show error state
   if (error) {
     return (
-      <div className="badges-page">
+      <div className="badges-page main-content fullpage-loading">
         <div className="error-container">
           <p>Error loading badges: {error}</p>
           <button onClick={() => window.location.reload()}>Retry</button>
@@ -108,49 +136,80 @@ export default function Badges() {
 
   return (
     <div className="badges-page">
-      {/* Top Navigation Panel */}
-      <div className="badges-nav-panel">
-        <div className="nav-header">
-          <h3>Badge Categories</h3>
-        </div>
-        <div className="nav-categories">
-          {navCategories.map((category) => {
-            const IconComponent = category.icon;
-            return (
-              <button
-                key={category.id}
-                className={`nav-category ${activeCategory === category.id ? 'active' : ''}`}
-                onClick={() => setActiveCategory(category.id)}
-              >
-                <div className="nav-category-icon">
-                  <IconComponent size={20} />
-                </div>
-                <div className="nav-category-content">
-                  <span className="nav-category-name">{category.name}</span>
-                  <span className="nav-category-count">{category.earned}/{category.count}</span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+      {/* Category Tabs (styled like Moves page) */}
+      <div className="badges-tabs reveal-on-scroll" ref={observe}>
+        {navCategories.map((cat) => (
+          <button
+            key={cat.id}
+            className={`badges-tab ${activeCategory === cat.id ? 'active' : ''}`}
+            onClick={() => setActiveCategory(cat.id)}
+          >
+            {cat.name}
+          </button>
+        ))}
       </div>
 
       {/* Main Content */}
       <div className="badges-main-content">
         <div className="badges-container">
           {/* Active Category Badges */}
-          <div className="badge-section">
-            <div className="badges-grid">
-              {getActiveBadges().map((badge) => (
-                <BadgeCard 
-                  key={badge._id || badge.name} 
-                  badge={badge} 
-                  isEarned={isBadgeUnlocked(badge, masteredMoves)}
-                  masteredMoves={masteredMoves}
-                />
-              ))}
+          {activeCategory === 'all' ? (
+            // Group all badges under their category titles
+            orderedCategories.map((category) => {
+              const categoryBadges = badgesByCategory[category] || [];
+              if (categoryBadges.length === 0) return null;
+
+              // Sort Level badges in the defined order
+              const sortedBadges = category === 'Level'
+                ? (() => {
+                    const levelOrder = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Skilled', 'Master', 'Grandmaster'];
+                    const orderMap = new Map(levelOrder.map((level, index) => [level.toLowerCase(), index]));
+                    return [...categoryBadges].sort((a, b) => {
+                      const aIndex = orderMap.get((a.name || '').toLowerCase());
+                      const bIndex = orderMap.get((b.name || '').toLowerCase());
+                      const aVal = aIndex !== undefined ? aIndex : Number.MAX_SAFE_INTEGER;
+                      const bVal = bIndex !== undefined ? bIndex : Number.MAX_SAFE_INTEGER;
+                      return aVal - bVal;
+                    });
+                  })()
+                : categoryBadges;
+
+              return (
+                <div key={category} className="badge-section">
+                  <div className="badges-section-header reveal-on-scroll" ref={observe}>
+                    <h3 className="section-title">{category}</h3>
+                  </div>
+                  <div className="badges-grid">
+                    {sortedBadges.map((badge) => (
+                      <div key={badge._id || badge.name} className="reveal-on-scroll" ref={observe}>
+                        <BadgeCard 
+                          badge={badge} 
+                          isEarned={isBadgeUnlocked(badge, masteredMoves, moves)}
+                          masteredMoves={masteredMoves}
+                          allMoves={moves}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="badge-section">
+              <div className="badges-grid">
+                {getActiveBadges().map((badge) => (
+                  <div key={badge._id || badge.name} className="reveal-on-scroll" ref={observe}>
+                    <BadgeCard 
+                      badge={badge} 
+                      isEarned={isBadgeUnlocked(badge, masteredMoves, moves)}
+                      masteredMoves={masteredMoves}
+                      allMoves={moves}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

@@ -21,11 +21,11 @@ export const useBattles = () => {
     }
   }, []);
 
-  const fetchBattlesByUser = useCallback(async (userId) => {
+  const fetchBattlesByUser = useCallback(async (userId, params = {}) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await battlesAPI.getAll({ user: userId });
+      const data = await battlesAPI.getByUser(userId, params);
       setBattles(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching battles by user:', err);
@@ -72,14 +72,31 @@ export const useBattles = () => {
       setLoading(true);
       setError(null);
       const updatedBattle = await battlesAPI.update(id, battleData);
+      
+      // Update the specific battle in the state
       setBattles(prev => prev.map(battle => 
         battle._id === id ? updatedBattle : battle
       ));
+      
       return updatedBattle;
     } catch (err) {
       console.error('Error updating battle:', err);
       setError(err.message || 'Failed to update battle');
       throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const refreshBattles = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await battlesAPI.getAll();
+      setBattles(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error refreshing battles:', err);
+      setError(err.message || 'Failed to refresh battles');
     } finally {
       setLoading(false);
     }
@@ -115,5 +132,6 @@ export const useBattles = () => {
     createBattle,
     updateBattle,
     deleteBattle,
+    refreshBattles,
   };
 }; 

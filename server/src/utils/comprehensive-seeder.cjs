@@ -608,7 +608,7 @@ const battlesData = [
       level: "Intermediate",
       crew: "Specific Kidz"
     },
-    status: "in_progress",
+          status: "in progress",
     callOutDate: "2024-01-08T16:45:00Z",
     responseDate: "2024-01-09T11:30:00Z", 
     acceptedBy: "opponent",

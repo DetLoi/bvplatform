@@ -1,7 +1,8 @@
-// Use localhost for development, Render for production
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://breakverse-api.onrender.com/api'
-  : 'http://localhost:5000/api';
+// Use Vite env if provided, else default based on mode
+const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL)
+  || ((typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.MODE) === 'production'
+    ? 'https://breakverse-api.onrender.com/api'
+    : 'http://localhost:5000/api');
 
 // Generic API request function
 const apiRequest = async (endpoint, options = {}) => {
@@ -19,6 +20,22 @@ const apiRequest = async (endpoint, options = {}) => {
   // Only set Content-Type for JSON requests, not for FormData
   if (!(options.body instanceof FormData)) {
     config.headers['Content-Type'] = 'application/json';
+  }
+
+  // Add user ID for admin requests if available
+  const savedUser = localStorage.getItem('breakverse_user');
+  if (savedUser) {
+    try {
+      const user = JSON.parse(savedUser);
+      if (user._id) {
+        config.headers['user-id'] = user._id;
+      }
+      if (Array.isArray(user.roles) && user.roles.length) {
+        config.headers['user-roles'] = user.roles.join(',');
+      }
+    } catch (error) {
+      console.error('Error parsing saved user:', error);
+    }
   }
 
   try {
@@ -50,8 +67,13 @@ export const movesAPI = {
     
     // Handle array parameters properly
     Object.entries(params).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === '') return;
       if (Array.isArray(value)) {
-        value.forEach(item => searchParams.append(key, item));
+        value.forEach(item => {
+          if (item !== undefined && item !== null && item !== '') {
+            searchParams.append(key, item);
+          }
+        });
       } else {
         searchParams.append(key, value);
       }
@@ -147,6 +169,63 @@ export const usersAPI = {
   rejectPendingMove: (userId, moveId) => apiRequest(`/users/${userId}/moves/${moveId}/reject`, {
     method: 'PUT',
   }),
+  
+  // Instructor management
+  getInstructors: () => apiRequest('/users/instructors'),
+  
+  getStudentsByInstructor: (instructorId) => apiRequest(`/users/instructor/${instructorId}/students`),
+  
+  assignInstructor: (studentId, instructorId) => apiRequest(`/users/${studentId}/instructor`, {
+    method: 'PUT',
+    body: JSON.stringify({ instructorId }),
+  }),
+  
+  removeInstructor: (studentId) => apiRequest(`/users/${studentId}/instructor`, {
+    method: 'DELETE',
+  }),
+};
+
+// Auth API (registration + verification)
+export const authAPI = {
+  register: (data) => apiRequest('/register', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  verify: (email, code) => apiRequest('/verify', {
+    method: 'POST',
+    body: JSON.stringify({ email, code }),
+  }),
+};
+
+// Bulk Submissions API
+export const bulkSubmissionsAPI = {
+  getAll: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/bulk-submissions?${queryString}`);
+  },
+  
+  getById: (id) => apiRequest(`/bulk-submissions/${id}`),
+  
+  getByUser: (userId) => apiRequest(`/bulk-submissions/user/${userId}`),
+  
+  create: (submissionData) => apiRequest('/bulk-submissions', {
+    method: 'POST',
+    body: JSON.stringify(submissionData),
+  }),
+  
+  approve: (submissionId, adminNotes = '') => apiRequest(`/bulk-submissions/${submissionId}/approve`, {
+    method: 'PUT',
+    body: JSON.stringify({ adminNotes }),
+  }),
+  
+  reject: (submissionId, adminNotes = '') => apiRequest(`/bulk-submissions/${submissionId}/reject`, {
+    method: 'PUT',
+    body: JSON.stringify({ adminNotes }),
+  }),
+  
+  delete: (submissionId) => apiRequest(`/bulk-submissions/${submissionId}`, {
+    method: 'DELETE',
+  }),
 };
 
 // Badges API
@@ -176,10 +255,21 @@ export const badgesAPI = {
     }
   },
   
-  update: (id, badgeData) => apiRequest(`/badges/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(badgeData),
-  }),
+  update: (id, badgeData) => {
+    if (badgeData instanceof FormData) {
+      return apiRequest(`/badges/${id}`, {
+        method: 'PUT',
+        body: badgeData,
+        headers: {
+          // Let browser set the multipart boundary
+        },
+      });
+    }
+    return apiRequest(`/badges/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(badgeData),
+    });
+  },
   
   delete: (id) => apiRequest(`/badges/${id}`, {
     method: 'DELETE',
@@ -219,6 +309,11 @@ export const battlesAPI = {
   
   getById: (id) => apiRequest(`/battles/${id}`),
   
+  getByUser: (userId, params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/battles/user/${userId}?${queryString}`);
+  },
+  
   create: (battleData) => apiRequest('/battles', {
     method: 'POST',
     body: JSON.stringify(battleData),
@@ -232,28 +327,93 @@ export const battlesAPI = {
   delete: (id) => apiRequest(`/battles/${id}`, {
     method: 'DELETE',
   }),
-};
-
-// Crews API
-export const crewsAPI = {
-  getAll: (params = {}) => {
-    const queryString = new URLSearchParams(params).toString();
-    return apiRequest(`/crews?${queryString}`);
+  
+  uploadVideo: (battleId, userId, videoUrl) => apiRequest(`/battles/${battleId}/upload`, {
+    method: 'POST',
+    body: JSON.stringify({ userId, videoUrl }),
+  }),
+  
+  // Judge voting methods
+  getJudgeVote: (battleId, judgeId, category) => {
+    const params = new URLSearchParams({ judgeId, category }).toString();
+    return apiRequest(`/battles/${battleId}/vote?${params}`);
   },
   
-  getById: (id) => apiRequest(`/crews/${id}`),
-  
-  create: (crewData) => apiRequest('/crews', {
+  submitJudgeVote: (battleId, voteData) => apiRequest(`/battles/${battleId}/vote`, {
     method: 'POST',
-    body: JSON.stringify(crewData),
+    body: JSON.stringify(voteData),
   }),
   
-  update: (id, crewData) => apiRequest(`/crews/${id}`, {
+  // Resolve battle and update user statistics
+  resolveBattle: (battleId) => apiRequest(`/battles/${battleId}/resolve`, {
+    method: 'POST',
+  }),
+};
+
+
+
+
+
+// Notifications API
+export const notificationsAPI = {
+  getByUser: (userId, params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiRequest(`/notifications/user/${userId}?${queryString}`);
+  },
+  
+  getUnreadCount: (userId) => apiRequest(`/notifications/user/${userId}/unread`),
+  
+  markAsRead: (notificationId) => apiRequest(`/notifications/${notificationId}/read`, {
     method: 'PUT',
-    body: JSON.stringify(crewData),
   }),
   
-  delete: (id) => apiRequest(`/crews/${id}`, {
+  markAllAsRead: (userId) => apiRequest(`/notifications/user/${userId}/read-all`, {
+    method: 'PUT',
+  }),
+  
+  create: (notificationData) => apiRequest('/notifications', {
+    method: 'POST',
+    body: JSON.stringify(notificationData),
+  }),
+  
+  delete: (notificationId) => apiRequest(`/notifications/${notificationId}`, {
+    method: 'DELETE',
+  }),
+};
+
+// Newsletter API
+export const newsletterAPI = {
+  subscribe: (email) => apiRequest('/newsletter/subscribe', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  }),
+  list: (q = '') => {
+    const query = q ? `?q=${encodeURIComponent(q)}` : '';
+    return apiRequest(`/newsletter${query}`);
+  },
+  remove: (id) => apiRequest(`/newsletter/${id}`, { method: 'DELETE' }),
+};
+
+// Upload API
+export const uploadAPI = {
+  uploadProfileImage: (formData) => apiRequest('/upload/profile-image', {
+    method: 'POST',
+    body: formData,
+  }),
+  
+  uploadCoverImage: (formData) => apiRequest('/upload/cover-image', {
+    method: 'POST',
+    body: formData,
+  }),
+  
+
+  
+  uploadVideo: (formData) => apiRequest('/upload/video', {
+    method: 'POST',
+    body: formData,
+  }),
+  
+  deleteVideo: (filename) => apiRequest(`/upload/video/${filename}`, {
     method: 'DELETE',
   }),
 };
@@ -265,5 +425,4 @@ export default {
   badges: badgesAPI,
   events: eventsAPI,
   battles: battlesAPI,
-  crews: crewsAPI,
 }; 

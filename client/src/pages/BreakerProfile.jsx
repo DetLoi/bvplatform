@@ -6,11 +6,19 @@ import { useBadges } from '../hooks/useBadges';
 import { FaArrowLeft, FaUsers, FaTrophy, FaStar, FaCrown } from 'react-icons/fa';
 import ProgressBar from '../components/ProgressBar';
 import { LevelSummary } from '../components/LevelSummary';
+import DashboardBadges from '../components/DashboardBadges';
 import { BattleStatistics } from '../components/BattleStatistics';
 import { isBadgeUnlocked } from '../utils/badgeUtils';
 import '../styles/pages/breaker-profile.css';
 
 export default function BreakerProfile() {
+  // Add home-page class to enable shared background and entry animations
+  useEffect(() => {
+    document.body.classList.add('home-page');
+    return () => {
+      document.body.classList.remove('home-page');
+    };
+  }, []);
   const { breakerId } = useParams();
   const navigate = useNavigate();
   const [breaker, setBreaker] = useState(null);
@@ -50,7 +58,6 @@ export default function BreakerProfile() {
       <div className="breaker-profile-page">
         <div className="loading">
           <div className="loading-spinner"></div>
-          <h2>Loading...</h2>
         </div>
       </div>
     );
@@ -173,16 +180,19 @@ export default function BreakerProfile() {
             <div className="profile-info">
               <div className="profile-pic-wrapper">
                 <img
-                  src={breaker.profileImage || '/src/assets/placeholder.jpg'}
+                  src={breaker.profileImage || '/src/assets/User.jpg'}
                   alt={breaker.name}
                   className="profile-pic"
                   onError={(e) => {
-                    e.target.src = '/src/assets/placeholder.jpg';
+                    e.target.src = '/src/assets/User.jpg';
                   }}
                 />
               </div>
               <div>
                 <h1 className="dashboard-title">{breaker.name}</h1>
+                {breaker.bio && (
+                  <p className="dashboard-bio text-muted" style={{ marginTop: '0.25rem' }}>{breaker.bio}</p>
+                )}
                                  <div className="header-progress-container">
                    <p className="xp-text">Level {level}</p>
                    <ProgressBar 
@@ -203,37 +213,9 @@ export default function BreakerProfile() {
             </button>
           </div>
 
-          {/* Badges */}
-          <div className="dashboard-grid mt-6">
-            <div className="section-card">
-              <h2 className="section-heading">Badges</h2>
-              <div className="badges-wrapper">
-                {breaker.badges && breaker.badges.length > 0 ? (
-                  <div className="badges-row">
-                    {breaker.badges.map((badge) => (
-                      <div key={badge._id || badge.name} className="game-badge-minimal">
-                        <div className="badge-icon">
-                          {badge.image.startsWith('/src/assets/badges/') ? (
-                            <img src={badge.image} alt={badge.name} className="badge-image" />
-                          ) : badge.image.startsWith('/uploads/') ? (
-                            <img src={`http://localhost:5000${badge.image}`} alt={badge.name} className="badge-image" />
-                          ) : (
-                            <span className="badge-emoji">{badge.image}</span>
-                          )}
-                        </div>
-                        <div className="badge-title">{badge.name}</div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="no-badges-cta">
-                    <div className="cta-icon">🏆</div>
-                    <h3>No badges earned yet</h3>
-                    <p>Master moves in each category to unlock prestigious badges</p>
-                  </div>
-                )}
-              </div>
-            </div>
+          {/* Badges - UB-styled widget reused on breaker profile */}
+          <div className="mt-6">
+            <DashboardBadges allMoves={allMoves} masteredMoves={breaker.masteredMoves || []} />
           </div>
 
           {/* Battle Statistics Section */}
@@ -251,11 +233,7 @@ export default function BreakerProfile() {
           </div>
 
           {/* Level Summary Section */}
-          <div className="section-card mt-6">
-            <div className="section-header">
-              <h2 className="section-heading">Foundation Progress</h2>
-              <p className="section-subtitle">Track your progress by category</p>
-            </div>
+          <div className="mt-6">
             <LevelSummary masteredByCategory={masteredByCategory} totalByCategory={totalByCategory} />
           </div>
 

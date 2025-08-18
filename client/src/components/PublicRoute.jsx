@@ -8,7 +8,7 @@ export default function PublicRoute({ children }) {
   // Show loading spinner while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen bg-stone-900 flex items-center justify-center">
+      <div className="bg-stone-900 flex items-center justify-center" style={{ minHeight: 'calc(100vh - 60px)' }}>
         <LoadingSpinner size="large" />
       </div>
     );

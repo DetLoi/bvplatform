@@ -12,13 +12,19 @@ const battleSchema = new Schema(
     },
     category: { 
       type: String, 
-      enum: ['1v1', '2v2', '3v3', 'Crew Battle', 'All Style'],
+      enum: ['1v1', '2v2', '3v3', 'All Style'],
       default: '1v1'
     },
     status: { 
       type: String, 
-      enum: ['pending', 'accepted', 'in_progress', 'judged', 'completed', 'declined'],
+      enum: ['pending', 'accepted', 'in progress', 'judged', 'completed', 'declined', 'cancelled'],
       default: 'pending'
+    },
+    visibility: {
+      type: String,
+      enum: ['public', 'private'],
+      default: 'public',
+      index: true
     },
     challenger: { 
       type: Schema.Types.ObjectId, 
@@ -39,19 +45,37 @@ const battleSchema = new Schema(
       }
     },
     votes: [{
-      voter: { 
+      judgeId: { 
         type: Schema.Types.ObjectId, 
-        ref: 'User' 
+        ref: 'User',
+        required: true
       },
-      vote: { 
+      category: { 
         type: String, 
-        enum: ['challenger', 'opponent', 'tie'] 
+        required: true,
+        enum: ['Foundation', 'Originality', 'Execution', 'Dynamics', 'Battle']
+      },
+      scoreA: { 
+        type: Number, 
+        required: true,
+        min: 1,
+        max: 5
+      },
+      scoreB: { 
+        type: Number, 
+        required: true,
+        min: 1,
+        max: 5
       },
       timestamp: { 
         type: Date, 
         default: Date.now 
       }
     }],
+    judgingDone: {
+      type: Boolean,
+      default: false
+    },
     winner: { 
       type: Schema.Types.ObjectId, 
       ref: 'User' 

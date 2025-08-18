@@ -23,6 +23,7 @@ export const useMoves = (filters = {}) => {
         page: 1
       });
       
+      // Ensure we always set an array even if API shape changes
       setMoves(response.moves);
       setPagination({
         currentPage: response.currentPage,
