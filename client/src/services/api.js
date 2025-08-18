@@ -1,7 +1,7 @@
 // Use Vite env if provided, else default based on mode
 const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL)
   || ((typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.MODE) === 'production'
-    ? 'https://breakverse-api.onrender.com/api'
+    ? 'https://bvplatform-api.onrender.com/api'
     : 'http://localhost:5000/api');
 
 // Generic API request function
