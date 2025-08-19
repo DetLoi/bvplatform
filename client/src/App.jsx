@@ -31,6 +31,7 @@ import Register from './pages/Register';
 import LearnMore from './pages/LearnMore';
 import Verify from './pages/Verify';
 import VerifySuccess from './pages/VerifySuccess';
+import NotFound from './pages/NotFound';
 
 import { Toaster } from 'react-hot-toast';
 import Header from './components/Header';
@@ -241,6 +242,9 @@ export default function App() {
                 <EditUser />
               </AdminRoute>
             } />
+
+            {/* Catch-all route for 404 */}
+            <Route path="*" element={<NotFound />} />
 
           </Routes>
 
