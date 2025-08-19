@@ -52,7 +52,7 @@ export default function ForgotPassword() {
       
       <div className="forgot-password-container">
         <div className="forgot-password-header">
-          <img src="/src/assets/logo-white.png" alt="Breakverse" className="forgot-password-logo" />
+          <img src="/assets/logo-white.png" alt="Breakverse" className="forgot-password-logo" />
           <h1>Forgot Password</h1>
           <p>Enter your email address and we'll send you a verification code to reset your password.</p>
         </div>

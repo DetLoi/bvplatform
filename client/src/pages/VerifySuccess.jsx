@@ -5,7 +5,7 @@ export default function VerifySuccess() {
     <div className="register-page">
       <div className="register-container">
         <div className="register-header">
-          <img src="/src/assets/logo-white.png" alt="Breakverse" className="register-logo" />
+          <img src="/assets/logo-white.png" alt="Breakverse" className="register-logo" />
           <h2>Account verified!</h2>
         </div>
         <div className="register-form">

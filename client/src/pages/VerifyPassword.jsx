@@ -121,7 +121,7 @@ export default function VerifyPassword() {
         
         <div className="verify-password-container">
           <div className="verify-password-header">
-            <img src="/src/assets/logo-white.png" alt="Breakverse" className="verify-password-logo" />
+            <img src="/assets/logo-white.png" alt="Breakverse" className="verify-password-logo" />
             <h1>Verify Code</h1>
             <p>Enter the 4-digit verification code sent to <strong>{email}</strong></p>
           </div>
@@ -194,7 +194,7 @@ export default function VerifyPassword() {
       
       <div className="verify-password-container">
         <div className="verify-password-header">
-          <img src="/src/assets/logo-white.png" alt="Breakverse" className="verify-password-logo" />
+          <img src="/assets/logo-white.png" alt="Breakverse" className="verify-password-logo" />
           <h1>Reset Password</h1>
           <p>Create a new password for your account</p>
         </div>

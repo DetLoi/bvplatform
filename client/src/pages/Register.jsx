@@ -92,7 +92,7 @@ export default function Register() {
       </Link>
       <div className="register-container">
         <div className="register-header">
-          <img src="/src/assets/logo-white.png" alt="Breakverse" className="register-logo" />
+          <img src="/assets/logo-white.png" alt="Breakverse" className="register-logo" />
         </div>
         {/* 7-dages gratis prøve banner */}
         <div

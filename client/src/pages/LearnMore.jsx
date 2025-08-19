@@ -7,6 +7,12 @@ import { useEvents } from '../hooks/useEvents';
 import { newsletterAPI } from '../services/api';
 import { FaCalendar, FaMapMarkerAlt } from 'react-icons/fa';
 
+// Import battle images as modules
+import dashboardImg from '/assets/battlesimages/dashboard.png';
+import battle01Img from '/assets/battlesimages/battle01.png';
+import battle02Img from '/assets/battlesimages/Battle02.png';
+import profileImg from '/assets/battlesimages/profile.png';
+
 const sections = [
   { key: 'summary', title: 'Summary', subtitle: 'What you get with Breakverse', bullets: [
     'Structured learning path for breakers',
@@ -75,11 +81,13 @@ export default function LearnMore() {
       .slice(0, 4);
   }, [events]);
   const battlesImages = useMemo(() => [
-    '/src/assets/battlesimages/dashboard.png',
-    '/src/assets/battlesimages/battle01.png',
-    '/src/assets/battlesimages/Battle02.png',
-    '/src/assets/battlesimages/profile.png',
+    dashboardImg,
+    battle01Img,
+    battle02Img,
+    profileImg,
   ], []);
+  
+
   const [battleIdx, setBattleIdx] = useState(0);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState('idle'); // idle | success | error
@@ -227,47 +235,47 @@ export default function LearnMore() {
             </div>
             <div className={styles.visual} style={{ ['--vdelay']: '220ms' }}>
               {s.key === 'summary' ? (
-                <img src="/src/assets/logo-white.png" alt="Breakverse" style={{ maxWidth: '260px', width: '100%', height: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 8px 30px rgba(0,0,0,0.45))' }} onError={(e)=>{ e.target.style.display='none'; }} />
+                <img src="/assets/logo-white.png" alt="Breakverse" style={{ maxWidth: '260px', width: '100%', height: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 8px 30px rgba(0,0,0,0.45))' }} onError={(e)=>{ e.target.style.display='none'; }} />
               ) : s.key === 'users' ? (
-                <UsersCarousel3D images={[
-                  '/src/assets/User.jpg',
-                  '/src/assets/benji.png',
-                  '/src/assets/kien.png',
-                  '/src/assets/ronway.png',
-                  '/src/assets/luca.png',
-                  '/src/assets/illwill.png',
-                ]} />
+                                 <UsersCarousel3D images={[
+                   '/assets/User.jpg',
+                   '/assets/benji.png',
+                   '/assets/kien.png',
+                   '/assets/ronway.png',
+                   '/assets/luca.png',
+                   '/assets/illwill.png',
+                 ]} />
               ) : s.key === 'badges' ? (
-                <UsersCarousel3D images={[
-                  '/src/assets/badges/beginner.png',
-                  '/src/assets/badges/novice.png',
-                  '/src/assets/badges/intermediate.png',
-                  '/src/assets/badges/Advanced.png',
-                  '/src/assets/badges/skilled.png',
-                  '/src/assets/badges/master.png',
-                  '/src/assets/badges/grandmaster.png',
-                ]} />
-              ) : s.key === 'battles' ? (
-                <div className={styles.galleryTreadmill} aria-label="Battle gallery autoplay">
-                  <div className={styles.treadmillTrack}>
-                    {[...battlesImages, ...battlesImages].map((src, i) => (
-                      <div key={i} className={styles.treadmillSlide}>
-                        <img src={src} alt={`Battle ${i % battlesImages.length + 1}`} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                                 <UsersCarousel3D images={[
+                   '/assets/badges/beginner.png',
+                   '/assets/badges/novice.png',
+                   '/assets/badges/intermediate.png',
+                   '/assets/badges/Advanced.png',
+                   '/assets/badges/skilled.png',
+                   '/assets/badges/master.png',
+                   '/assets/badges/grandmaster.png',
+                 ]} />
+                                            ) : s.key === 'battles' ? (
+                 <div className={styles.galleryTreadmill} aria-label="Battle gallery autoplay">
+                   <div className={styles.treadmillTrack}>
+                     {[...battlesImages, ...battlesImages].map((src, i) => (
+                       <div key={i} className={styles.treadmillSlide}>
+                         <img src={src} alt={`Battle ${i % battlesImages.length + 1}`} />
+                       </div>
+                     ))}
+                   </div>
+                 </div>
               ) : s.key === 'moves' ? (
-                <UsersCarousel3D images={[
-                  '/src/assets/badges/topbadge.png',
-                  '/src/assets/badges/footwork.png',
-                  '/src/assets/badges/freezes.png',
-                  '/src/assets/badges/Powermoves.png',
-                  '/src/assets/badges/Tricks.png',
-                  '/src/assets/badges/Godown.png',
-                  '/src/assets/badges/air.png',
-                  '/src/assets/badges/ground.png',
-                ]} />
+                                 <UsersCarousel3D images={[
+                   '/assets/badges/topbadge.png',
+                   '/assets/badges/footwork.png',
+                   '/assets/badges/freezes.png',
+                   '/assets/badges/Powermoves.png',
+                   '/assets/badges/Tricks.png',
+                   '/assets/badges/Godown.png',
+                   '/assets/badges/air.png',
+                   '/assets/badges/ground.png',
+                 ]} />
                              ) : s.key === 'events' ? (
                  <div className={styles.eventsMini}>
                    <div className={styles.eventsMiniHeader}>Upcoming events in Denmark</div>
@@ -295,19 +303,19 @@ export default function LearnMore() {
                    </div>
                  </div>
                ) : s.key === 'rules' ? (
-                 <img 
-                   src="/src/assets/safety.png" 
-                   alt="Safety and System Rules" 
-                   style={{ 
-                     maxWidth: '300px', 
-                     width: '100%', 
-                     height: 'auto', 
-                     objectFit: 'contain', 
-                     filter: 'drop-shadow(0 8px 30px rgba(0,0,0,0.45))',
-                     borderRadius: '12px'
-                   }} 
-                   onError={(e) => { e.target.style.display = 'none'; }} 
-                 />
+                                   <img 
+                    src="/assets/safety.png" 
+                    alt="Safety and System Rules" 
+                    style={{ 
+                      maxWidth: '300px', 
+                      width: '100%', 
+                      height: 'auto', 
+                      objectFit: 'contain', 
+                      filter: 'drop-shadow(0 8px 30px rgba(0,0,0,0.45))',
+                      borderRadius: '12px'
+                    }} 
+                    onError={(e) => { e.target.style.display = 'none'; }} 
+                  />
               ) : s.key === 'notifications' ? (
                 <div className={styles.newsletter}>
                   <div className={styles.newsletterHeader}>Sign up for our newsletter</div>

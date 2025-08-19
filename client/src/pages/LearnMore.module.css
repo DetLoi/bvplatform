@@ -1,7 +1,8 @@
 .pageRoot {
   display: grid;
   grid-template-columns: 260px 1fr;
-  min-height: calc(100vh - var(--header-h, 0px));
+  min-height: 100vh;
+  height: 100vh;
   background:
     linear-gradient(0deg, rgba(11,11,12,0.85), rgba(11,11,12,0.85)),
     url('../assets/zen.jpg') center / cover no-repeat fixed;
@@ -114,7 +115,7 @@
 }
 
 .content {
-  height: calc(100vh - var(--header-h, 0px));
+  height: 100vh;
   overflow-y: auto;
   overflow-x: hidden; /* prevent horizontal scroll from 3D transforms */
   scroll-snap-type: y mandatory;
@@ -142,6 +143,61 @@
   .section {
     grid-template-columns: 1fr;
     padding: 40px 20px;
+    min-height: 100vh;
+    height: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .pageRoot {
+    height: 100vh;
+    min-height: 100vh;
+    /* Account for mobile browser UI */
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+  
+  .content {
+    height: 100vh;
+    min-height: 100vh;
+    /* Account for mobile browser UI */
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+  
+  .section {
+    min-height: 100vh;
+    height: auto;
+    padding: 20px 16px 100px;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    /* Use dynamic viewport height for mobile */
+    min-height: 100dvh;
+  }
+  
+  .title {
+    font-size: 28px;
+    line-height: 1.2;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  
+  .bullets {
+    gap: 8px;
+  }
+  
+  .visual {
+    height: auto;
+    min-height: 200px;
+    max-height: 50vh;
+  }
+  
+  /* Ensure content doesn't go behind mobile browser UI */
+  .mobileProgress {
+    padding: 8px 16px 0;
   }
 }
 
@@ -198,6 +254,14 @@
   overflow: visible; /* clip 3D carousel to avoid horizontal overflow */
 }
 
+@media (max-width: 768px) {
+  .visual {
+    height: auto;
+    min-height: 200px;
+    max-height: 50vh;
+  }
+}
+
 .sectionEnter {
   opacity: 0;
   transform: translateY(16px);
@@ -247,6 +311,15 @@
   background: linear-gradient(0deg, rgba(11,11,12,0.92), rgba(11,11,12,0.2));
   border-top: 1px solid rgba(255,255,255,0.06);
   z-index: 5;
+}
+
+@media (max-width: 768px) {
+  .footerNav {
+    padding: 12px 16px;
+    background: linear-gradient(0deg, rgba(11,11,12,0.95), rgba(11,11,12,0.8));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
 }
 
 .btn {
@@ -363,13 +436,21 @@
 .galleryTreadmill {
   position: relative;
   width: min(900px, 100%);
-  height: 100%;
+  height: 400px;
   overflow: hidden;
+  border-radius: 12px;
 }
 @media (min-width: 1024px) {
   .galleryTreadmill {
     width: min(1600px, 100%); /* bigger on desktop */
     height: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .galleryTreadmill {
+    width: 100%;
+    height: 300px;
   }
 }
 
@@ -414,16 +495,28 @@
 .newsletterMsgError { margin-top: 8px; color: #fca5a5; font-weight: 600; text-align: center; }
 /* Make the visual container taller when hosting the treadmill */
 .visual:has(.galleryTreadmill) {
-  height: 100vh;
+  height: 400px;
+  min-height: 400px;
 }
 @media (min-width: 1024px) {
   .visual:has(.galleryTreadmill) {
-    height: 100vh;
+    height: 500px;
+    min-height: 500px;
+  }
+}
+@media (max-width: 768px) {
+  .visual:has(.galleryTreadmill) {
+    height: auto;
+    min-height: 200px;
+    max-height: 50vh;
   }
 }
 .treadmillTrack {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   height: 100%;
   animation: treadmill 18s linear infinite;
@@ -433,16 +526,25 @@
   height: 80%;
   margin-right: 2rem;
 }
+
+@media (max-width: 768px) {
+  .treadmillSlide {
+    flex: 0 0 90%;
+    height: 90%;
+    margin-right: 1rem;
+  }
+}
 .treadmillSlide img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   background: transparent;
   display: block;
+  border-radius: 8px;
 }
 @keyframes treadmill {
   0%   { transform: translateX(0%); }
-  100% { transform: translateX(-360%); /* 4 slides × 90% each + gaps for infinite loop */
+  100% { transform: translateX(-200%); /* Simplified animation */
 }
 }
 

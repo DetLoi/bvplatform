@@ -78,7 +78,7 @@ export default function Login() {
       </Link>
       <div className="login-container">
         <div className="login-header">
-          <img src="/src/assets/logo-white.png" alt="Breakverse" className="login-logo" />
+          <img src="/assets/logo-white.png" alt="Breakverse" className="login-logo" />
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
