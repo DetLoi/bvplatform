@@ -17,8 +17,8 @@ export default function BattleRoom() {
   const [judgeVotes, setJudgeVotes] = useState([]);
 
   // Determine user role and upload status
-  const isChallenger = battle && currentUser && battle.challenger._id === currentUser._id;
-  const isOpponent = battle && currentUser && battle.opponent._id === currentUser._id;
+  const isChallenger = battle && currentUser && battle.challenger && battle.challenger._id === currentUser._id;
+  const isOpponent = battle && currentUser && battle.opponent && battle.opponent._id === currentUser._id;
   const isParticipant = isChallenger || isOpponent;
   const isJudge = currentUser?.roles?.includes('judge');
   const canSeePrivacy = isParticipant || isAdmin?.();

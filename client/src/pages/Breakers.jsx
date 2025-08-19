@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUsers } from '../hooks/useUsers';
-
+import { getImageUrl } from '../utils/imageUtils';
 import { useBattles } from '../hooks/useBattles';
 import { useAuth } from '../context/AuthContext';
 import { FaSearch, FaFilter, FaUsers, FaCrosshairs, FaUserTimes, FaCrown, FaStar, FaClock, FaTimes, FaVideo } from 'react-icons/fa';
@@ -29,13 +29,13 @@ export default function Breakers() {
     if (usersLoading) return [];
     
     return users
-      .filter(user => !currentUser || user._id !== currentUser._id)
+      .filter(user => user && user._id && (!currentUser || user._id !== currentUser._id))
       .map(user => {
       return {
         id: user._id,
         name: user.name,
         username: user.username,
-        profileImage: user.profileImage || '/src/assets/User.jpg',
+        profileImage: getImageUrl(user.profileImage) || '/assets/User.jpg',
         level: user.level,
         xp: user.xp,
         status: user.status
@@ -48,7 +48,7 @@ export default function Breakers() {
     if (!currentUser || !battles) return [];
     
     const pending = battles.filter(battle => {
-      const isChallenger = battle.challenger === currentUser._id || battle.challenger._id === currentUser._id;
+      const isChallenger = battle.challenger === currentUser._id || (battle.challenger && battle.challenger._id === currentUser._id);
       const isPending = battle.status === 'pending';
       const isNotCancelled = battle.status !== 'cancelled';
       return isChallenger && isPending && isNotCancelled;
@@ -62,8 +62,8 @@ export default function Breakers() {
     if (!currentUser || !battles) return [];
     
     const active = battles.filter(battle => {
-      const isParticipant = (battle.challenger === currentUser._id || battle.challenger._id === currentUser._id) ||
-                           (battle.opponent === currentUser._id || battle.opponent._id === currentUser._id);
+      const isParticipant = (battle.challenger === currentUser._id || (battle.challenger && battle.challenger._id === currentUser._id)) ||
+                           (battle.opponent === currentUser._id || (battle.opponent && battle.opponent._id === currentUser._id));
       const isActive = battle.status === 'in progress';
       return isParticipant && isActive;
     });
@@ -74,7 +74,7 @@ export default function Breakers() {
   // Check if a breaker has a pending call-out from current user
   const hasPendingCallOut = (breakerId) => {
     const hasPending = pendingBattles.some(battle => {
-      const isOpponent = battle.opponent === breakerId || battle.opponent._id === breakerId;
+      const isOpponent = battle.opponent === breakerId || (battle.opponent && battle.opponent._id === breakerId);
       const isNotCancelled = battle.status !== 'cancelled';
       return isOpponent && isNotCancelled;
     });
@@ -84,8 +84,8 @@ export default function Breakers() {
   // Check if a breaker has an active battle with current user
   const hasActiveBattle = (breakerId) => {
     const hasActive = activeBattles.some(battle => {
-      const isOpponent = battle.opponent === breakerId || battle.opponent._id === breakerId;
-      const isChallenger = battle.challenger === breakerId || battle.challenger._id === breakerId;
+      const isOpponent = battle.opponent === breakerId || (battle.opponent && battle.opponent._id === breakerId);
+      const isChallenger = battle.challenger === breakerId || (battle.challenger && battle.challenger._id === breakerId);
       return isOpponent || isChallenger;
     });
     return hasActive;
@@ -94,8 +94,8 @@ export default function Breakers() {
   // Check if current user has been challenged by this breaker
   const hasBeenChallenged = (breakerId) => {
     const hasChallenged = battles.some(battle => {
-      const isChallenger = battle.challenger === breakerId || battle.challenger._id === breakerId;
-      const isOpponent = battle.opponent === currentUser._id || battle.opponent._id === currentUser._id;
+      const isChallenger = battle.challenger === breakerId || (battle.challenger && battle.challenger._id === breakerId);
+      const isOpponent = battle.opponent === currentUser._id || (battle.opponent && battle.opponent._id === currentUser._id);
       const isPending = battle.status === 'pending';
       return isChallenger && isOpponent && isPending;
     });
@@ -105,7 +105,7 @@ export default function Breakers() {
   // Get battle ID for a specific opponent
   const getBattleId = (opponentId) => {
     const battle = pendingBattles.find(battle => 
-      battle.opponent === opponentId || battle.opponent._id === opponentId
+      battle.opponent === opponentId || (battle.opponent && battle.opponent._id === opponentId)
     );
     return battle?._id;
   };
@@ -113,8 +113,8 @@ export default function Breakers() {
   // Get active battle ID for a specific opponent
   const getActiveBattleId = (opponentId) => {
     const battle = activeBattles.find(battle => {
-      const isOpponent = battle.opponent === opponentId || battle.opponent._id === opponentId;
-      const isChallenger = battle.challenger === opponentId || battle.challenger._id === opponentId;
+      const isOpponent = battle.opponent === opponentId || (battle.opponent && battle.opponent._id === opponentId);
+      const isChallenger = battle.challenger === opponentId || (battle.challenger && battle.challenger._id === opponentId);
       return isOpponent || isChallenger;
     });
     return battle?._id;
@@ -352,9 +352,9 @@ export default function Breakers() {
                         src={breaker.profileImage}
                         alt={breaker.name}
                         className="breaker-avatar"
-                        onError={(e) => {
-                          e.target.src = '/src/assets/User.jpg';
-                        }}
+                                                 onError={(e) => {
+                           e.target.src = '/assets/User.jpg';
+                         }}
                       />
                     </div>
                     

@@ -11,6 +11,7 @@ import { useBulkSubmissions } from '../hooks/useBulkSubmissions';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { toast } from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUtils';
 import Toast from '../components/Toast';
 import '../styles/pages/admin.css';
 import '../styles/pages/add-form.css';
@@ -1907,7 +1908,7 @@ export default function Admin() {
                     <p><strong>Requirement:</strong> {badge.requirement || 'None'}</p>
                     {badge.image && (
                       <div className="badge-image-preview">
-                        <img src={badge.image.startsWith('/uploads/') ? `http://localhost:5000${badge.image}` : badge.image} alt={badge.name} />
+                        <img src={getImageUrl(badge.image)} alt={badge.name} />
                       </div>
                     )}
                   </>
@@ -2302,10 +2303,10 @@ export default function Admin() {
                     <p><strong>Name:</strong> {user.name || 'Not specified'}</p>
                     <p><strong>Email:</strong> {user.email}</p>
                     {user.profileImage && (
-                      <p><strong>Profile:</strong> <img src={user.profileImage} alt="profile" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', verticalAlign: 'middle' }} /></p>
+                      <p><strong>Profile:</strong> <img src={getImageUrl(user.profileImage)} alt="profile" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', verticalAlign: 'middle' }} /></p>
                     )}
                     {user.coverImage && (
-                      <p><strong>Cover:</strong> <img src={user.coverImage} alt="cover" style={{ width: '72px', height: '36px', objectFit: 'cover', borderRadius: '4px', verticalAlign: 'middle' }} /></p>
+                      <p><strong>Cover:</strong> <img src={getImageUrl(user.coverImage)} alt="cover" style={{ width: '72px', height: '36px', objectFit: 'cover', borderRadius: '4px', verticalAlign: 'middle' }} /></p>
                     )}
                     {user.bio && (
                       <p><strong>Bio:</strong> {user.bio}</p>

@@ -65,12 +65,12 @@ export default function Battles() {
   const pendingCallOuts = battles.filter(battle => 
     battle.status === 'pending' && 
     battle.status !== 'cancelled' &&
-    (battle.opponent._id === currentUser?._id || battle.opponent === currentUser?._id)
+    (battle.opponent && battle.opponent._id === currentUser?._id || battle.opponent === currentUser?._id)
   );
   const myCallOuts = battles.filter(battle => 
     battle.status === 'pending' && 
     battle.status !== 'cancelled' &&
-    (battle.challenger._id === currentUser?._id || battle.challenger === currentUser?._id)
+    (battle.challenger && battle.challenger._id === currentUser?._id || battle.challenger === currentUser?._id)
   );
   const activeBattles = battles.filter(battle => battle.status === 'in progress');
   const completedBattles = battles.filter(battle => battle.status === 'completed');
@@ -144,8 +144,8 @@ export default function Battles() {
 
 
   const renderBattleCard = (battle) => {
-    const isChallenger = battle.challenger._id === currentUser?._id || battle.challenger === currentUser?._id;
-    const isOpponent = battle.opponent._id === currentUser?._id || battle.opponent === currentUser?._id;
+    const isChallenger = (battle.challenger && battle.challenger._id === currentUser?._id) || battle.challenger === currentUser?._id;
+    const isOpponent = (battle.opponent && battle.opponent._id === currentUser?._id) || battle.opponent === currentUser?._id;
     const isParticipant = isChallenger || isOpponent;
     const isJudge = currentUser?.roles?.includes('judge');
     const isCallee = isOpponent && battle.status === 'pending';
@@ -495,7 +495,7 @@ export default function Battles() {
               (activeTab === 'judged' && judgedBattles.length === 0)) && (
               <div className="battles-empty-state">
                 <img 
-                  src="/src/assets/breakKidCropped.png" 
+                  src="/assets/breakKidCropped.png" 
                   alt="Empty State Icon" 
                   className="battles-empty-icon" 
                 />
@@ -592,20 +592,20 @@ export default function Battles() {
                       </span>
                     </div>
 
-                    {(selectedBattle.status === 'pending' || selectedBattle.status === 'accepted') ? (
-                      <p className="battles-modal-description">
-                        {(
-                          selectedBattle.opponent._id === currentUser?._id ||
-                          selectedBattle.opponent === currentUser?._id
-                        ) ? (
-                          <>
-                            <strong>{selectedBattle.challenger.name}</strong> has challenged you to a battle!
-                          </>
-                        ) : (
-                          (
-                            selectedBattle.challenger._id === currentUser?._id ||
-                            selectedBattle.challenger === currentUser?._id
-                          ) ? (
+                                         {(selectedBattle.status === 'pending' || selectedBattle.status === 'accepted') ? (
+                       <p className="battles-modal-description">
+                         {(
+                           (selectedBattle.opponent && selectedBattle.opponent._id === currentUser?._id) ||
+                           selectedBattle.opponent === currentUser?._id
+                         ) ? (
+                           <>
+                             <strong>{selectedBattle.challenger.name}</strong> has challenged you to a battle!
+                           </>
+                         ) : (
+                           (
+                             (selectedBattle.challenger && selectedBattle.challenger._id === currentUser?._id) ||
+                             selectedBattle.challenger === currentUser?._id
+                           ) ? (
                             <>
                               You have challenged <strong>{selectedBattle.opponent.name}</strong> to a battle!
                             </>
@@ -624,7 +624,7 @@ export default function Battles() {
                   </>
                 )}
 
-                {selectedBattle.status === 'pending' && (selectedBattle.opponent._id === currentUser?._id || selectedBattle.opponent === currentUser?._id) && (
+                                 {selectedBattle.status === 'pending' && ((selectedBattle.opponent && selectedBattle.opponent._id === currentUser?._id) || selectedBattle.opponent === currentUser?._id) && (
                   <div className="battles-actions">
                     <button 
                       className="battles-btn-primary"

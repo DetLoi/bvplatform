@@ -5,6 +5,7 @@ import { useMoves } from '../hooks/useMoves';
 import { FaArrowLeft, FaTrophy, FaCheck, FaLock, FaLightbulb, FaStar, FaFire } from 'react-icons/fa';
 import { useEffect } from 'react';
 import { isBadgeUnlocked, getBadgeRequiredMoves, getBadgeProgress } from '../utils/badgeUtils';
+import { getImageUrl } from '../utils/imageUtils';
 import '../styles/pages/badge-detail.css';
 
 export default function BadgeDetail() {
@@ -152,10 +153,8 @@ export default function BadgeDetail() {
         <div className="badge-detail-content">
           <div className="badge-hero">
             <div className="badge-icon-large">
-              {badge.image.startsWith('/assets/badges/') ? (
-                <img src={badge.image} alt={badge.name} className="badge-image-large" />
-              ) : badge.image.startsWith('/uploads/') ? (
-                <img src={`http://localhost:5000${badge.image}`} alt={badge.name} className="badge-image-large" />
+              {badge.image && !badge.image.startsWith('🏆') && !badge.image.startsWith('🎖️') ? (
+                <img src={getImageUrl(badge.image)} alt={badge.name} className="badge-image-large" />
               ) : (
                 <span className="badge-emoji-large">{badge.image}</span>
               )}

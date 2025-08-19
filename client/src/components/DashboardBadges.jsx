@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBadges } from '../hooks/useBadges';
 import { isBadgeUnlocked } from '../utils/badgeUtils';
+import { getImageUrl } from '../utils/imageUtils';
 
 export default function DashboardBadges({ allMoves, masteredMoves }) {
   const navigate = useNavigate();
@@ -54,11 +55,7 @@ export default function DashboardBadges({ allMoves, masteredMoves }) {
                   title={badge.name}
                 >
                   <div className="ub-badge-icon">
-                    {badge.image?.startsWith('/uploads/') ? (
-                      <img src={`http://localhost:5000${badge.image}`} alt={badge.name} className="ub-badge-media" />
-                    ) : (
-                      <img src={badge.image} alt={badge.name} className="ub-badge-media" />
-                    )}
+                    <img src={getImageUrl(badge.image)} alt={badge.name} className="ub-badge-media" />
                   </div>
                   <span className="ub-tile__status">{badge.name}</span>
                 </button>
@@ -73,11 +70,7 @@ export default function DashboardBadges({ allMoves, masteredMoves }) {
                   <div className="ub-detail-header">
                     <div className="ub-detail-status">
                       <div className="ub-badge-icon ub-badge-icon--lg">
-                        {badge.image?.startsWith('/uploads/') ? (
-                          <img src={`http://localhost:5000${badge.image}`} alt={badge.name} className="ub-badge-media" />
-                        ) : (
-                          <img src={badge.image} alt={badge.name} className="ub-badge-media" />
-                        )}
+                        <img src={getImageUrl(badge.image)} alt={badge.name} className="ub-badge-media" />
                       </div>
                       <span>{badge.name}</span>
                     </div>

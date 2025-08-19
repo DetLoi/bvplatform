@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUsers } from '../hooks/useUsers';
+import { getImageUrl } from '../utils/imageUtils';
 import { useMoves } from '../hooks/useMoves';
 import { useBadges } from '../hooks/useBadges';
 import { FaArrowLeft, FaUsers, FaTrophy, FaStar, FaCrown } from 'react-icons/fa';
@@ -180,7 +181,7 @@ export default function BreakerProfile() {
             <div className="profile-info">
               <div className="profile-pic-wrapper">
                 <img
-                  src={breaker.profileImage || '/assets/User.jpg'}
+                  src={getImageUrl(breaker.profileImage) || '/assets/User.jpg'}
                   alt={breaker.name}
                   className="profile-pic"
                   onError={(e) => {

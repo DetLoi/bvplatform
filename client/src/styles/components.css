@@ -629,24 +629,28 @@
       background-position: center;
       background-repeat: no-repeat;
       color: #000000;
-      padding: 1.25rem; /* restore padding */
+      padding: 1.25rem 1.25rem 3rem 1.25rem; /* extra bottom padding for mobile browser UI */
       width: 100%;
-      height: calc(100vh - 56px);
+      height: calc(100vh - 56px); /* Fallback for older browsers */
+      height: calc(100dvh - 56px); /* Use dynamic viewport height for mobile */
       overflow-y: auto; /* allow scrolling */
       flex-direction: column;
       align-items: stretch; /* full width items */
-      gap: 0.75rem; /* comfortable spacing */
+      justify-content: space-evenly; /* evenly distribute nav items */
+      gap: 0; /* remove gap since we're using space-evenly */
       display: none;
     }
 
-  /* Let items size naturally */
-  .nav-links li { flex: 0 0 auto; width: 100%; opacity: 0; transform: translateX(24px); }
+  /* Let items size naturally and grow to fill space */
+  .nav-links li { flex: 1; width: 100%; opacity: 0; transform: translateX(24px); display: flex; align-items: center; }
  
   .nav-links li a {
     color: #000; font-weight: 300;
-    display: block;
+    display: flex;
+    align-items: center;
     width: 100%;
-    padding: 0.75rem 1.25rem 0.75rem 0; /* remove left padding */
+    height: 100%;
+    padding: 0.75rem 1.25rem; /* restore left padding */
     font-size: 3rem; /* 3x font size */
     text-align: left;
     font-family: 'Bebas Neue', sans-serif;
