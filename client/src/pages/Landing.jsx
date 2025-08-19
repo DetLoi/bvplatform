@@ -48,20 +48,20 @@ export default function Landing() {
         {/* Background 3D carousel */}
         <div className="hero-bg-carousel" aria-hidden="true">
           <UsersCarousel3D images={[
-            '/src/assets/badges/beginner.png',
-            '/src/assets/badges/novice.png',
-            '/src/assets/badges/intermediate.png',
-            '/src/assets/badges/Advanced.png',
-            '/src/assets/badges/skilled.png',
-            '/src/assets/badges/master.png',
-            '/src/assets/badges/grandmaster.png',
+                    '/assets/badges/beginner.png',
+        '/assets/badges/novice.png',
+        '/assets/badges/intermediate.png',
+        '/assets/badges/Advanced.png',
+        '/assets/badges/skilled.png',
+        '/assets/badges/master.png',
+        '/assets/badges/grandmaster.png',
           ]} />
         </div>
         <div className="hero-content">
           <div className="hero-intro">
             <div className="welcome-block">
               <img
-                src="/src/assets/Logo.png"
+                src="/assets/Logo.png"
                 alt="Breakverse"
                 className="hero-logo-lg"
               />
@@ -188,7 +188,7 @@ export default function Landing() {
         <div className="container">
           <div className="footer-top">
             <div className="footer-brand">
-              <img src="/src/assets/logo-white.png" alt="Breakverse" className="footer-logo" />
+              <img src="/assets/logo-white.png" alt="Breakverse" className="footer-logo" />
               <p className="footer-tagline">Learn. Battle. Grow. Together.</p>
               <div className="footer-contact">
                 <a href="mailto:support@breakverse.app" className="footer-mail">support@breakverse.app</a>

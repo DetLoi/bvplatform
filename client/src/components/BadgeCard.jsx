@@ -19,7 +19,7 @@ export default function BadgeCard({ badge, isEarned, masteredMoves = [], allMove
   return (
     <div className={`badge-card ${isEarned ? 'earned' : 'locked'}`} onClick={handleClick}>
       <div className="badge-icon">
-        {badge.image.startsWith('/src/assets/badges/') ? (
+        {badge.image.startsWith('/assets/badges/') ? (
           <img src={badge.image} alt={badge.name} className="badge-image" />
         ) : badge.image.startsWith('/uploads/') ? (
           <img src={`http://localhost:5000${badge.image}`} alt={badge.name} className="badge-image" />

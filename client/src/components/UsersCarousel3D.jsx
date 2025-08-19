@@ -52,7 +52,7 @@ export default function UsersCarousel3D({ images, aspect }) {
     startDragDegRef.current = isNaN(parsed) ? 0 : parsed;
   };
 
-  const items = images && images.length ? images : ['/src/assets/User.jpg'];
+  const items = images && images.length ? images : ['/assets/User.jpg'];
 
   // Allow overriding aspect ratio via CSS variable. For 9:16 portrait, set card height ~1.78x width
   const rootStyle = aspect === '9:16' ? { ['--card-h']: 'calc(var(--card-w) * 1.78)' } : undefined;
@@ -77,7 +77,7 @@ export default function UsersCarousel3D({ images, aspect }) {
             className={styles.item}
             style={{ '--position': index + 1 }}
           >
-            <img src={src} alt={`user-${index}`} onError={(e)=>{ e.target.src = '/src/assets/User.jpg'; }} />
+            <img src={src} alt={`user-${index}`} onError={(e)=>{ e.target.src = '/assets/User.jpg'; }} />
           </div>
         ))}
       </div>

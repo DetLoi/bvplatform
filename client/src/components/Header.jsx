@@ -41,10 +41,10 @@ function UserAvatarDropdown({ user, onLogout }) {
         aria-label="User menu"
       >
         <img 
-          src={user.profileImage || '/src/assets/User.jpg'} 
+          src={user.profileImage || '/assets/User.jpg'} 
           alt={`${user.username}'s profile`}
           className="user-avatar-img"
-          onError={(e) => { e.target.src = '/src/assets/User.jpg'; }}
+          onError={(e) => { e.target.src = '/assets/User.jpg'; }}
         />
       </button>
       

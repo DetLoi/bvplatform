@@ -152,7 +152,7 @@ export default function BadgeDetail() {
         <div className="badge-detail-content">
           <div className="badge-hero">
             <div className="badge-icon-large">
-              {badge.image.startsWith('/src/assets/badges/') ? (
+              {badge.image.startsWith('/assets/badges/') ? (
                 <img src={badge.image} alt={badge.name} className="badge-image-large" />
               ) : badge.image.startsWith('/uploads/') ? (
                 <img src={`http://localhost:5000${badge.image}`} alt={badge.name} className="badge-image-large" />

@@ -180,11 +180,11 @@ export default function BreakerProfile() {
             <div className="profile-info">
               <div className="profile-pic-wrapper">
                 <img
-                  src={breaker.profileImage || '/src/assets/User.jpg'}
+                  src={breaker.profileImage || '/assets/User.jpg'}
                   alt={breaker.name}
                   className="profile-pic"
                   onError={(e) => {
-                    e.target.src = '/src/assets/User.jpg';
+                    e.target.src = '/assets/User.jpg';
                   }}
                 />
               </div>
