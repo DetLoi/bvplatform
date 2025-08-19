@@ -104,7 +104,7 @@ export default function Register() {
             letterSpacing: '0.06em'
           }}
         >
-          <span style={{ borderBottom: '2px solid #ffd700', paddingBottom: 2 }}>7 DAGES GRATIS PRØVE</span>
+          <span style={{ borderBottom: '2px solid #ffd700', paddingBottom: 2 }}>ALPHA TEST RELEASE FREE</span>
         </div>
         <form onSubmit={handleSubmit} className="register-form">
           {error && <div className="error-message">{error}</div>}

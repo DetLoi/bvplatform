@@ -472,6 +472,12 @@
     gap: 12px;
   }
 
+  .hero-buttons .btn-primary,
+  .hero-buttons .btn-secondary,
+  .hero-buttons .hero-btn {
+    width: 100%;
+  }
+
   /* Ensure hero content block spans full width on mobile */
   .welcome-block { width: 100%; }
   
