@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
+    "start": "cd server && npm start",
     "dev": "concurrently \"npm run dev --prefix client\" \"npm run dev --prefix server\""
   },
   "devDependencies": {
