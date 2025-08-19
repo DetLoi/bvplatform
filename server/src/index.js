@@ -54,6 +54,7 @@ const corsOptions = {
     'https://breakverse-client.vercel.app', // Vercel deployment
     'https://breakverse-client.netlify.app', // Netlify deployment
     'https://breakverse-client.onrender.com', // Render deployment
+    'https://breakverse-frontend.onrender.com', // Render frontend deployment
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
