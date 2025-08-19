@@ -2421,7 +2421,9 @@ export default function Admin() {
     console.log('Bulk submissions length:', bulkSubmissions?.length);
 
     // Convert bulk submissions to approval requests format
-    const allBulkApprovals = (bulkSubmissions || []).map((submission) => ({
+    const allBulkApprovals = (bulkSubmissions || [])
+      .filter(submission => submission.userId) // Filter out submissions with null/undefined userId
+      .map((submission) => ({
       id: submission._id,
       type: 'bulk',
       userId: submission.userId._id,

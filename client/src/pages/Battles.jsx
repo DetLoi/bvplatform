@@ -165,13 +165,13 @@ export default function Battles() {
         <div className="battles-card-header">
           <div className="battles-users">
             <div className="battles-user-info">
-              <span className="battles-user-name">{battle.challenger.name}</span>
-              <span className="battles-user-level">{battle.challenger.level}</span>
+              <span className="battles-user-name">{battle.challenger?.name || 'Unknown User'}</span>
+              <span className="battles-user-level">{battle.challenger?.level || 0}</span>
             </div>
             <div className="battles-vs-divider">VS</div>
             <div className="battles-user-info">
-              <span className="battles-user-name">{battle.opponent.name}</span>
-              <span className="battles-user-level">{battle.opponent.level}</span>
+              <span className="battles-user-name">{battle.opponent?.name || 'Unknown User'}</span>
+              <span className="battles-user-level">{battle.opponent?.level || 0}</span>
             </div>
           </div>
           <div className="battles-status">
@@ -191,7 +191,7 @@ export default function Battles() {
           {isCallee && (
             <div className="battles-callout-message">
               <p className="battles-callout-text">
-                <strong>{battle.challenger.name}</strong> has challenged you to a battle!
+                <strong>{battle.challenger?.name || 'Unknown User'}</strong> has challenged you to a battle!
               </p>
               <span className="battles-callout-time">
                 {new Date(battle.createdAt).toLocaleDateString()} at {new Date(battle.createdAt).toLocaleTimeString()}
@@ -201,7 +201,7 @@ export default function Battles() {
           {isChallenger && battle.status === 'pending' && (
             <div className="battles-callout-message">
               <p className="battles-callout-text">
-                You have challenged <strong>{battle.opponent.name}</strong> to a battle!
+                You have challenged <strong>{battle.opponent?.name || 'Unknown User'}</strong> to a battle!
               </p>
               <span className="battles-callout-time">
                 {new Date(battle.createdAt).toLocaleDateString()} at {new Date(battle.createdAt).toLocaleTimeString()}
@@ -211,7 +211,7 @@ export default function Battles() {
           {!isCallee && !isChallenger && !isParticipant && !isJudge && (
             <div className="battles-spectator-message">
               <p className="battles-spectator-text">
-                <strong>Spectating:</strong> Watch this battle between {battle.challenger.name} and {battle.opponent.name}
+                <strong>Spectating:</strong> Watch this battle between {battle.challenger?.name || 'Unknown User'} and {battle.opponent?.name || 'Unknown User'}
               </p>
               <span className="battles-spectator-time">
                 {new Date(battle.createdAt).toLocaleDateString()} at {new Date(battle.createdAt).toLocaleTimeString()}
@@ -326,7 +326,7 @@ export default function Battles() {
                <div className="battles-winner-info">
                                    <div className="battles-winner-badge">
                     <FaCrown />
-                    <span>Winner: {battle.winner ? battle.winner.name : 'Draw'}</span>
+                                             <span>Winner: {battle.winner?.name || 'Draw'}</span>
                   </div>
                  {battle.votes && battle.votes.length > 0 && (
                    <div className="battles-vote-summary">

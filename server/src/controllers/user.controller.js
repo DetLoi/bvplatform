@@ -1,6 +1,10 @@
 import User from '../models/user.models.js';
 import Move from '../models/move.models.js';
 import Badge from '../models/badge.models.js';
+import Battle from '../models/battle.models.js';
+import BulkSubmission from '../models/bulkSubmission.models.js';
+import Event from '../models/event.models.js';
+import Notification from '../models/notification.models.js';
 import { createBattleNotification } from './notification.controller.js';
 import bcrypt from 'bcryptjs';
 
@@ -310,14 +314,93 @@ export const updateUser = async (req, res) => {
 // Delete user
 export const deleteUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
+    const userId = req.params.id;
     
+    // Find the user first to ensure it exists
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+
+    // 1. Clean up Battle references
+    const battleUpdates = await Battle.updateMany(
+      {
+        $or: [
+          { challenger: userId },
+          { opponent: userId },
+          { winner: userId },
+          { judges: userId }
+        ]
+      },
+      {
+        $unset: {
+          challenger: "",
+          opponent: "",
+          winner: "",
+          judges: ""
+        }
+      }
+    );
+
+    // 2. Clean up BulkSubmission references
+    const bulkSubmissionUpdates = await BulkSubmission.updateMany(
+      {
+        $or: [
+          { user: userId },
+          { instructor: userId }
+        ]
+      },
+      {
+        $unset: {
+          user: "",
+          instructor: ""
+        }
+      }
+    );
+
+    // 3. Clean up Event references
+    const eventUpdates = await Event.updateMany(
+      { organizer: userId },
+      { $unset: { organizer: "" } }
+    );
+
+    // 4. Clean up User instructor references
+    const userUpdates = await User.updateMany(
+      { instructor: userId },
+      { $unset: { instructor: "" } }
+    );
+
+    // 5. Clean up Notification references
+    const notificationUpdates = await Notification.updateMany(
+      {
+        $or: [
+          { recipient: userId },
+          { sender: userId }
+        ]
+      },
+      {
+        $unset: {
+          recipient: "",
+          sender: ""
+        }
+      }
+    );
+
+    // 6. Finally, delete the user
+    await User.findByIdAndDelete(userId);
     
-    res.json({ message: 'User deleted successfully' });
+    res.json({ 
+      message: 'User deleted successfully',
+      cleanup: {
+        battlesUpdated: battleUpdates.modifiedCount || 0,
+        bulkSubmissionsUpdated: bulkSubmissionUpdates.modifiedCount || 0,
+        eventsUpdated: eventUpdates.modifiedCount || 0,
+        usersUpdated: userUpdates.modifiedCount || 0,
+        notificationsUpdated: notificationUpdates.modifiedCount || 0
+      }
+    });
   } catch (err) {
+    console.error('Error deleting user:', err);
     res.status(500).json({ message: err.message });
   }
 };
