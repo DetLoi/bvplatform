@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FaArrowLeft, FaSave, FaTimes, FaUpload, FaPlay, FaCheck, FaSearch, FaPlus, FaFilter, FaChevronUp, FaChevronDown } from 'react-icons/fa';
 import { useMoves } from '../hooks/useMoves';
 import { useAuth } from '../context/AuthContext';
@@ -15,6 +15,7 @@ const categories = ['All Moves', 'Toprock', 'Footwork', 'Freezes', 'Power', 'Tri
 
 export default function MasterMove() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser } = useAuth();
   const { requestMoveApproval, masteredMoves } = useProfile();
   const { createSubmission } = useBulkSubmissions();
@@ -47,6 +48,22 @@ export default function MasterMove() {
   useEffect(() => {
     fetchMoves({ limit: 1000 }); // Get all moves
   }, []);
+
+  // Handle pre-selected moves from quest tracker
+  useEffect(() => {
+    if (location.state?.preSelectedMoves && location.state.preSelectedMoves.length > 0) {
+      const preSelectedMoves = location.state.preSelectedMoves;
+      setSelectedMoves(preSelectedMoves);
+      
+      // Automatically open the side panel if requested
+      if (location.state.openSidePanel) {
+        setIsPanelExpanded(true);
+      }
+      
+      // Clear the state to prevent re-application on re-renders
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   // Filter moves based on search, category, and level
   const filteredMoves = moves.filter(move => {

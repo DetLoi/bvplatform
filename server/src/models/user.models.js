@@ -70,6 +70,14 @@ const userSchema = new Schema(
       enum: ['active', 'inactive', 'banned'], 
       default: 'active' 
     },
+    hasSeenIntroGuide: {
+      type: Boolean,
+      default: false
+    },
+    isFirstTimeUser: {
+      type: Boolean,
+      default: true
+    },
     roles: {
       type: [String],
       enum: ['student', 'instructor', 'judge', 'admin'],

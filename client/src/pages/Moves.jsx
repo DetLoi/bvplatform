@@ -8,6 +8,7 @@ import MoveCard from '../components/MoveCard';
 import RecommendationsPanel from '../components/RecommendationsPanel';
 import VideoPlayer from '../components/VideoPlayer';
 import IntroGuideModal from '../components/IntroGuideModal';
+import { useQuestTracker } from '../context/QuestTrackerContext';
 import { toast } from 'react-hot-toast';
 import { movesAPI } from '../services/api';
 
@@ -34,8 +35,9 @@ export function Moves({ setToastMessage }) {
   const [category, setCategory] = useState(initialCategory);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [selectedMove, setSelectedMove] = useState(null);
-  const [showIntroGuide, setShowIntroGuide] = useState(false);
-  const [isPageDimmed, setIsPageDimmed] = useState(false);
+           const [showIntroGuide, setShowIntroGuide] = useState(false);
+         const [isPageDimmed, setIsPageDimmed] = useState(false);
+         const { activateQuest } = useQuestTracker(); // Use context instead of local state
   
   // Show intro guide automatically for first time users
   useEffect(() => {
@@ -169,6 +171,12 @@ export function Moves({ setToastMessage }) {
       });
     }
   }
+
+           // Quest tracker functions
+         function handleActivateQuest(moves) {
+           console.log('Activating quest with moves:', moves);
+           activateQuest(moves);
+         }
 
   function handleCategoryChange(newCategory) {
     setCategory(newCategory);
@@ -377,8 +385,10 @@ export function Moves({ setToastMessage }) {
           </div>
         )}
       </div>
+
+
       
-                                                                               {/* Intro Guide Modal */}
+      {/* Intro Guide Modal */}
                <IntroGuideModal 
                  show={showIntroGuide}
                  onClose={() => {
@@ -395,11 +405,14 @@ export function Moves({ setToastMessage }) {
                    console.log('Sending mastered moves to guide from ProfileContext:', masteredMoves);
                    return masteredMoves || [];
                  })()}
-                 onFirstTimeStart={() => {
+                                  onFirstTimeStart={() => {
                    console.log('First time user started, dimming page');
                    setIsPageDimmed(true);
                  }}
-               />
+                 onActivateQuest={handleActivateQuest}
+                 />
+
+
                
                {/* Dimmed Page Overlay */}
                {isPageDimmed && (

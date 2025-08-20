@@ -5,7 +5,7 @@ import { useProfile } from '../context/ProfileContext';
 import { usersAPI, movesAPI } from '../services/api';
 import './IntroGuideModal.css';
 
-const IntroGuideModal = ({ show, onClose, onMoveSelect, userMasteredMoves = [], onFirstTimeStart }) => {
+const IntroGuideModal = ({ show, onClose, onMoveSelect, userMasteredMoves = [], onFirstTimeStart, onActivateQuest }) => {
   const navigate = useNavigate();
   const { currentUser, updateUser } = useAuth();
   const { masteredMoves: profileMasteredMoves } = useProfile();
@@ -134,19 +134,24 @@ const IntroGuideModal = ({ show, onClose, onMoveSelect, userMasteredMoves = [], 
     }
   };
 
-  const handleStartNow = async () => {
-    console.log('Starting quest and closing modal');
-    await markGuideAsSeen();
-    console.log('About to call onClose()');
-    
-    // If this is a first time user, trigger the dimmed state
-    if (currentUser?.isFirstTimeUser && onFirstTimeStart) {
-      onFirstTimeStart();
-    }
-    
-    onClose(); // Close modal immediately
-    console.log('onClose() called');
-  };
+           const handleStartNow = async () => {
+           console.log('Starting quest and closing modal');
+           await markGuideAsSeen();
+           console.log('About to call onClose()');
+
+           // If this is a first time user, trigger the dimmed state
+           if (currentUser?.isFirstTimeUser && onFirstTimeStart) {
+             onFirstTimeStart();
+           }
+
+           // Activate quest tracker
+           if (onActivateQuest) {
+             onActivateQuest(beginnerMoves);
+           }
+
+           onClose(); // Close modal immediately
+           console.log('onClose() called');
+         };
 
   const handleMoveCardClick = (move) => {
     console.log('Move card clicked:', move);
@@ -218,15 +223,22 @@ const IntroGuideModal = ({ show, onClose, onMoveSelect, userMasteredMoves = [], 
 
 
         {/* Bottom button */}
-        <div className="intro-guide-buttons">
-                     <button 
-             className="intro-guide-modal-btn primary" 
-             onClick={handleStartNow}
-             type="button"
-           >
-             {currentUser?.isFirstTimeUser ? "Kom i gang!" : "Start"}
-           </button>
-        </div>
+                       <div className="intro-guide-buttons">
+                 <button
+                   className="intro-guide-modal-btn primary"
+                   onClick={handleStartNow}
+                   type="button"
+                 >
+                   {currentUser?.isFirstTimeUser ? "Kom i gang!" : "Start"}
+                 </button>
+                 <button
+                   className="intro-guide-modal-btn close"
+                   onClick={onClose}
+                   type="button"
+                 >
+                   Luk
+                 </button>
+               </div>
       </div>
     </div>
   );

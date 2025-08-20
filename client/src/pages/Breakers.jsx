@@ -368,9 +368,22 @@ export default function Breakers() {
                     </div>
                   </div>
 
+            
+
                   {/* Only show call out button if not the current user */}
                   {currentUser && currentUser._id !== breaker.id && (
                     <div className="action-button">
+                       <button
+                      className="btn-view-profile"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent card click from triggering
+                        navigate(`/breakers/${breaker.id}`);
+                      }}
+                      title="View profile"
+                    >
+                      <FaUserTimes />
+                      <span>View Profile</span>
+                    </button>
                       {isChallenged ? (
                         <div className="challenged-container">
                           <button

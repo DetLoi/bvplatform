@@ -137,12 +137,13 @@ export default function CoverPhotoSection({ isEditing, tempCoverPhoto, setTempCo
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(0,0,0,0.6)',
+              background: 'rgba(0,0,0,0.9)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 1000,
               padding: '16px',
+           
             }}
           >
             <div
@@ -152,6 +153,7 @@ export default function CoverPhotoSection({ isEditing, tempCoverPhoto, setTempCo
                 padding: '16px',
                 color: '#fff',
                 maxWidth: '94vw',
+                height: '100vh',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>

@@ -40,6 +40,8 @@ import PublicRoute from './components/PublicRoute';
 import AdminRoute from './components/AdminRoute';
 import { AuthProvider } from './context/AuthContext';
 import { ProfileProvider } from './context/ProfileContext';
+import { QuestTrackerProvider } from './context/QuestTrackerContext';
+import QuestTracker from './components/QuestTracker';
 import CookieConsent from './components/CookieConsent';
 import VersionIndicator from './components/VersionIndicator';
 
@@ -76,7 +78,8 @@ export default function App() {
   return (
     <AuthProvider>
       <ProfileProvider>
-        <div className="min-h-screen bg-stone-900 text-stone-100 font-sans" style={{ ['--header-h']: '64px' }}>
+        <QuestTrackerProvider>
+          <div className="min-h-screen bg-stone-900 text-stone-100 font-sans" style={{ ['--header-h']: '64px' }}>
           <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
 
           <Routes>
@@ -268,7 +271,9 @@ export default function App() {
         />
         <CookieConsent />
         <VersionIndicator />
+        <QuestTracker />
       </div>
+      </QuestTrackerProvider>
       </ProfileProvider>
     </AuthProvider>
   );

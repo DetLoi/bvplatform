@@ -4,7 +4,9 @@ import {
   getBadgeById,
   createBadge,
   updateBadge,
-  deleteBadge
+  deleteBadge,
+  assignOGMembershipBadge,
+  manuallyAssignBadge
 } from '../controllers/badge.controller.js';
 import { uploadBadgeImage } from '../middleware/upload.js';
 
@@ -24,5 +26,11 @@ router.put('/:id', uploadBadgeImage, updateBadge);
 
 // Delete badge
 router.delete('/:id', deleteBadge);
+
+// Assign OG Membership badge to first 20 users
+router.post('/assign-og-membership', assignOGMembershipBadge);
+
+// Manually assign badge to specific users
+router.post('/assign-manual', manuallyAssignBadge);
 
 export default router; 

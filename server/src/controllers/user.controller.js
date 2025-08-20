@@ -405,6 +405,35 @@ export const deleteUser = async (req, res) => {
   }
 };
 
+// Mark intro guide as seen
+export const markIntroGuideAsSeen = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    user.hasSeenIntroGuide = true;
+    user.isFirstTimeUser = false;
+    await user.save();
+    
+    res.json({ 
+      success: true, 
+      message: 'Intro guide marked as seen and user marked as not first time',
+      hasSeenIntroGuide: true,
+      isFirstTimeUser: false
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // Add mastered move to user
 export const addMasteredMove = async (req, res) => {
   try {

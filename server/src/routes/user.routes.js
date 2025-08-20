@@ -19,7 +19,8 @@ import {
   getInstructors,
   getStudentsByInstructor,
   assignInstructor,
-  removeInstructor
+  removeInstructor,
+  markIntroGuideAsSeen
 } from '../controllers/user.controller.js';
 
 const router = Router();
@@ -47,6 +48,9 @@ router.get('/:id', getUserById);
 
 // Get user statistics
 router.get('/:userId/stats', getUserStats);
+
+// Mark intro guide as seen
+router.post('/intro-guide-seen', markIntroGuideAsSeen);
 
 // Create user
 router.post('/', createUser);

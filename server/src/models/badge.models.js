@@ -44,6 +44,22 @@ const badgeSchema = new Schema(
       },
       specialRequirements: { 
         type: String 
+      },
+      // New field for manually assigned users
+      manualUsers: [{
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+      }],
+      // New field for special badge types
+      badgeType: {
+        type: String,
+        enum: ['standard', 'og_membership', 'manual_assignment'],
+        default: 'standard'
+      },
+      // For OG membership - track the user limit
+      userLimit: {
+        type: Number,
+        default: null
       }
     },
     isActive: { 
