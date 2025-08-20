@@ -149,6 +149,12 @@ export const usersAPI = {
   // Get all pending move requests (admin)
   getPendingMoveRequests: () => apiRequest('/users/pending-moves'),
   
+  // Mark intro guide as seen
+  markIntroGuideAsSeen: (userId) => apiRequest('/users/intro-guide-seen', {
+    method: 'POST',
+    body: JSON.stringify({ userId }),
+  }),
+  
   // Move management
   addMasteredMove: (userId, moveId) => apiRequest(`/users/${userId}/moves/${moveId}/master`, {
     method: 'POST',

@@ -1541,6 +1541,29 @@ export default function Admin() {
     }
   };
 
+  const handleCreateOGBadge = async () => {
+    if (window.confirm('Create OG Membership badge for the first 20 users? This will automatically assign it to the earliest registered users.')) {
+      try {
+        const response = await fetch('/api/badges/assign-og-membership', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create OG badge');
+        }
+
+        const result = await response.json();
+        showToast(`🎉 OG Membership badge created and assigned to ${result.assignedUsers} users!`);
+        refetchBadges(); // Refresh the badges list
+      } catch (error) {
+        showToast(`Error creating OG badge: ${error.message}`);
+      }
+    }
+  };
+
   const handleApproval = async (id, status, type) => {
     try {
       const submission = (bulkSubmissions || []).find(sub => sub._id === id);
@@ -1843,6 +1866,13 @@ export default function Admin() {
             </div>
             <button className="header-action-btn add-btn" onClick={() => navigate(`/admin/add-badge?tab=${activeTab}`)}>
               <FaPlus />
+            </button>
+            <button 
+              className="header-action-btn special-btn" 
+              onClick={handleCreateOGBadge}
+              title="Create OG Membership Badge"
+            >
+              👑 OG
             </button>
             <button className="header-action-btn refresh-btn" onClick={() => refetchBadges()}>
               <FaSync />

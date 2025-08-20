@@ -41,6 +41,7 @@ import AdminRoute from './components/AdminRoute';
 import { AuthProvider } from './context/AuthContext';
 import { ProfileProvider } from './context/ProfileContext';
 import CookieConsent from './components/CookieConsent';
+import VersionIndicator from './components/VersionIndicator';
 
 // Import styles
 import './styles/base.css';
@@ -266,6 +267,7 @@ export default function App() {
           }}
         />
         <CookieConsent />
+        <VersionIndicator />
       </div>
       </ProfileProvider>
     </AuthProvider>

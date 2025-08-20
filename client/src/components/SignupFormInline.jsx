@@ -56,7 +56,7 @@ export default function SignupFormInline() {
     <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: 420, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 14, padding: 16, display: 'grid', gap: 10, position: 'relative' }}>
       <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 4 }}>Create your account</div>
       {error && <div style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.35)', color: '#fee2e2', padding: 8, borderRadius: 8 }}>{error}</div>}
-      <input name="name" placeholder="Full name" value={formData.name} onChange={handleChange} style={inputStyle} required />
+      <input name="name" placeholder="Bboy/bgirl name" value={formData.name} onChange={handleChange} style={inputStyle} required />
       <input name="username" placeholder="Username" value={formData.username} onChange={handleChange} style={inputStyle} required />
       <input name="email" type="email" placeholder="Email" value={formData.email} onChange={handleChange} style={inputStyle} required />
       <div style={{ display: 'grid', gap: 6 }}>

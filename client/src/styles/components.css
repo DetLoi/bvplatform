@@ -629,27 +629,26 @@
       background-position: center;
       background-repeat: no-repeat;
       color: #000000;
-      padding: 1.25rem 1.25rem 3rem 1.25rem; /* extra bottom padding for mobile browser UI */
+      padding: 2rem 1.25rem 3rem 1.25rem; /* reduced top padding for tighter spacing */
       width: 100%;
       height: calc(100vh - 56px); /* Fallback for older browsers */
       height: calc(100dvh - 56px); /* Use dynamic viewport height for mobile */
       overflow-y: auto; /* allow scrolling */
       flex-direction: column;
       align-items: stretch; /* full width items */
-      justify-content: space-evenly; /* evenly distribute nav items */
-      gap: 0; /* remove gap since we're using space-evenly */
+      justify-content: flex-start; /* start from top instead of space-evenly */
+      gap: 1rem; /* add small consistent gap between items */
       display: none;
     }
 
-  /* Let items size naturally and grow to fill space */
-  .nav-links li { flex: 1; width: 100%; opacity: 0; transform: translateX(24px); display: flex; align-items: center; }
+  /* Let items size naturally without growing to fill space */
+  .nav-links li { width: 100%; opacity: 0; transform: translateX(24px); display: flex; align-items: center; }
  
   .nav-links li a {
     color: #000; font-weight: 300;
     display: flex;
     align-items: center;
     width: 100%;
-    height: 100%;
     padding: 0.75rem 1.25rem; /* restore left padding */
     font-size: 3rem; /* 3x font size */
     text-align: left;
@@ -812,10 +811,12 @@
   }
 }
 
-/* ============ MASTER MOVE BUTTON ============ */
+/* ============ MASTER MOVE BUTTON AND INTRO GUIDE BUTTON ============ */
 .master-move-section {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 1rem;
   margin: 1rem 0;
 }
 
@@ -843,6 +844,138 @@
 .master-move-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+}
+
+.intro-guide-page-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.intro-guide-page-btn:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.intro-guide-page-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+/* ============ DIMMED PAGE OVERLAY ============ */
+.dimmed-page-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.guide-highlight-container {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.guide-highlight-text p {
+  font-size: 1.2rem;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.close-dimmed-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-dimmed-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Highlight the guide button when page is dimmed */
+.dimmed-page-overlay ~ .master-move-section .intro-guide-page-btn {
+  animation: guideButtonGlow 2s ease-in-out infinite alternate;
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.8), 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+@keyframes guideButtonGlow {
+  from {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.8), 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+  to {
+    box-shadow: 0 0 30px rgba(102, 126, 234, 1), 0 6px 20px rgba(102, 126, 234, 0.5);
+  }
+}
+
+/* ============ INTRO GUIDE MODAL BUTTONS ============ */
+.intro-guide-modal-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0.5rem;
+}
+
+.intro-guide-modal-btn:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.intro-guide-modal-btn.primary {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
+}
+
+.intro-guide-modal-btn.primary:hover {
+  background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%);
+  box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
+}
+
+.intro-guide-modal-btn.skip {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+}
+
+.intro-guide-modal-btn.skip:hover {
+  background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+  box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
 }
 
 /* ============ USER BATTLES COMPONENT ============ */
@@ -1451,4 +1584,28 @@
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* ============ VERSION INDICATOR ============ */
+.version-indicator {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.7);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Courier New', monospace;
+  z-index: 9999;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  user-select: none;
+  pointer-events: none;
+}
+
+.version-indicator:hover {
+  background: rgba(0, 0, 0, 0.8);
+  color: rgba(255, 255, 255, 1);
 }

@@ -1,10 +1,13 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { FaPlay } from 'react-icons/fa';
 import { useMoves } from '../hooks/useMoves';
+import { useAuth } from '../context/AuthContext';
+import { useProfile } from '../context/ProfileContext';
 import MoveCard from '../components/MoveCard';
 import RecommendationsPanel from '../components/RecommendationsPanel';
 import VideoPlayer from '../components/VideoPlayer';
+import IntroGuideModal from '../components/IntroGuideModal';
 import { toast } from 'react-hot-toast';
 import { movesAPI } from '../services/api';
 
@@ -23,11 +26,24 @@ const categoryVideos = {
 
 export function Moves({ setToastMessage }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { currentUser } = useAuth();
+  const { masteredMoves } = useProfile();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialCategory = searchParams.get('category') || 'All Moves';
   const [category, setCategory] = useState(initialCategory);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [selectedMove, setSelectedMove] = useState(null);
+  const [showIntroGuide, setShowIntroGuide] = useState(false);
+  const [isPageDimmed, setIsPageDimmed] = useState(false);
+  
+  // Show intro guide automatically for first time users
+  useEffect(() => {
+    if (currentUser?.isFirstTimeUser && !currentUser?.hasSeenIntroGuide) {
+      console.log('First time user detected, showing intro guide automatically');
+      setShowIntroGuide(true);
+    }
+  }, [currentUser]);
   const movesPageRef = useRef(null);
   const hasAppliedUrlSelectionRef = useRef(false);
   
@@ -37,6 +53,8 @@ export function Moves({ setToastMessage }) {
   // State to track all moves for recommendations
   const [allMoves, setAllMoves] = useState([]);
   
+
+
   // Fetch all moves on component mount for move lookup
   useEffect(() => {
     const fetchAllMoves = async () => {
@@ -213,15 +231,22 @@ export function Moves({ setToastMessage }) {
         ))}
       </div>
       
-      {/* Master Move Button */}
-      <div className="master-move-section">
-        <button 
-          className="master-move-btn"
-          onClick={() => navigate('/master-move')}
-        >
-         Click here to prove a point
-        </button>
-      </div>
+                    {/* Master Move Button and Intro Guide Button */}
+       <div className="master-move-section">
+         <button 
+           className="master-move-btn"
+           onClick={() => navigate('/master-move')}
+         >
+          Click here to prove a point
+         </button>
+         
+         <button 
+           className="intro-guide-page-btn"
+           onClick={() => setShowIntroGuide(true)}
+         >
+           📚 Se guide
+         </button>
+       </div>
       
       {/* Video Section with Recommendations */}
       <div
@@ -352,6 +377,46 @@ export function Moves({ setToastMessage }) {
           </div>
         )}
       </div>
+      
+                                                                               {/* Intro Guide Modal */}
+               <IntroGuideModal 
+                 show={showIntroGuide}
+                 onClose={() => {
+                   console.log('onClose called, setting showIntroGuide to false');
+                   setShowIntroGuide(false);
+                 }}
+                 onMoveSelect={(move) => {
+                   console.log('Move selected from guide:', move);
+                   // Set the selected move to trigger video player
+                   setSelectedMove(move);
+                   setSelectedVideo(move.videoUrl || move.video);
+                 }}
+                 userMasteredMoves={(() => {
+                   console.log('Sending mastered moves to guide from ProfileContext:', masteredMoves);
+                   return masteredMoves || [];
+                 })()}
+                 onFirstTimeStart={() => {
+                   console.log('First time user started, dimming page');
+                   setIsPageDimmed(true);
+                 }}
+               />
+               
+               {/* Dimmed Page Overlay */}
+               {isPageDimmed && (
+                 <div className="dimmed-page-overlay">
+                   <div className="guide-highlight-container">
+                     <div className="guide-highlight-text">
+                       <p>Du kan finde øveguiden her</p>
+                       <button 
+                         className="close-dimmed-btn"
+                         onClick={() => setIsPageDimmed(false)}
+                       >
+                         Luk
+                       </button>
+                     </div>
+                   </div>
+                 </div>
+               )}
     </section>
   );
 }

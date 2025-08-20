@@ -139,6 +139,7 @@
   white-space: nowrap;
   overflow: visible;
   max-width: none;
+  text-align: left;
 }
 
 .badge-description {

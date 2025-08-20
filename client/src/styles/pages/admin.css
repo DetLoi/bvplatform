@@ -1630,6 +1630,18 @@ body.editing-mode {
   box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
 }
 
+.header-action-btn.special-btn {
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  color: #000;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.header-action-btn.special-btn:hover {
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.5);
+  transform: translateY(-2px) scale(1.05);
+}
+
  
 
 /* Events Sub-tabs */

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FaArrowLeft, FaSave, FaTimes, FaSearch, FaPlus, FaTimes as FaTimesIcon, FaUpload, FaImage } from 'react-icons/fa';
 import { useBadges } from '../hooks/useBadges';
 import { useMoves } from '../hooks/useMoves';
+import { useUsers } from '../hooks/useUsers';
 import '../styles/pages/add-form.css';
 
 export default function AddBadge() {
@@ -11,6 +12,7 @@ export default function AddBadge() {
   const currentTab = searchParams.get('tab') || 'badges';
   const { createBadge, loading, error } = useBadges({ skipInitialFetch: true });
   const { moves: existingMoves } = useMoves({ skipInitialFetch: false });
+  const { users: existingUsers } = useUsers({ skipInitialFetch: false });
   
   const [formData, setFormData] = useState({
     name: '',
@@ -18,7 +20,9 @@ export default function AddBadge() {
     category: '',
     requirement: '',
     image: null,
-    imagePreview: null
+    imagePreview: null,
+    badgeType: 'standard',
+    userLimit: null
   });
 
   // State for requirements dropdown
@@ -26,6 +30,11 @@ export default function AddBadge() {
   const [requirementsSearch, setRequirementsSearch] = useState('');
   const [requirementsCategoryFilter, setRequirementsCategoryFilter] = useState('');
   const [selectedRequirements, setSelectedRequirements] = useState([]);
+  
+  // State for manual users assignment
+  const [showManualUsersDropdown, setShowManualUsersDropdown] = useState(false);
+  const [manualUsersSearch, setManualUsersSearch] = useState('');
+  const [selectedManualUsers, setSelectedManualUsers] = useState([]);
   
   // State for category dropdown
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
@@ -49,6 +58,16 @@ export default function AddBadge() {
     const notSelected = !selectedRequirements.includes(move.name);
     
     return matchesName && matchesCategory && notSelected;
+  });
+
+  // Filter existing users for manual assignment dropdown
+  const filteredUsers = existingUsers.filter(user => {
+    const matchesName = user.username?.toLowerCase().includes(manualUsersSearch.toLowerCase()) ||
+                       user.email?.toLowerCase().includes(manualUsersSearch.toLowerCase()) ||
+                       user.name?.toLowerCase().includes(manualUsersSearch.toLowerCase());
+    const notSelected = !selectedManualUsers.includes(user.username || user.email);
+    
+    return matchesName && notSelected;
   });
 
   // Get unique categories from existing moves for the category filter
@@ -187,6 +206,17 @@ export default function AddBadge() {
     setSelectedRequirements(prev => prev.filter(name => name !== moveName));
   };
 
+  const handleAddManualUser = (user) => {
+    const userIdentifier = user.username || user.email;
+    setSelectedManualUsers(prev => [...prev, userIdentifier]);
+    setManualUsersSearch('');
+    setShowManualUsersDropdown(false);
+  };
+
+  const handleRemoveManualUser = (userIdentifier) => {
+    setSelectedManualUsers(prev => prev.filter(id => id !== userIdentifier));
+  };
+
   const clearRequirementsFilters = () => {
     setRequirementsSearch('');
     setRequirementsCategoryFilter('');
@@ -209,6 +239,11 @@ export default function AddBadge() {
       formDataToSend.append('description', formData.description);
       formDataToSend.append('category', formData.category);
       formDataToSend.append('requirements', JSON.stringify(selectedRequirements));
+      formDataToSend.append('manualUsers', JSON.stringify(selectedManualUsers));
+      formDataToSend.append('badgeType', formData.badgeType);
+      if (formData.userLimit) {
+        formDataToSend.append('userLimit', formData.userLimit.toString());
+      }
       
       if (formData.image) {
         formDataToSend.append('badgeImage', formData.image);
@@ -339,10 +374,12 @@ export default function AddBadge() {
             )}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="requirements">Requirements (Moves to Master) *</label>
-            <div className="recommendations-container">
-              {/* Selected requirements display */}
+          {/* Requirements Section - Only show for standard badges */}
+          {formData.badgeType === 'standard' && (
+            <div className="form-group">
+              <label htmlFor="requirements">Requirements (Moves to Master) *</label>
+              <div className="recommendations-container">
+                {/* Selected requirements display */}
               {selectedRequirements.length > 0 && (
                 <div className="selected-recommendations">
                   {selectedRequirements.map((moveName, index) => (
@@ -429,10 +466,14 @@ export default function AddBadge() {
                       ))
                     ) : (
                       <div className="no-results">
-                        {requirementsSearch || requirementsCategoryFilter 
-                          ? `No moves found matching "${requirementsSearch}"${requirementsCategoryFilter ? ` in ${requirementsCategoryFilter}` : ''}`
-                          : 'Start typing to search moves or select a category'
-                        }
+                        {(() => {
+                          if (requirementsSearch || requirementsCategoryFilter) {
+                            const searchText = `No moves found matching "${requirementsSearch}"`;
+                            const categoryText = requirementsCategoryFilter ? ` in ${requirementsCategoryFilter}` : '';
+                            return searchText + categoryText;
+                          }
+                          return 'Start typing to search moves or select a category';
+                        })()}
                       </div>
                     )}
                   </div>
@@ -440,6 +481,117 @@ export default function AddBadge() {
               </div>
             </div>
           </div>
+          )}
+
+          {/* Badge Type Selection */}
+          <div className="form-group">
+            <label htmlFor="badgeType">Badge Type *</label>
+            <select
+              id="badgeType"
+              name="badgeType"
+              value={formData.badgeType}
+              onChange={handleChange}
+              className="form-select"
+            >
+              <option value="standard">Standard Badge (Move Requirements)</option>
+              <option value="og_membership">OG Membership (First 20 Users)</option>
+              <option value="manual_assignment">Manual Assignment (Specific Users)</option>
+            </select>
+          </div>
+
+          {/* User Limit for OG Membership */}
+          {formData.badgeType === 'og_membership' && (
+            <div className="form-group">
+              <label htmlFor="userLimit">User Limit</label>
+              <input
+                type="number"
+                id="userLimit"
+                name="userLimit"
+                value={formData.userLimit || ''}
+                onChange={handleChange}
+                placeholder="e.g., 20 for first 20 users"
+                className="form-input"
+                min="1"
+              />
+            </div>
+          )}
+
+          {/* Manual Users Assignment */}
+          {formData.badgeType === 'manual_assignment' && (
+            <div className="form-group">
+              <label htmlFor="manualUsers">Assign to Specific Users</label>
+              <div className="recommendations-container">
+                {/* Selected manual users display */}
+                {selectedManualUsers.length > 0 && (
+                  <div className="selected-recommendations">
+                    {selectedManualUsers.map((userIdentifier, index) => (
+                      <span key={index} className="recommendation-tag">
+                        {userIdentifier}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveManualUser(userIdentifier)}
+                          className="remove-recommendation"
+                        >
+                          <FaTimesIcon />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Search input and dropdown */}
+                <div className="recommendations-input-container">
+                  <div className="search-input-wrapper">
+                    <FaSearch className="search-icon" />
+                    <input
+                      type="text"
+                      placeholder="Search for users by username or email..."
+                      value={manualUsersSearch}
+                      onChange={(e) => setManualUsersSearch(e.target.value)}
+                      onFocus={() => setShowManualUsersDropdown(true)}
+                      className="form-input"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowManualUsersDropdown(!showManualUsersDropdown)}
+                      className="dropdown-toggle"
+                    >
+                      ▼
+                    </button>
+                  </div>
+                  
+                  {/* Dropdown with existing users */}
+                  {showManualUsersDropdown && (
+                    <div className="recommendations-dropdown">
+                      {filteredUsers.length > 0 ? (
+                        filteredUsers.map((user) => (
+                          <div
+                            key={user._id}
+                            className="recommendation-option"
+                            onClick={() => handleAddManualUser(user)}
+                          >
+                            <div className="move-info">
+                              <span className="move-name">{user.username || user.email}</span>
+                              <span className="move-category">{user.name || 'No name'}</span>
+                              <span className="move-level">Level {user.level || 1}</span>
+                            </div>
+                            <FaPlus className="add-icon" />
+                          </div>
+                        ))
+                      ) : (
+                        <div className="no-results">
+                          {manualUsersSearch 
+                            ? `No users found matching "${manualUsersSearch}"`
+                            : 'Start typing to search users'
+                          }
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="image">Badge Icon *</label>

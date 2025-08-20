@@ -14,13 +14,16 @@ export default function Register() {
     password: ''
   });
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  const handleContainerClick = () => {
+    setNewsletterSubscribed(!newsletterSubscribed);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,10 +36,6 @@ export default function Register() {
     setError('');
     if (!formData.name || !formData.username || !formData.email || !formData.password) {
       setError('Please fill in all fields.');
-      return;
-    }
-    if (!acceptedTerms) {
-      setError('Please accept our Terms of Service and Privacy Policy.');
       return;
     }
     const checks = passwordChecks;
@@ -90,27 +89,27 @@ export default function Register() {
       <Link to="/" className="back-link">
         <FaArrowLeft />
       </Link>
-      <div className="register-container">
-        <div className="register-header">
-          <img src="/assets/logo-white.png" alt="Breakverse" className="register-logo" />
-        </div>
         {/* 7-dages gratis prøve banner */}
         <div
           style={{
             color: '#ffd700',
             fontWeight: 800,
             textAlign: 'center',
-            margin: '4px 0 12px 0',
+            margin: '2rem 0 20px 0',
             letterSpacing: '0.06em'
           }}
         >
           <span style={{ borderBottom: '2px solid #ffd700', paddingBottom: 2 }}>ALPHA TEST RELEASE FREE</span>
         </div>
+      <div className="register-container" onClick={handleContainerClick}>
+        <div className="register-header">
+          <img src="/assets/logo-white.png" alt="Breakverse" className="register-logo" />
+        </div>
         <form onSubmit={handleSubmit} className="register-form">
           {error && <div className="error-message">{error}</div>}
 
           <div className="form-group">
-            <label htmlFor="name">Full name</label>
+            <label htmlFor="name">Bboy/bgirl name</label>
             <div className="input-wrapper">
               <div className="input-icon-container"><FaUser /></div>
               <input
@@ -169,7 +168,7 @@ export default function Register() {
                 name="password"
                 type={showPassword ? 'text' : 'password'}
                 className="form-input"
-                placeholder="min. 6 characters"
+                placeholder="min. 8 characters"
                 value={formData.password}
                 onChange={handleChange}
                 onFocus={() => setPasswordFocused(true)}
@@ -214,25 +213,16 @@ export default function Register() {
             description="Stay updated with the latest breaking news, events, and tips"
           />
 
-          <div className="terms-checkbox-container">
-            <label className="terms-checkbox-label">
-              <input
-                type="checkbox"
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="terms-checkbox"
-              />
-              <span className="terms-text">
-                I agree to the{' '}
-                <Link to="/terms" target="_blank" className="terms-link">
-                  Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link to="/policy" target="_blank" className="terms-link">
-                  Privacy Policy
-                </Link>
-              </span>
-            </label>
+          <div className="terms-text">
+            You accept our{' '}
+            <Link to="/terms" target="_blank" className="terms-link">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link to="/policy" target="_blank" className="terms-link">
+              Privacy Policy
+            </Link>{' '}
+            when you create account
           </div>
 
           <button type="submit" disabled={loading} className="register-button">

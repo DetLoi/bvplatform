@@ -1,0 +1,262 @@
+.intro-guide-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.intro-guide-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 800px;
+  width: 90%;
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.15),
+    0 15px 35px rgba(0, 0, 0, 0.1),
+    0 5px 15px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.intro-guide-card:hover {
+  transform: translateZ(0) translateY(-2px);
+  box-shadow: 
+    0 30px 60px rgba(0, 0, 0, 0.2),
+    0 20px 40px rgba(0, 0, 0, 0.15),
+    0 10px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.intro-guide-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #60a5fa, #34d399, #fbbf24);
+}
+
+.intro-guide-top {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.intro-guide-character {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.intro-guide-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: center;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.intro-guide-subtitle {
+  font-size: 1.1rem;
+  color: #64748b;
+  text-align: center;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+/* Move cards - 3 columns layout */
+.intro-guide-moves {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.intro-guide-move-card {
+  background: transparent;
+  padding: 1.5rem;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: none;
+  border: 2px solid #374151;
+  transition: all 0.3s ease;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.intro-guide-move-card:hover {
+  transform: translateY(-2px);
+  border-color: #667eea;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+  background-color: rgba(102, 126, 234, 0.05);
+}
+
+.intro-guide-loading,
+.intro-guide-no-moves {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2rem;
+  background: transparent;
+  border-radius: 16px;
+  border: 2px dashed #d1d5db;
+  box-shadow: none;
+}
+
+.intro-guide-loading p,
+.intro-guide-no-moves p {
+  color: #6b7280;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.intro-guide-move-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+  position: relative;
+}
+
+.intro-guide-move-category {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 500;
+  position: relative;
+}
+
+.intro-guide-move-xp {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #059669;
+  position: relative;
+}
+
+.intro-guide-progress {
+  margin-bottom: 2rem;
+}
+
+.progress-label {
+  font-size: 0.9rem;
+  color: #64748b;
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #60a5fa, #34d399);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* Quest Status Styling */
+.quest-status {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  animation: questPulse 2s ease-in-out infinite;
+}
+
+.quest-badge {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.quest-description {
+  font-size: 1rem;
+  color: #92400e;
+  line-height: 1.5;
+  margin: 0;
+}
+
+@keyframes questPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.intro-guide-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Button styling is now handled in components.css */
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .intro-guide-card {
+    padding: 1.5rem;
+    margin: 1rem;
+    max-width: 95%;
+  }
+  
+  .intro-guide-title {
+    font-size: 1.75rem;
+  }
+  
+  .intro-guide-moves {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .intro-guide-move-card {
+    padding: 1rem;
+    min-height: 100px;
+  }
+  
+  .intro-guide-move-title {
+    font-size: 1.1rem;
+  }
+  
+  .intro-guide-move-category {
+    font-size: 0.8rem;
+  }
+  
+  .intro-guide-move-xp {
+    font-size: 0.9rem;
+  }
+  
+  .intro-guide-character {
+    width: 100px;
+    height: 100px;
+  }
+}
