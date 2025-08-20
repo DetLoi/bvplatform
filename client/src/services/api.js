@@ -402,24 +402,22 @@ export const newsletterAPI = {
 
 // Upload API
 export const uploadAPI = {
-  uploadProfileImage: (formData) => apiRequest('upload/profile-image', {
+  uploadProfileImage: (formData) => apiRequest('/upload/profile-image', {
     method: 'POST',
     body: formData,
   }),
   
-  uploadCoverImage: (formData) => apiRequest('upload/cover-image', {
+  uploadCoverImage: (formData) => apiRequest('/upload/cover-image', {
     method: 'POST',
     body: formData,
   }),
   
-
-  
-  uploadVideo: (formData) => apiRequest('upload/video', {
+  uploadVideo: (formData) => apiRequest('/upload/video', {
     method: 'POST',
     body: formData,
   }),
   
-  deleteVideo: (filename) => apiRequest(`upload/video/${filename}`, {
+  deleteVideo: (filename) => apiRequest(`/upload/video/${filename}`, {
     method: 'DELETE',
   }),
 };

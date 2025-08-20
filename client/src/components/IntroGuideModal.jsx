@@ -171,14 +171,14 @@ const IntroGuideModal = ({ show, onClose, onMoveSelect, userMasteredMoves = [], 
         {/* Top section with character image */}
         <div className="intro-guide-top">
           <img 
-            src="/assets/cutekitty223.png" 
-            alt="Cute Kitty Guide" 
+            src="/assets/breakKidCropped.png" 
+            alt="Break Kid Guide" 
             className="intro-guide-character"
           />
         </div>
 
                  {/* Title and subtitle */}
-         <h1 className="intro-guide-title">Velkommen til Breakverse! 🎉</h1>
+         <h1 className="intro-guide-title">Velkommen til Breakverse</h1>
          <p className="intro-guide-subtitle">
            {currentUser?.isFirstTimeUser 
              ? "Som ny bruger får du en personlig guide til at komme i gang!"

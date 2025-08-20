@@ -38,6 +38,7 @@ import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import AdminRoute from './components/AdminRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { ProfileProvider } from './context/ProfileContext';
 import { QuestTrackerProvider } from './context/QuestTrackerContext';
@@ -76,205 +77,207 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <AuthProvider>
-      <ProfileProvider>
-        <QuestTrackerProvider>
-          <div className="min-h-screen bg-stone-900 text-stone-100 font-sans" style={{ ['--header-h']: '64px' }}>
-          <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+    <ErrorBoundary>
+      <AuthProvider>
+        <ProfileProvider>
+          <QuestTrackerProvider>
+            <div className="min-h-screen bg-stone-900 text-stone-100 font-sans" style={{ ['--header-h']: '64px' }}>
+            <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
 
-          <Routes>
-            {/* Public routes - only accessible when not logged in */}
-            <Route path="/" element={
-              <PublicRoute>
-                <Landing />
-              </PublicRoute>
-            } />
-            <Route path="/login" element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            } />
-            <Route path="/policy" element={
-              <PublicRoute>
-                <Page><Policy /></Page>
-              </PublicRoute>
-            } />
-            <Route path="/terms" element={
-              <PublicRoute>
-                <Page><TermsOfService /></Page>
-              </PublicRoute>
-            } />
-            <Route path="/forgot-password" element={
-              <PublicRoute>
-                <Page><ForgotPassword /></Page>
-              </PublicRoute>
-            } />
-            <Route path="/verify-password" element={
-              <PublicRoute>
-                <Page><VerifyPassword /></Page>
-              </PublicRoute>
-            } />
-            <Route path="/register" element={
-              <PublicRoute>
-                <Register />
-              </PublicRoute>
-            } />
-            <Route path="/learnmore" element={
-              <PublicRoute>
-                <LearnMore />
-              </PublicRoute>
-            } />
-            <Route path="/verify" element={
-              <PublicRoute>
-                <Verify />
-              </PublicRoute>
-            } />
-            <Route path="/verify-success" element={
-              <PublicRoute>
-                <VerifySuccess />
-              </PublicRoute>
-            } />
+            <Routes>
+              {/* Public routes - only accessible when not logged in */}
+              <Route path="/" element={
+                <PublicRoute>
+                  <Landing />
+                </PublicRoute>
+              } />
+              <Route path="/login" element={
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              } />
+              <Route path="/policy" element={
+                <PublicRoute>
+                  <Page><Policy /></Page>
+                </PublicRoute>
+              } />
+              <Route path="/terms" element={
+                <PublicRoute>
+                  <Page><TermsOfService /></Page>
+                </PublicRoute>
+              } />
+              <Route path="/forgot-password" element={
+                <PublicRoute>
+                  <Page><ForgotPassword /></Page>
+                </PublicRoute>
+              } />
+              <Route path="/verify-password" element={
+                <PublicRoute>
+                  <Page><VerifyPassword /></Page>
+                </PublicRoute>
+              } />
+              <Route path="/register" element={
+                <PublicRoute>
+                  <Register />
+                </PublicRoute>
+              } />
+              <Route path="/learnmore" element={
+                <PublicRoute>
+                  <LearnMore />
+                </PublicRoute>
+              } />
+              <Route path="/verify" element={
+                <PublicRoute>
+                  <Verify />
+                </PublicRoute>
+              } />
+              <Route path="/verify-success" element={
+                <PublicRoute>
+                  <VerifySuccess />
+                </PublicRoute>
+              } />
 
-            {/* Protected routes - only accessible when logged in */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Page><Home /></Page>
-              </ProtectedRoute>
-            } />
-            <Route path="/moves" element={
-              <ProtectedRoute>
-                <Page><Moves /></Page>
-              </ProtectedRoute>
-            } />
-            <Route path="/master-move" element={
-              <ProtectedRoute>
-                <Page><MasterMove /></Page>
-              </ProtectedRoute>
-            } />
+              {/* Protected routes - only accessible when logged in */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Page><Home /></Page>
+                </ProtectedRoute>
+              } />
+              <Route path="/moves" element={
+                <ProtectedRoute>
+                  <Page><Moves /></Page>
+                </ProtectedRoute>
+              } />
+              <Route path="/master-move" element={
+                <ProtectedRoute>
+                  <Page><MasterMove /></Page>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/badges" element={
-              <ProtectedRoute>
-                <Page><Badges /></Page>
-              </ProtectedRoute>
-            } />
-            <Route path="/badges/:id" element={
-              <ProtectedRoute>
-                <Page><BadgeDetail /></Page>
-              </ProtectedRoute>
-            } />
+              <Route path="/badges" element={
+                <ProtectedRoute>
+                  <Page><Badges /></Page>
+                </ProtectedRoute>
+              } />
+              <Route path="/badges/:id" element={
+                <ProtectedRoute>
+                  <Page><BadgeDetail /></Page>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/breakers" element={
-              <ProtectedRoute>
-                <Page><Breakers /></Page>
-              </ProtectedRoute>
-            } />
-            <Route path="/breakers/:breakerId" element={
-              <ProtectedRoute>
-                <Page><BreakerProfile /></Page>
-              </ProtectedRoute>
-            } />
-            <Route path="/events" element={
-              <ProtectedRoute>
-                <Page><Events /></Page>
-              </ProtectedRoute>
-            } />
-            <Route path="/battles" element={
-              <ProtectedRoute>
-                <Page><Battles /></Page>
-              </ProtectedRoute>
-            } />
-            <Route path="/battles/:battleId" element={
-              <ProtectedRoute>
-                <Page><BattleRoom /></Page>
-              </ProtectedRoute>
-            } />
-            <Route path="/judge/:battleId" element={
-              <ProtectedRoute>
-                <Page><JudgeVoting /></Page>
-              </ProtectedRoute>
-            } />
-            <Route path="/battles/:battleId/judge/:category" element={
-              <ProtectedRoute>
-                <Page><JudgeVoting /></Page>
-              </ProtectedRoute>
-            } />
+              <Route path="/breakers" element={
+                <ProtectedRoute>
+                  <Page><Breakers /></Page>
+                </ProtectedRoute>
+              } />
+              <Route path="/breakers/:breakerId" element={
+                <ProtectedRoute>
+                  <Page><BreakerProfile /></Page>
+                </ProtectedRoute>
+              } />
+              <Route path="/events" element={
+                <ProtectedRoute>
+                  <Page><Events /></Page>
+                </ProtectedRoute>
+              } />
+              <Route path="/battles" element={
+                <ProtectedRoute>
+                  <Page><Battles /></Page>
+                </ProtectedRoute>
+              } />
+              <Route path="/battles/:battleId" element={
+                <ProtectedRoute>
+                  <Page><BattleRoom /></Page>
+                </ProtectedRoute>
+              } />
+              <Route path="/judge/:battleId" element={
+                <ProtectedRoute>
+                  <Page><JudgeVoting /></Page>
+                </ProtectedRoute>
+              } />
+              <Route path="/battles/:battleId/judge/:category" element={
+                <ProtectedRoute>
+                  <Page><JudgeVoting /></Page>
+                </ProtectedRoute>
+              } />
 
-            {/* Admin routes - require admin status */}
-            <Route path="/admin" element={
-              <AdminRoute>
-                <Admin />
-              </AdminRoute>
-            } />
-            <Route path="/admin/add-move" element={
-              <AdminRoute>
-                <AddMove />
-              </AdminRoute>
-            } />
-            <Route path="/admin/add-badge" element={
-              <AdminRoute>
-                <AddBadge />
-              </AdminRoute>
-            } />
-            <Route path="/admin/add-event" element={
-              <AdminRoute>
-                <AddEvent />
-              </AdminRoute>
-            } />
+              {/* Admin routes - require admin status */}
+              <Route path="/admin" element={
+                <AdminRoute>
+                  <Admin />
+                </AdminRoute>
+              } />
+              <Route path="/admin/add-move" element={
+                <AdminRoute>
+                  <AddMove />
+                </AdminRoute>
+              } />
+              <Route path="/admin/add-badge" element={
+                <AdminRoute>
+                  <AddBadge />
+                </AdminRoute>
+              } />
+              <Route path="/admin/add-event" element={
+                <AdminRoute>
+                  <AddEvent />
+                </AdminRoute>
+              } />
 
-            <Route path="/admin/add-user" element={
-              <AdminRoute>
-                <AddUser />
-              </AdminRoute>
-            } />
-            <Route path="/admin/edit-move/:id" element={
-              <AdminRoute>
-                <EditMove />
-              </AdminRoute>
-            } />
-            <Route path="/admin/edit-badge/:id" element={
-              <AdminRoute>
-                <EditBadge />
-              </AdminRoute>
-            } />
-            <Route path="/admin/edit-event/:id" element={
-              <AdminRoute>
-                <EditEvent />
-              </AdminRoute>
-            } />
-            <Route path="/admin/edit-user/:id" element={
-              <AdminRoute>
-                <EditUser />
-              </AdminRoute>
-            } />
+              <Route path="/admin/add-user" element={
+                <AdminRoute>
+                  <AddUser />
+                </AdminRoute>
+              } />
+              <Route path="/admin/edit-move/:id" element={
+                <AdminRoute>
+                  <EditMove />
+                </AdminRoute>
+              } />
+              <Route path="/admin/edit-badge/:id" element={
+                <AdminRoute>
+                  <EditBadge />
+                </AdminRoute>
+              } />
+              <Route path="/admin/edit-event/:id" element={
+                <AdminRoute>
+                  <EditEvent />
+                </AdminRoute>
+              } />
+              <Route path="/admin/edit-user/:id" element={
+                <AdminRoute>
+                  <EditUser />
+                </AdminRoute>
+              } />
 
-            {/* Catch-all route for 404 */}
-            <Route path="*" element={<NotFound />} />
+              {/* Catch-all route for 404 */}
+              <Route path="*" element={<NotFound />} />
 
-          </Routes>
+            </Routes>
 
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: '#333',
-              color: '#fff',
-              fontWeight: 600,
-              borderRadius: '12px',
-            },
-            success: {
-              iconTheme: {
-                primary: '#00ffc3',
-                secondary: '#111',
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: '#333',
+                color: '#fff',
+                fontWeight: 600,
+                borderRadius: '12px',
               },
-            },
-          }}
-        />
-        <CookieConsent />
-        <VersionIndicator />
-        <QuestTracker />
-      </div>
-      </QuestTrackerProvider>
-      </ProfileProvider>
-    </AuthProvider>
+              success: {
+                iconTheme: {
+                  primary: '#00ffc3',
+                  secondary: '#111',
+                },
+              },
+            }}
+          />
+          <CookieConsent />
+          <VersionIndicator />
+          <QuestTracker />
+        </div>
+        </QuestTrackerProvider>
+        </ProfileProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

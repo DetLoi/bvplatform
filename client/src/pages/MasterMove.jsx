@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaArrowLeft, FaSave, FaTimes, FaUpload, FaPlay, FaCheck, FaSearch, FaPlus, FaFilter, FaChevronUp, FaChevronDown } from 'react-icons/fa';
+import { FaArrowLeft, FaSave, FaTimes, FaUpload, FaPlay, FaCheck, FaSearch, FaPlus, FaFilter, FaChevronUp, FaChevronDown, FaList } from 'react-icons/fa';
 import { useMoves } from '../hooks/useMoves';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
@@ -36,8 +36,21 @@ export default function MasterMove() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
-  // State for mobile panel expansion
+  // State for panel expansion - start closed by default
   const [isPanelExpanded, setIsPanelExpanded] = useState(false);
+  
+  // Check if we're on mobile
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  
+  // Update mobile detection on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // State for tracking moves being removed (for animations)
   const [removingMoves, setRemovingMoves] = useState(new Set());
@@ -124,16 +137,13 @@ export default function MasterMove() {
         // Start removal animation
         setRemovingMoves(prevRemoving => new Set([...prevRemoving, move._id]));
         
-        // Remove move after animation completes
-        setTimeout(() => {
-          setSelectedMoves(current => {
-            const newMoves = current.filter(m => m._id !== move._id);
-            // Reset panel expansion if no moves are selected
-            if (newMoves.length === 0) {
-              setIsPanelExpanded(false);
-            }
-            return newMoves;
-          });
+                 // Remove move after animation completes
+         setTimeout(() => {
+           setSelectedMoves(current => {
+             const newMoves = current.filter(m => m._id !== move._id);
+             // Don't auto-close panel when removing moves
+             return newMoves;
+           });
           setRemovingMoves(prevRemoving => {
             const newRemoving = new Set(prevRemoving);
             newRemoving.delete(move._id);
@@ -143,11 +153,18 @@ export default function MasterMove() {
         
         return prev; // Keep the move in the list during animation
       } else {
-        // Add move at the top of the list
-        return [move, ...prev];
-      }
-    });
-  };
+                 // Add move at the top of the list
+         const newMoves = [move, ...prev];
+         
+         // On desktop, automatically show the panel when moves are added
+         if (!isMobile && !isPanelExpanded) {
+           setIsPanelExpanded(true);
+         }
+         
+         return newMoves;
+       }
+     });
+   };
 
   // Handle video file selection
   const handleVideoSelect = (event) => {
@@ -267,7 +284,7 @@ export default function MasterMove() {
     <div className="master-move-page">
       {/* Header */}
       <div className="master-move-header">
-        <button className="back-btn" onClick={handleCancel}>
+        <button className="master-move-back-btn" onClick={handleCancel}>
           <FaArrowLeft />
           Back to Moves
         </button>
@@ -319,153 +336,171 @@ export default function MasterMove() {
         </div>
       </div>
 
-      {/* Selected Moves Summary */}
-      <div className={`selected-moves-summary ${selectedMoves.length > 0 ? 'show' : ''} ${isPanelExpanded ? 'expanded' : ''}`}>
-        <div className="panel-header" onClick={() => setIsPanelExpanded(!isPanelExpanded)}>
-          <h3>Selected Moves ({selectedMoves.length})</h3>
-          <div className="panel-controls">
-            {selectedMoves.length > 0 && (
-              <button 
-                className="close-panel-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedMoves([]);
-                  setIsPanelExpanded(false);
-                }}
-                title="Clear all selected moves"
-              >
-                <FaTimes />
-              </button>
-            )}
-                         <button 
-               className={`expand-toggle ${isPanelExpanded ? 'expanded' : ''}`}
-               onClick={(e) => {
-                 e.stopPropagation();
-                 setIsPanelExpanded(!isPanelExpanded);
-               }}
-               title={isPanelExpanded ? 'Collapse panel' : 'Expand panel'}
-             >
-               <FaChevronUp />
-             </button>
-          </div>
-        </div>
-        <div className="selected-moves-content">
-          {/* Top Section: Scrollable Moves List */}
-          <div className="selected-moves-scrollable">
-            {selectedMoves.map((move) => (
-              <div 
-                key={move._id} 
-                className={`selected-move-item ${removingMoves.has(move._id) ? 'removing' : ''}`}
-              >
-                <div className="move-info">
-                  <div className={`move-name level-${move.level?.toLowerCase()}`}>
-                    {move.name}
-                  </div>
-                  <div className="move-details">
-                    <span className="move-category">{move.category}</span>
-                    <span className="move-xp">+{move.xp} XP</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleMoveToggle(move)}
-                  className="remove-move-btn"
-                  title="Remove move"
-                  disabled={removingMoves.has(move._id)}
+             {/* Selected Moves Summary - Toggle Design */}
+       {/* Show toggle button only on mobile */}
+       {isMobile && !isPanelExpanded && (
+         <button 
+           className="selected-moves-toggle"
+           onClick={() => setIsPanelExpanded(true)}
+           title="Åbn selected moves"
+         >
+           <FaList />
+           <span className="toggle-text">Selected moves ({selectedMoves.length})</span>
+         </button>
+       )}
+       
+       {/* Show panel when expanded OR when there are moves on desktop */}
+       {(isPanelExpanded || (!isMobile && selectedMoves.length > 0)) && (
+         <div className="selected-moves-panel">
+          <div className="selected-moves-header">
+            <h3>Selected Moves ({selectedMoves.length})</h3>
+            <div className="selected-moves-actions">
+              {selectedMoves.length > 0 && (
+                <button 
+                  className="clear-moves-btn"
+                                     onClick={() => {
+                     setSelectedMoves([]);
+                     // On desktop, automatically hide panel when no moves
+                     if (!isMobile) {
+                       setIsPanelExpanded(false);
+                     }
+                   }}
+                  title="Clear all selected moves"
                 >
                   <FaTimes />
                 </button>
-              </div>
-            ))}
-          </div>
-          
-          {/* Fixed Bottom Sections */}
-          <div className="panel-bottom-sections">
-            {/* Video Upload Section */}
-            <div className="video-upload-section">
-              <h2>Upload Demonstration Video</h2>
-              <p>Record yourself performing all selected moves and upload the video for approval</p>
-              
-              <div className="upload-container">
-                {!videoUrl ? (
-                  <div className="upload-area">
-                    <input
-                      type="file"
-                      accept="video/*"
-                      onChange={handleVideoSelect}
-                      id="video-upload"
-                      className="file-input"
-                    />
-                    <label htmlFor="video-upload" className="upload-label">
-                      <FaUpload />
-                      <span>Click to select video file</span>
-                      <small>Max size: 100MB</small>
-                    </label>
-                  </div>
-                ) : (
-                  <div className="video-preview">
-                    <VideoPlayer
-                      src={videoUrl}
-                      className="preview-video"
-                      title="Preview video"
-                    />
-                    <div className="video-actions">
-                      <button
-                        onClick={() => {
-                          setVideoFile(null);
-                          setVideoUrl(null);
-                        }}
-                        className="change-video-btn"
-                      >
-                        Change Video
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              {isUploading && (
-                <div className="upload-progress">
-                  <div className="progress-bar">
-                    <div 
-                      className="progress-fill" 
-                      style={{ width: `${uploadProgress}%` }}
-                    ></div>
-                  </div>
-                  <p>Uploading video... {uploadProgress}%</p>
-                </div>
+              )}
+              {/* Only show close button on mobile */}
+              {isMobile && (
+                <button 
+                  className="close-panel-btn"
+                  onClick={() => setIsPanelExpanded(false)}
+                  title="Luk"
+                >
+                  <FaTimes />
+                </button>
               )}
             </div>
+          </div>
+          
+          <div className="selected-moves-content">
+            {/* Top Section: Scrollable Moves List */}
+            <div className="selected-moves-scrollable">
+              {selectedMoves.map((move) => (
+                <div 
+                  key={move._id} 
+                  className={`selected-move-item ${removingMoves.has(move._id) ? 'removing' : ''}`}
+                >
+                  <div className="move-info">
+                    <div className={`move-name level-${move.level?.toLowerCase()}`}>
+                      {move.name}
+                    </div>
+                    <div className="move-details">
+                      <span className="move-category">{move.category}</span>
+                      <span className="move-xp">+{move.xp} XP</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleMoveToggle(move)}
+                    className="remove-move-btn"
+                    title="Remove move"
+                    disabled={removingMoves.has(move._id)}
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+              ))}
+            </div>
             
-            {/* Error Message */}
-            {error && (
-              <div className="error-message">
-                {error}
-              </div>
-            )}
-            
-            {/* Submit Button */}
-            <div className="submit-section">
-              <button
-                onClick={handleSubmit}
-                className="submit-btn"
-                disabled={isSubmitting || !videoFile}
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="spinner"></div>
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <FaSave />
-                    Submit Mastery ({selectedMoves.length} moves)
-                  </>
+            {/* Fixed Bottom Sections */}
+            <div className="panel-bottom-sections">
+              {/* Video Upload Section */}
+              <div className="video-upload-section">
+                <h2>Upload Demonstration Video</h2>
+                <p>Record yourself performing all selected moves and upload the video for approval</p>
+                
+                <div className="upload-container">
+                  {!videoUrl ? (
+                    <div className="upload-area">
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={handleVideoSelect}
+                        id="video-upload"
+                        className="file-input"
+                      />
+                      <label htmlFor="video-upload" className="upload-label">
+                        <FaUpload />
+                        <span>Click to select video file</span>
+                        <small>Max size: 100MB</small>
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="video-preview">
+                      <VideoPlayer
+                        src={videoUrl}
+                        className="preview-video"
+                        title="Preview video"
+                      />
+                      <div className="video-actions">
+                        <button
+                          onClick={() => {
+                            setVideoFile(null);
+                            setVideoUrl(null);
+                          }}
+                          className="change-video-btn"
+                        >
+                          Change Video
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {isUploading && (
+                  <div className="upload-progress">
+                    <div className="progress-bar">
+                      <div 
+                        className="progress-fill" 
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                    <p>Uploading video... {uploadProgress}%</p>
+                  </div>
                 )}
-              </button>
+              </div>
+              
+              {/* Error Message */}
+              {error && (
+                <div className="error-message">
+                  {error}
+                </div>
+              )}
+              
+              {/* Submit Button */}
+              <div className="submit-section">
+                <button
+                  onClick={handleSubmit}
+                  className="submit-btn"
+                  disabled={isSubmitting || !videoFile}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="spinner"></div>
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <FaSave />
+                      Submit Mastery ({selectedMoves.length} moves)
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Moves Grid */}
       <div className="moves-container">

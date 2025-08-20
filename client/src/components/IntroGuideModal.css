@@ -55,9 +55,8 @@
 }
 
 .intro-guide-character {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
+  width: 80px;
+  height: 80px;
   object-fit: cover;
 }
 
@@ -215,7 +214,7 @@
 
 .intro-guide-buttons {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   gap: 1rem;
 }
@@ -261,6 +260,8 @@
     padding: 1.5rem;
     margin: 1rem;
     max-width: 95%;
+    max-height: 90vh; /* Limit height on mobile */
+    overflow-y: auto; /* Allow scrolling if needed */
   }
   
   .intro-guide-title {
@@ -268,13 +269,14 @@
   }
   
   .intro-guide-moves {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr; /* Single column on mobile */
     gap: 0.75rem;
+    margin-bottom: 1.5rem; /* Reduce bottom margin */
   }
   
   .intro-guide-move-card {
     padding: 1rem;
-    min-height: 100px;
+    min-height: 80px; /* Reduce height on mobile */
   }
   
   .intro-guide-move-title {
@@ -290,7 +292,88 @@
   }
   
   .intro-guide-character {
-    width: 100px;
-    height: 100px;
+    width: 70px;
+    height: 70px;
+  }
+  
+  /* Reduce progress section margin on mobile */
+  .intro-guide-progress {
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Ensure buttons are positioned higher and more accessible */
+  .intro-guide-buttons {
+    gap: 0.75rem;
+    margin-top: 0; /* Remove any top margin */
+  }
+  
+  /* Make buttons slightly smaller on mobile for better fit */
+  .intro-guide-modal-btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    min-width: 100px;
+  }
+}
+
+/* Additional mobile breakpoint for very small screens */
+@media (max-width: 480px) {
+  .intro-guide-card {
+    padding: 1rem;
+    margin: 0.5rem;
+    max-width: 98%;
+  }
+  
+  .intro-guide-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .intro-guide-subtitle {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .intro-guide-moves {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .intro-guide-move-card {
+    padding: 0.75rem;
+    min-height: 70px;
+  }
+  
+  .intro-guide-move-title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .intro-guide-move-category {
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .intro-guide-move-xp {
+    font-size: 0.85rem;
+  }
+  
+  .intro-guide-character {
+    width: 50px;
+    height: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .intro-guide-progress {
+    margin-bottom: 1rem;
+  }
+  
+  .intro-guide-buttons {
+    gap: 0.5rem;
+  }
+  
+  .intro-guide-modal-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    min-width: 90px;
   }
 }

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { usersAPI } from '../services/api';
+import { usersAPI, uploadAPI } from '../services/api';
 
 const ProfileContext = createContext();
 
@@ -246,16 +246,7 @@ function ProfileProviderInner({ children, currentUser }) {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/profile-image`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload profile image');
-      }
-
-      const data = await response.json();
+      const data = await uploadAPI.uploadProfileImage(formData);
       
       // Update local state
       setProfileImage(data.imageUrl);
@@ -286,16 +277,7 @@ function ProfileProviderInner({ children, currentUser }) {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/upload/cover-image`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload cover image');
-      }
-
-      const data = await response.json();
+      const data = await uploadAPI.uploadCoverImage(formData);
       
       // Update local state
       setCoverPhoto(data.imageUrl);

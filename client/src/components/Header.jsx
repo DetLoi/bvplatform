@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../hooks/useNotifications';
 import logo from '../assets/logo-white.png';
 import logoColor from '../assets/Logo.png';
-import { FaTwitch, FaSignOutAlt, FaBell, FaEnvelope, FaUser, FaQuestionCircle, FaBook } from 'react-icons/fa';
+import { FaSignOutAlt, FaBell, FaEnvelope, FaUser, FaQuestionCircle, FaBook, FaExternalLinkAlt } from 'react-icons/fa';
 
 // User Avatar Dropdown Component
 function UserAvatarDropdown({ user, onLogout }) {
@@ -68,6 +68,84 @@ function UserAvatarDropdown({ user, onLogout }) {
               <FaSignOutAlt size={16} />
               <span>Log out</span>
             </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Social Links Dropdown Component
+function SocialLinksDropdown() {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="social-links-container" ref={dropdownRef}>
+      <button
+        className="social-links-btn"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="Portals link"
+      >
+        <img 
+          src="/assets/portals.png" 
+          alt="Portals" 
+          className="portals-icon"
+          onError={(e) => {
+            console.error('Failed to load portals icon:', e);
+            e.target.style.display = 'none';
+            // Add fallback icon
+            const fallbackIcon = document.createElement('div');
+            fallbackIcon.innerHTML = '🌀';
+            fallbackIcon.style.fontSize = '24px';
+            fallbackIcon.style.color = '#fff';
+            fallbackIcon.style.marginLeft = '8px';
+            e.target.parentNode.appendChild(fallbackIcon);
+          }}
+        />
+      </button>
+      
+      {isOpen && (
+        <div className="social-links-dropdown">
+          <div className="social-links-header">
+            <h3>Breakverse Crew Hall</h3>
+          </div>
+          
+          <div className="social-links-list">
+            <a
+              href="https://theportal.to/?room=83ab543d-59e0-4425-9b10-d9e5ab29212d"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-link-item portals-item"
+              onClick={() => setIsOpen(false)}
+            >
+              <div className="social-link-icon">
+                <img 
+                  src="/assets/portals.png" 
+                  alt="Portals" 
+                  className="portals-icon-small"
+                  onError={(e) => {
+                    console.error('Failed to load portals icon in dropdown:', e);
+                    e.target.style.display = 'none';
+                  }}
+                />
+              </div>
+              <div className="social-link-content">
+                <h4>Enter metaverse</h4>
+              </div>
+              <FaExternalLinkAlt size={14} className="external-link-icon" />
+            </a>
           </div>
         </div>
       )}
@@ -281,78 +359,73 @@ export default function Header({ menuOpen, setMenuOpen }) {
           </div>
         )}
 
-        {currentUser && (
-          <div className="notification-container">
-            <button
-              className="notification-btn"
-              onClick={() => setNotificationsOpen(!notificationsOpen)}
-              aria-label="Notifications"
-            >
-              <FaBell size={24} />
-              {unreadCount > 0 && (
-                <span className="notification-badge">{unreadCount}</span>
-              )}
-            </button>
-            
-            {notificationsOpen && (
-              <div className="notification-dropdown">
-                <div className="notification-header">
-                  <h3>Notifications</h3>
-                  {unreadCount > 0 && (
-                    <button 
-                      className="mark-all-read-btn"
-                      onClick={handleMarkAllAsRead}
-                    >
-                      Mark all as read
-                    </button>
-                  )}
-                </div>
-                
-                <div className="notification-list">
-                  {notifications.length === 0 ? (
-                    <div className="no-notifications">
-                      <FaEnvelope size={20} />
-                      <p>No notifications</p>
-                    </div>
-                  ) : (
-                    notifications.map(notification => (
-                      <div
-                        key={notification._id}
-                        className={`notification-item ${!notification.read ? 'unread' : ''}`}
-                        onClick={() => handleNotificationClick(notification)}
+        {/* Right-side icons container */}
+        <div className="nav-right-container">
+          {currentUser && (
+            <div className="notification-container">
+              <button
+                className="notification-btn"
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
+                aria-label="Notifications"
+              >
+                <FaBell size={24} />
+                {unreadCount > 0 && (
+                  <span className="notification-badge">{unreadCount}</span>
+                )}
+              </button>
+              
+              {notificationsOpen && (
+                <div className="notification-dropdown">
+                  <div className="notification-header">
+                    <h3>Notifications</h3>
+                    {unreadCount > 0 && (
+                      <button 
+                        className="mark-all-read-btn"
+                        onClick={handleMarkAllAsRead}
                       >
-                        <div className="notification-content">
-                          <p className="notification-message">{notification.message}</p>
-                          <span className="notification-time">
-                            {new Date(notification.createdAt).toLocaleDateString()} {new Date(notification.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                          </span>
-                        </div>
-                        {!notification.read && <div className="unread-indicator"></div>}
+                        Mark all as read
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="notification-list">
+                    {notifications.length === 0 ? (
+                      <div className="no-notifications">
+                        <FaEnvelope size={20} />
+                        <p>No notifications</p>
                       </div>
-                    ))
-                  )}
+                    ) : (
+                      notifications.map(notification => (
+                        <div
+                          key={notification._id}
+                          className={`notification-item ${!notification.read ? 'unread' : ''}`}
+                          onClick={() => handleNotificationClick(notification)}
+                        >
+                          <div className="notification-content">
+                            <p className="notification-message">{notification.message}</p>
+                            <span className="notification-time">
+                              {new Date(notification.createdAt).toLocaleDateString()} {new Date(notification.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </span>
+                          </div>
+                          {!notification.read && <div className="unread-indicator"></div>}
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
-        
-        <a
-          href="https://twitch.tv/ducweb"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="twitch-link"
-          aria-label="Twitch"
-        >
-          <FaTwitch size={28} />
-        </a>
+              )}
+            </div>
+          )}
+          
+          <SocialLinksDropdown />
 
-        {currentUser && (
-          <UserAvatarDropdown 
-            user={currentUser} 
-            onLogout={handleLogout}
-          />
-        )}
+          {currentUser && (
+            <UserAvatarDropdown 
+              user={currentUser} 
+              onLogout={handleLogout}
+            />
+          )}
+        </div>
         <button
           className={`burger ${menuOpen ? 'open' : ''}`}
           onClick={() => setMenuOpen((o) => !o)}

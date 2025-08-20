@@ -1,5 +1,47 @@
 /* Quest Tracker Component Styles */
 
+/* Error State Styling */
+.quest-tracker-error {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  width: 280px;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(220, 38, 38, 0.3);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.quest-error-content {
+  padding: 1rem 1.5rem;
+  text-align: center;
+}
+
+.quest-error-content p {
+  color: #fecaca;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.quest-error-content button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.quest-error-content button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
 /* Desktop Version - Fixed panel on left side */
 .quest-tracker-desktop {
   position: fixed;
